@@ -235,3 +235,11 @@ A chronological diary of every decision made in this project, what was done, and
 - [ ] Check there are about 10 public news releases per sponsor
 - [ ] Sketch the RDF schema together (RDF-star provenance, D-015)
 - [ ] Build the cached GLEIF downloader for Hg, Bridgepoint and Apax
+
+### Addendum (Friday 16 Oct, late)
+- **D-024 · The LLM provider is Google Gemini.**
+  - Bruno's key was found in the earlier exercise's `.env` (`~/Downloads/excel-kg-exercise`) and copied into this project's `.env` as `LLM_API_KEY`.
+  - The value was never printed or committed.
+  - That project used the model `gemini-2.5-flash`. Which model this project uses is decided when extraction starts.
+  - Still to confirm: that Seisa intends this key for this trial, and what its spending limit is.
+- [ ] Sunday, before extraction: send one small test request to check that the key works
