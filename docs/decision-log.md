@@ -226,7 +226,7 @@ A chronological diary of every decision made in this project, what was done, and
 ### End of day (Friday 16 Oct)
 - The Companies House API key is registered. Bruno holds it.
 - The Neo4j password is set by Bruno in the browser, so it never passes through the AI tools.
-- `.env` is created by Bruno (`cp .env.example .env`); Bruno types in the Companies House key and the Neo4j password himself (D-021).
+- `.env` is created by Bruno (`cp .env.example .env`); Bruno types in the Companies House key and the Neo4j password (D-021).
 - Neo4j is stopped at the end of the session with `make neo4j-stop`.
 
 ### TODO for Sunday
