@@ -250,7 +250,7 @@ A chronological diary of every decision made in this project, what was done, and
   - **Still to confirm with Seisa:** that this key is meant for this trial, and what its spending limit is.
 
 **State at close:**
-- Five commits pushed to the private repo `brunohawkins/seisa-kg-trial`, all under Bruno's name only (D-020).
+- 9 commits pushed (counting this correction) to the private repo `brunohawkins/seisa-kg-trial`, all under Bruno's name only (D-020).
 - 10 setup tests passing.
 - Neo4j is stopped with `make neo4j-stop`.
 
