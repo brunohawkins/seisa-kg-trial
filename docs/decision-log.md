@@ -217,8 +217,21 @@ A chronological diary of every decision made in this project, what was done, and
 
 ### TODO for next time
 - [x] **Bruno:** choose the 3 sponsors (D-023)
-- [ ] **Bruno:** register for a Companies House API key
+- [x] **Bruno:** register for a Companies House API key (done; the key is kept out of git and out of the chat)
 - [ ] **Bruno:** set the Neo4j password at `http://localhost:7474`, and connect Neo4j Desktop to `bolt://localhost:7687`
 - [ ] Look up the reporting-exception reasons for a sample of entities (`NON_CONSOLIDATING`, `NATURAL_PERSONS`, …), to inform the RDF schema
 - [ ] Check that each chosen sponsor has enough public news releases (about 10 each)
 - [ ] Sunday: sketch the RDF schema
+
+### End of day (Friday 16 Oct)
+- The Companies House API key is registered. Bruno holds it.
+- The Neo4j password is set by Bruno in the browser, so it never passes through the AI tools.
+- `.env` is created by Bruno (`cp .env.example .env`); he types in the Companies House key and the Neo4j password himself (D-021).
+- Neo4j is stopped at the end of the session with `make neo4j-stop`.
+
+### TODO for Sunday
+- [ ] `make neo4j-start`, and check that Neo4j Desktop connects to `bolt://localhost:7687`
+- [ ] Sample GLEIF's reporting-exception reasons for the three sponsors
+- [ ] Check there are about 10 public news releases per sponsor
+- [ ] Sketch the RDF schema together (RDF-star provenance, D-015)
+- [ ] Build the cached GLEIF downloader for Hg, Bridgepoint and Apax
