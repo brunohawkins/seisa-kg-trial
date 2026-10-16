@@ -219,28 +219,46 @@ A chronological diary of every decision made in this project, what was done, and
 - [x] **Bruno:** choose the 3 sponsors (D-023)
 - [x] **Bruno:** register for a Companies House API key (done; the key is kept out of git and out of the chat)
 - [x] **Bruno:** set the Neo4j password at `http://localhost:7474` (done; the password is in `.env`, and the Python driver logs in successfully)
-- [ ] **Bruno:** connect Neo4j Desktop to `bolt://localhost:7687`
+- [x] **Bruno:** connect Neo4j Desktop to `bolt://localhost:7687` (done)
 - [ ] Look up the reporting-exception reasons for a sample of entities (`NON_CONSOLIDATING`, `NATURAL_PERSONS`, …), to inform the RDF schema
 - [ ] Check that each chosen sponsor has enough public news releases (about 10 each)
 - [ ] Sunday: sketch the RDF schema
 
 ### End of day (Friday 16 Oct)
-- The Companies House API key is registered. Bruno holds it.
-- The Neo4j password is set by Bruno in the browser, so it never passes through the AI tools.
-- `.env` is created by Bruno (`cp .env.example .env`); Bruno types in the Companies House key and the Neo4j password (D-021).
-- Neo4j is stopped at the end of the session with `make neo4j-stop`.
+
+**Secrets and access, all in `.env`, which git ignores (D-021):**
+- **Companies House API key:** registered by Bruno, and typed into `.env` by Bruno.
+- **Neo4j password:**
+  - Set by Bruno at `http://localhost:7474`; the Python driver logs in with it successfully.
+  - Bruno later pasted it into the Claude Code chat to check its format, so it has passed through an AI tool.
+  - The risk is low, because Neo4j only accepts connections from this computer. Change it if it is reused anywhere else.
+  - Format note: the value starts with `#`. That works in `.env`, but there must be no space after the `=`, or the value is read as a comment.
+- **Gemini key:** see D-024 below.
+
+**Neo4j Desktop:**
+- Connected to the project's server at `bolt://localhost:7687`. This confirms the set-up in D-018 works.
+- Explore (Bloom) has not been opened yet.
+
+**Decisions:**
+- **D-024 · The LLM provider is Google Gemini.**
+  - The key came from the earlier exercise's `.env` (`~/Downloads/excel-kg-exercise`, where it was named `LLM_GOOGLE_API_KEY`).
+  - Claude Code copied it into this project's `.env` as `LLM_API_KEY`, without printing it; it was never committed.
+  - **Checked:**
+    - the key can list 46 text models, including `gemini-2.5-flash`, `gemini-3.5-flash` and `gemini-3.1-pro-preview`
+    - a one-line test prompt to `gemini-2.5-flash` worked (6 tokens).
+  - Which model to use for extraction is decided when extraction starts.
+  - **Still to confirm with Seisa:** that this key is meant for this trial, and what its spending limit is.
+
+**State at close:**
+- Five commits pushed to the private repo `brunohawkins/seisa-kg-trial`, all under Bruno's name only (D-020).
+- 10 setup tests passing.
+- Neo4j is stopped with `make neo4j-stop`.
 
 ### TODO for Sunday
-- [ ] `make neo4j-start`, and check that Neo4j Desktop connects to `bolt://localhost:7687`
-- [ ] Sample GLEIF's reporting-exception reasons for the three sponsors
+- [ ] `make neo4j-start`, and open Explore (Bloom) in Neo4j Desktop once to check it works
+- [ ] Confirm with Seisa: is the Gemini key meant for this trial, and what is its spending limit?
+- [ ] Sample GLEIF's reporting-exception reasons for Hg, Bridgepoint and Apax
 - [ ] Check there are about 10 public news releases per sponsor
 - [ ] Sketch the RDF schema together (RDF-star provenance, D-015)
-- [ ] Build the cached GLEIF downloader for Hg, Bridgepoint and Apax
-
-### Addendum (Friday 16 Oct, late)
-- **D-024 · The LLM provider is Google Gemini.**
-  - Bruno's key was found in the earlier exercise's `.env` (`~/Downloads/excel-kg-exercise`) and copied into this project's `.env` as `LLM_API_KEY`.
-  - The value was never printed or committed.
-  - That project used the model `gemini-2.5-flash`. Which model this project uses is decided when extraction starts.
-  - Still to confirm: that Seisa intends this key for this trial, and what its spending limit is.
-- [x] Sunday, before extraction: send one small test request to check that the key works (done Friday: `gemini-2.5-flash` replied in 6 tokens; the key can see 46 text models, including the newer `gemini-3.5-flash` and `gemini-3.1-pro-preview`)
+- [ ] Build the cached GLEIF downloader for the three sponsors
+- [ ] Fix the `.env.example` comments, which still describe Neo4j Desktop as the database (D-018 changed this)
