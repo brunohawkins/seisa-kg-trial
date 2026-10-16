@@ -171,3 +171,54 @@ A chronological diary of every decision made in this project, what was done, and
 - [ ] When the first key is needed: `cp .env.example .env` and fill it in
 - [ ] Sponsor check: search GLEIF for candidate UK sponsors, count entities and parent links, choose 3
 - [ ] Sunday: design the RDF schema, starting from the sponsor-check results
+
+---
+
+## Entry 4 · Friday 16 Oct 2026 · Sponsor check
+
+### What we did
+- Wrote `scripts/sponsor_check.py`. For 6 candidate UK sponsors it:
+  - searches GLEIF by name
+  - caches every reply in `data/raw/gleif/sponsor_check/`
+  - counts what the records say.
+- Results are saved in `docs/sponsor-check.md`.
+- Ran it against GLEIF's data for 16 Oct 2026. It made 9 requests, all paced under GLEIF's limit of 60 per minute.
+
+### Findings
+
+| Sponsor | Entities | Funds | With a Companies House number | Report a parent | Give a reason for no parent | Fund-manager links | Main countries |
+|---|---|---|---|---|---|---|---|
+| Permira | 147 | 35 | 7 | 5 | 141 | 16 | LU, GG, GB |
+| Cinven | 66 | 5 | 15 | 1 | 65 | 3 | GG, GB, LU |
+| Hg | 104 | 3 | 81 | 0 | 104 | 1 | GB, GG, LU |
+| Bridgepoint | 202 | 14 | 66 | 1 | 193 | 5 | LU, GB, IE |
+| Apax | 177 | 70 | 14 | 2 | 173 | 65 | GG, LU, GB |
+| Inflexion | 57 | 2 | 2 | 2 | 55 | 2 | GG, GB, KY |
+
+- **GLEIF records almost no parent links for sponsor entities:** 0–5 per sponsor. Nearly all of them give a *reporting exception*, a stated reason for naming no parent.
+  - This matches the brief's warning, and the primer's point that funds don't consolidate the companies they own.
+  - Consequence: the ownership structure has to come from **Companies House PSC records**, **GLEIF fund-manager links** and **news releases**, not from GLEIF parent links.
+  - The exceptions themselves must be stored as facts.
+- **Name search finds some look-alikes:** 2–17 per sponsor, e.g. US property LLCs in the Bridgepoint search.
+  - Some look-alikes are actually useful: deal vehicles that matched on an address or another field, e.g. "ACORN BIDCO LIMITED" in the Hg search.
+- **Each sponsor's strength:**
+  - Hg (81) and Bridgepoint (66) have the most UK Companies House entities.
+  - Apax has the most fund-manager links (65), so GLEIF itself shows its fund → manager structure.
+  - Permira and Inflexion are mostly offshore (Luxembourg, Guernsey), with little in Companies House.
+
+### Decisions
+- **D-023 · The project's three sponsors are Hg, Bridgepoint and Apax** (about 480 GLEIF entities before cleaning).
+  - Decided by Bruno, on Claude Code's recommendation from the sponsor check.
+  - Hg and Bridgepoint give Companies House depth.
+  - Apax gives GLEIF fund-manager structure.
+  - Together they show both the strengths and the gaps of each source.
+  - Alternative considered: swap Apax for Cinven (about 370 entities). Not chosen, because Cinven has few fund-manager links.
+  - Would revisit if: any of the three has too few public news releases, or the entity count proves too large to check by hand.
+
+### TODO for next time
+- [x] **Bruno:** choose the 3 sponsors (D-023)
+- [ ] **Bruno:** register for a Companies House API key
+- [ ] **Bruno:** set the Neo4j password at `http://localhost:7474`, and connect Neo4j Desktop to `bolt://localhost:7687`
+- [ ] Look up the reporting-exception reasons for a sample of entities (`NON_CONSOLIDATING`, `NATURAL_PERSONS`, …), to inform the RDF schema
+- [ ] Check that each chosen sponsor has enough public news releases (about 10 each)
+- [ ] Sunday: sketch the RDF schema

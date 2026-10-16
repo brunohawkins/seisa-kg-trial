@@ -1,6 +1,6 @@
 # Seisa trial: project plan (v2, draft for Bruno's review)
 
-**Status:** v2.2. On 16 Oct 2026 Bruno accepted every recommendation in this plan, chose RDF-star for RDF provenance (D-015), and made the translation layer a post-task extension (D-016). Items marked **[Decided: D-0xx]** are settled. **The full log now lives in [docs/decision-log.md](docs/decision-log.md)**, which is the source of truth from here on. Still open: provenance in the property graph.
+**Status:** v2.2. On 16 Oct 2026 Bruno accepted every recommendation in this plan, chose RDF-star for RDF provenance (D-015), and made the translation layer a post-task extension (D-016). Items marked **[Decided: D-0xx]** are settled. **The full log now lives in [docs/decision-log.md](docs/decision-log.md)**, which is the source of truth from here on. Sponsors chosen: Hg, Bridgepoint and Apax (D-023). Still open: provenance in the property graph.
 **Sources:** Trial brief, Knowledge graph primer, Private markets primer, Candidate pack README (all read in full on 16 Oct 2026).
 
 ---
@@ -339,8 +339,8 @@ Would revisit if:  what would change our mind
 
 | # | Decision | When |
 |---|---|---|
-| 1 | Provenance design in the property graph (3.2); RDF is decided (D-015) | When we design the property graph, on Sunday |
-| 2 | Which 3 UK sponsors | After the sponsor spike (3.5) |
+| 1 | Provenance design in each model (3.2) | Sketched together before the first builder is written (Sunday morning) |
+| 2 | ~~Which 3 UK sponsors~~ | **Decided (D-023): Hg, Bridgepoint, Apax** |
 | 3 | Your 10–12 investor questions | Yours to write; the first 3 are needed for the Sunday thin slice |
 
 *Investor questions must be your own (brief §3.3). Some example shapes to get you started:*
