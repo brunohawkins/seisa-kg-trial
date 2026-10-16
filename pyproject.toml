@@ -1,0 +1,47 @@
+# SUMMARY: This is the project's "ingredients list". It names the project,
+# says which Python version it needs, and lists every outside library it uses.
+# The `uv` tool reads this file to build an identical environment on any
+# machine, and records the exact versions it chose in `uv.lock`.
+
+# This section describes the project itself.
+[project]
+# The project's name. Python code will refer to it as `seisa_kg`.
+name = "seisa-kg"
+# The version of our own code. We start at 0.1.0 and bump it by hand.
+version = "0.1.0"
+# A one-line description of what the project is.
+description = "Seisa trial: the same private-markets ownership data in an RDF graph and a Neo4j property graph."
+# The Python versions allowed: 3.12 only, the safest for library support (D-006).
+requires-python = ">=3.12,<3.13"
+# The outside libraries the project needs to run.
+dependencies = [
+    # Reads text out of PDF files (used to extract the brief).
+    "pymupdf",
+    # Reads text out of Word .docx files (used for the candidate pack README).
+    "python-docx",
+    # Sends web requests to public APIs like GLEIF and Companies House.
+    "httpx",
+    # Python's standard toolkit for RDF data (reading and writing triples).
+    "rdflib",
+    # Fast RDF database that supports RDF-star (D-013, D-015).
+    "pyoxigraph",
+    # Official connector for talking to a Neo4j database from Python.
+    "neo4j",
+    # Loads secret keys from the private .env file into the program.
+    "python-dotenv",
+]
+
+# Extra tools needed only while developing, not to run the project.
+[dependency-groups]
+# The "dev" group is installed by `uv sync` automatically.
+dev = [
+    # Runs our automated tests.
+    "pytest",
+]
+
+# Tells Python tools how to package our own code from the src/ folder.
+[build-system]
+# Uses uv's own lightweight packaging tool.
+requires = ["uv_build>=0.8,<0.13"]
+# The name of the packaging tool's entry point.
+build-backend = "uv_build"

@@ -1,0 +1,22 @@
+# SUMMARY: This file lists things git should never save or share.
+# They are either secret (API keys), large and re-downloadable (data),
+# Seisa's own material (the brief), or junk files made by tools.
+
+# The private Python environment. Anyone can rebuild it with `uv sync`.
+.venv/
+# Secret keys (Seisa LLM key, Companies House key). Never shared (brief rule).
+.env
+# Downloaded and generated data. Large, and rebuilt by the build command.
+data/
+# Seisa's brief documents. The brief says "no Seisa code or data" in the repo (D-011).
+brief/
+# Text copies of the brief made by scripts/extract_brief.py. Also Seisa material.
+docs/brief_text/
+# Python's compiled-code cache folders. Made automatically, not useful to share.
+__pycache__/
+# Cache folder made by the test runner.
+.pytest_cache/
+# Hidden folder-settings file that macOS creates.
+.DS_Store
+# The project's own copy of the Neo4j program. Re-downloadable with `make neo4j-install`.
+tools/
