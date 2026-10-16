@@ -137,7 +137,7 @@ A chronological diary of every decision made in this project, what was done, and
   - `make neo4j-install`, `make neo4j-start`, `make neo4j-stop`, `make neo4j-status`
 - **Started the server:**
   - It runs on Java 25, at `http://127.0.0.1:7474` (browser) and `bolt://127.0.0.1:7687` (code).
-  - The password is still Neo4j's default, `neo4j`/`neo4j`. Bruno sets his own on first login, so the password never passes through the AI tools.
+  - The password is still Neo4j's default, `neo4j`/`neo4j`. Bruno sets a new one on first login, so the password never passes through the AI tools.
 - **Neo4j Desktop:** installed Neo4j Desktop 2 (2.2.1) through Homebrew, for viewing only: Bloom/Explore, connected to the project's server.
 - **Decision log:** rewritten as this diary, with bullet points and a TODO list at the end of every entry.
 - **GitHub:** made the first commit and pushed it to the private repo `seisa-kg-trial`.
@@ -226,7 +226,7 @@ A chronological diary of every decision made in this project, what was done, and
 ### End of day (Friday 16 Oct)
 - The Companies House API key is registered. Bruno holds it.
 - The Neo4j password is set by Bruno in the browser, so it never passes through the AI tools.
-- `.env` is created by Bruno (`cp .env.example .env`); he types in the Companies House key and the Neo4j password himself (D-021).
+- `.env` is created by Bruno (`cp .env.example .env`); Bruno types in the Companies House key and the Neo4j password himself (D-021).
 - Neo4j is stopped at the end of the session with `make neo4j-stop`.
 
 ### TODO for Sunday
