@@ -218,7 +218,8 @@ A chronological diary of every decision made in this project, what was done, and
 ### TODO for next time
 - [x] **Bruno:** choose the 3 sponsors (D-023)
 - [x] **Bruno:** register for a Companies House API key (done; the key is kept out of git and out of the chat)
-- [ ] **Bruno:** set the Neo4j password at `http://localhost:7474`, and connect Neo4j Desktop to `bolt://localhost:7687`
+- [x] **Bruno:** set the Neo4j password at `http://localhost:7474` (done; the password is in `.env`, and the Python driver logs in successfully)
+- [ ] **Bruno:** connect Neo4j Desktop to `bolt://localhost:7687`
 - [ ] Look up the reporting-exception reasons for a sample of entities (`NON_CONSOLIDATING`, `NATURAL_PERSONS`, …), to inform the RDF schema
 - [ ] Check that each chosen sponsor has enough public news releases (about 10 each)
 - [ ] Sunday: sketch the RDF schema
@@ -242,4 +243,4 @@ A chronological diary of every decision made in this project, what was done, and
   - The value was never printed or committed.
   - That project used the model `gemini-2.5-flash`. Which model this project uses is decided when extraction starts.
   - Still to confirm: that Seisa intends this key for this trial, and what its spending limit is.
-- [ ] Sunday, before extraction: send one small test request to check that the key works
+- [x] Sunday, before extraction: send one small test request to check that the key works (done Friday: `gemini-2.5-flash` replied in 6 tokens; the key can see 46 text models, including the newer `gemini-3.5-flash` and `gemini-3.1-pro-preview`)
