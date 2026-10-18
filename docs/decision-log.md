@@ -1133,3 +1133,25 @@ The brief (§6) asks for each answer to be scored "for whether it is correct and
 - [ ] Bruno writes the remaining questions after the chat with Anish (D-062)
 - [ ] Text-to-SPARQL (and later text-to-Cypher), scored with the scorer
 - [ ] Fair timings on a smaller and a larger dataset; Bloom view; scope-rule tests; README
+
+### Text-to-SPARQL: started, paused for the day (about 5:30pm)
+
+#### What we did
+- Bruno confirmed "the SQL thing" means **text-to-SPARQL**: Gemini reads a plain-English question, writes a SPARQL query, we run it on the RDF graph, and the scorer marks it (pipeline stage 6, "Ask"). It's the one stage the RDF side doesn't have yet.
+- **Step 1 explained (no code yet):**
+  - What the model is given: the question, a description of our graph (the schema), and instructions.
+  - Why it needs the schema: it has never seen our names, our scope decisions or our RDF-star notes.
+  - Typical mistakes on our graph, and the score column each shows up in:
+    - an invented name gives 0 rows
+    - bad syntax (like F17) means the query doesn't run
+    - ignoring the scope rule invents items
+    - forgetting sources gives citation 0
+    - fumbling the RDF-star syntax gives wrong sources
+    - the F21 blank-lookup trap gives low support.
+  - Safety: only read-only `SELECT` queries are accepted, run on an in-memory copy.
+- Paused here at Bruno's request (tired).
+
+#### TODO: pick up here tomorrow (19 Oct)
+- [ ] **Text-to-SPARQL step 2, Bruno's decisions:** (1) how much schema the model sees; (2) whether to give one or two worked examples (never the question being tested); (3) which Gemini model; (4) one retry with the error message when a query fails, or none. Then step 3 (the call to Gemini) and step 4 (run it on the 3 questions and score), checking in after each step.
+- [ ] Neo4j together, step by step (see the list above)
+- [ ] Bruno writes the remaining questions after the chat with Anish (D-062)
