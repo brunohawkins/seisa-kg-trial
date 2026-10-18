@@ -1,13 +1,13 @@
 # SUMMARY: Short, memorable commands for running the project.
 # Type `make <name>` in the project folder, e.g. `make test`.
-# Later this file will also hold `make build`, the single command that
-# builds both graphs from scratch.
+# `make build` is the single command that runs the whole pipeline from scratch
+# (RDF graph today; the Neo4j graph joins it on 19 Oct, D-057).
 
 # Where the project's own copy of Neo4j lives (see scripts/install_neo4j.sh).
 NEO4J := tools/neo4j/bin/neo4j
 
 # Tell make these names are commands, not files to be created.
-.PHONY: setup test brief fetch-gleif facts rdf neo4j-install neo4j-start neo4j-stop neo4j-status
+.PHONY: setup test brief build fetch-gleif facts rdf query neo4j-install neo4j-start neo4j-stop neo4j-status
 
 # Install every Python library into the project's private environment.
 setup:
@@ -38,6 +38,16 @@ facts:
 rdf: facts
 	# Run the RDF builder inside the project's environment.
 	uv run python -m seisa_kg.rdf.build
+
+# Run every investor question against the RDF graph; saves answers, sources and timings (pipeline stage 5).
+query: rdf
+	# Run the question runner inside the project's environment.
+	uv run python -m seisa_kg.rdf.ask
+
+# The single command (brief §4): fetch (cached) -> facts -> scope -> RDF graph -> checks -> questions.
+build: fetch-gleif query
+	# Say the whole pipeline finished.
+	@echo "Build complete: data/output/graph.ttl, docs/answers-rdf.md"
 
 # Download and set up the project's own Neo4j server (only needed once).
 neo4j-install:

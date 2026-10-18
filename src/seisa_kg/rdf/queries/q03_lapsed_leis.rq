@@ -1,0 +1,40 @@
+# SUMMARY: Investor question 3 (placeholder draft, D-058).
+# QUESTION: Which of each sponsor's companies have a lapsed or retired LEI, and when did GLEIF last tell us so?
+# WHY: A lapsed LEI means GLEIF no longer re-checks the company's data: a red flag for counterparty checks and for any fact about that company.
+# TYPE: time and data quality; the answer reads each fact's own source and fetch date (D-046, D-042).
+
+# The core RDF vocabulary (rdf:reifies links a note to its fact).
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# RDF Schema (rdfs:label).
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+# The W3C provenance vocabulary.
+PREFIX prov: <http://www.w3.org/ns/prov#>
+# Our own vocabulary.
+PREFIX ex:   <https://seisa-kg.example/def/>
+
+# One row per company and status: who, which status, when GLEIF last said so, and where.
+SELECT ?sponsorName ?entity ?name ?status (MAX(?fetched) AS ?lastToldUs)
+       # Every GLEIF web address that stated this status, separated by spaces.
+       (GROUP_CONCAT(DISTINCT ?url; SEPARATOR=" ") AS ?sources)
+WHERE {
+  # A scope decision saying this company is In for this sponsor...
+  ?decision a ex:ScopeDecision ; ex:entity ?entity ; ex:sponsor ?sponsor ; ex:verdict ex:In .
+  # ...that no hand decision has replaced.
+  FILTER NOT EXISTS { ?newer prov:wasRevisionOf ?decision }
+  # The sponsor's display name.
+  ?sponsor rdfs:label ?sponsorName .
+  # The LEI's registration status, as GLEIF gives it.
+  ?entity ex:registrationStatus ?status .
+  # Only the lapsed or retired ones.
+  FILTER (?status IN ("LAPSED", "RETIRED"))
+  # Every note on that fact, and the record each came from (one per fetch, D-042).
+  ?note rdf:reifies <<( ?entity ex:registrationStatus ?status )>> ; prov:wasDerivedFrom ?record .
+  # The record's web address and fetch time.
+  ?record ex:url ?url ; ex:retrievedAt ?fetched .
+  # The company's legal name.
+  ?entity ex:legalName ?name .
+}
+# One group per company and status.
+GROUP BY ?sponsorName ?entity ?name ?status
+# Sponsors alphabetically, then retired before lapsed, then by name.
+ORDER BY ?sponsorName DESC(?status) ?name

@@ -1,0 +1,41 @@
+# SUMMARY: Investor question 1 (placeholder draft, D-058).
+# QUESTION: Which companies does GLEIF say manage Apax's funds, and how many fund vehicles does each one manage?
+# WHY: An investor needs to know which legal entity acts for a fund: who signs, and who the counterparty is.
+# TYPE: several links (sponsor -> scope decision -> fund -> manager), then counting.
+# NOTE: GLEIF's "fund manager" can be a GP company or a management company (F4, D-027), so the answer says "manager per GLEIF", not "GP".
+
+# The core RDF vocabulary (rdf:reifies links a note to its fact).
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# RDF Schema (rdfs:label).
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+# The W3C provenance vocabulary.
+PREFIX prov: <http://www.w3.org/ns/prov#>
+# Our own vocabulary.
+PREFIX ex:   <https://seisa-kg.example/def/>
+# Our sponsors (a "/" can't appear in a short name, so sponsors get their own prefix).
+PREFIX sponsor: <https://seisa-kg.example/def/sponsor/>
+
+# One row per manager: its name, how many Apax funds it manages, and the GLEIF records behind those links.
+SELECT ?manager ?managerName (COUNT(DISTINCT ?fund) AS ?funds)
+       # Every GLEIF web address the links came from, separated by spaces.
+       (GROUP_CONCAT(DISTINCT ?url; SEPARATOR=" ") AS ?sources)
+       # The most recent fetch among those records.
+       (MAX(?fetched) AS ?latestFetch)
+WHERE {
+  # A scope decision that says this fund is Apax's...
+  ?decision a ex:ScopeDecision ; ex:entity ?fund ; ex:sponsor sponsor:apax ; ex:verdict ex:In .
+  # ...and that no hand decision has replaced (D-037, D-052).
+  FILTER NOT EXISTS { ?newer prov:wasRevisionOf ?decision }
+  # GLEIF's fund-manager link from the fund to its manager.
+  ?fund ex:fundManagedBy ?manager .
+  # The note on that link, and the GLEIF record it came from (RDF-star, D-035).
+  ?note rdf:reifies <<( ?fund ex:fundManagedBy ?manager )>> ; prov:wasDerivedFrom ?record .
+  # The record's web address and fetch time.
+  ?record ex:url ?url ; ex:retrievedAt ?fetched .
+  # The manager's legal name.
+  ?manager ex:legalName ?managerName .
+}
+# One group per manager.
+GROUP BY ?manager ?managerName
+# Biggest managers first.
+ORDER BY DESC(?funds) ?managerName

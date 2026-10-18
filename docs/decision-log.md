@@ -967,3 +967,56 @@ lei:894500AOGUG91SHOC845  ex:directParentException  "NON_CONSOLIDATING"
 
 - 19 Review in total: 17 come from the 6 unknown care-of names, plus ALTAROC and ΑΠΑΞ.
 - Build: all checks pass; all 16 tests pass.
+
+### RDF explained, and today's goal narrowed
+
+#### What we did
+- Bruno asked for the RDF format to be explained from the ground up. It's now built up in seven layers (1–3: the facts; 4–6: where they came from; 7: our own decisions).
+- A visual page with three diagrams, for copying into the notebook: [Reading the RDF Graph](https://claude.ai/artifact/8r5D58sm6ZndQnYjrV9wfb) (private to Bruno).
+- Researched what makes a good investor question; the sources are listed in the chat of 18 Oct. Summary:
+  - Questions are requirements written before the schema and used to test it ("competency questions", Grüninger & Fox 1995).
+  - Good ones are atomic, clear, domain-relevant and testable (Sefidbari & Castro, CEUR 2026, quoting Grüninger & Fox).
+  - Mix the types: several links, counting, time-based, unanswerable (LC-QuAD 2.0, QALD).
+  - The valuable ones cross sources and show gaps and conflicts (Seisa primer §3.2–3.3).
+
+#### Decisions
+- **D-057 · Today's goal: a runnable end-to-end pipeline in RDF only. Neo4j and Cypher move to tomorrow (19 Oct).**
+  - Why: Bruno wants to understand the RDF side fully before building the second graph, and a finished slice beats two half-finished ones (D-009).
+- **D-058 · Stage 5 is built with three placeholder questions (Claude Code's drafts), one SPARQL file each. Bruno tweaks the wording tomorrow.**
+  - Q1, several links: which companies GLEIF says manage Apax's funds, and how many funds each manages.
+  - Q2, counting gaps: per sponsor, how many companies report no parent, and why.
+  - Q3, time and data quality: which sponsor companies have a lapsed or retired LEI, and when GLEIF last told us so.
+  - Why: they test the three things the runner must handle (following links, counting, reading a fact's source and date). Changing a question later touches only its own file.
+
+### The RDF pipeline runs end to end (`make build`)
+
+#### What we did
+- **Stage 5, query:** `src/seisa_kg/rdf/ask.py` (`make query`).
+  - It loads the saved graph (`data/output/graph.ttl`). This also proves the file on disk loads back complete: 49,042 triples in about 0.15 s.
+  - It runs every question in `src/seisa_kg/rdf/queries/*.rq`, timing each one (median of 5 runs, after one untimed warm-up).
+  - Each answer is saved with every source: `data/output/answers/rdf/<question>.json`.
+  - A readable report: `docs/answers-rdf.md` (long source lists shortened to the first one plus a count).
+  - A question that returns no rows is flagged, never passed silently (F12).
+- **The three placeholder questions (D-058),** one file each, every line commented:
+  - `q01_apax_fund_managers.rq`: **9 managers**. Apax Digital II GP Co. Limited manages 31 of Apax's In funds, and Apax Management Luxembourg S.à r.l. manages 9. 1 ms.
+  - `q02_no_parent_reasons.rq`: **15 rows**, mostly `NON_CONSOLIDATING` (Apax 124, Bridgepoint 118, Hg 89). The totals match the In counts exactly (160, 186, 98), so every In company is counted once. 108 ms.
+  - `q03_lapsed_leis.rq`: **72 lapsed or retired** In companies, each with when GLEIF last said so and the source. 3 ms.
+  - Every answer row carries its sources: the GLEIF web addresses and fetch times, read from the RDF-star notes.
+- **`make build`:** the single command. fetch (cached) → facts → scope → RDF graph → checks → questions. **7.5 seconds** from the cache. A first run on an empty cache downloads from GLEIF (about 16 minutes at the rate limit).
+- **Tests:** `tests/test_rdf_questions.py`. Every question file must parse as SPARQL and carry QUESTION, WHY and TYPE lines; an empty folder fails. **23 tests pass.**
+
+#### Findings
+- **F17 · A "/" can't appear in a SPARQL short name.** `ex:sponsor/apax` is read as a path ("follow ex:sponsor, then apax"), not as one name. Sponsors now get their own prefix in queries (`sponsor:apax`). The new test catches this kind of mistake before a build.
+- **F18 · Two reason codes we hadn't seen in the warm-up sample:** `NON_PUBLIC` (4 Bridgepoint companies) and `NO_LEI` (1). D-026 stores whatever code GLEIF gives, so they came through with no code change.
+- **F19 · Q2 is about 100 times slower than Q1 and Q3** (108 ms against 1–3 ms). It's the only one with OPTIONAL blocks around the RDF-star notes. Worth a line in the timing write-up once the larger dataset exists.
+
+#### TODO for tomorrow (19 Oct)
+- [ ] Bruno: tweak the three questions (wording, or swap in the alternatives Q1b, Q3b or the "unanswerable" probe), then add more, towards the brief's 10–12
+- [ ] Property-graph schema, including how it records sources (open since the plan); the "what changed between RDF and the property graph" note
+- [ ] Neo4j builder from the same fact list; the same questions in Cypher; add both to `make build`
+- [ ] Timings on a smaller and a larger dataset (brief §3)
+- [ ] One Bloom view tracing a fact to its source; Bruno: open Explore (Bloom) once
+- [ ] Tests for the scope rules (one per test, with a made-up entity each)
+- [ ] README: how someone else runs `make build`
+- [ ] *(Optional, any time)* Bruno: hand decisions in `config/scope_reviews.toml` (the 6 care-of names, the look-alikes, HGT SATURN 4, Tembo Capital)
+- [ ] After Monday: give annotation nodes stable names (D-045)

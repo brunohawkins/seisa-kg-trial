@@ -1,0 +1,47 @@
+# SUMMARY: Investor question 2 (placeholder draft, D-058).
+# QUESTION: For each sponsor, how many of its companies report no parent to GLEIF, and for what reason?
+# WHY: It shows where the public register cannot reveal ownership, and why (funds don't consolidate what they own), so an investor knows where the data stops.
+# TYPE: counting, grouped; shows gaps openly (D-026, primer section 3.3).
+# NOTE: companies that do report a parent, or give no Level 2 information at all (F13), are counted too, so every In company appears exactly once.
+
+# The core RDF vocabulary (rdf:reifies links a note to its fact).
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# RDF Schema (rdfs:label).
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+# The W3C provenance vocabulary.
+PREFIX prov: <http://www.w3.org/ns/prov#>
+# Our own vocabulary.
+PREFIX ex:   <https://seisa-kg.example/def/>
+
+# One row per sponsor and reason: how many companies, and the GLEIF records behind the answer.
+SELECT ?sponsorName ?reason (COUNT(DISTINCT ?entity) AS ?companies)
+       # Every GLEIF web address the reasons came from, separated by spaces.
+       (GROUP_CONCAT(DISTINCT ?url; SEPARATOR=" ") AS ?sources)
+       # The most recent fetch among those records.
+       (MAX(?fetched) AS ?latestFetch)
+WHERE {
+  # A scope decision saying this company is In for this sponsor...
+  ?decision a ex:ScopeDecision ; ex:entity ?entity ; ex:sponsor ?sponsor ; ex:verdict ex:In .
+  # ...that no hand decision has replaced.
+  FILTER NOT EXISTS { ?newer prov:wasRevisionOf ?decision }
+  # The sponsor's display name.
+  ?sponsor rdfs:label ?sponsorName .
+  # GLEIF's stated reason for no direct parent, if there is one, with its record.
+  OPTIONAL { ?entity ex:directParentException ?exception .
+             # The note on that fact, and the record it came from.
+             ?n1 rdf:reifies <<( ?entity ex:directParentException ?exception )>> ; prov:wasDerivedFrom ?r1 . }
+  # An actual direct parent, if there is one, with its record.
+  OPTIONAL { ?entity ex:directParent ?parent .
+             # The note on that fact, and the record it came from.
+             ?n2 rdf:reifies <<( ?entity ex:directParent ?parent )>> ; prov:wasDerivedFrom ?r2 . }
+  # The answer's category: GLEIF's reason, or "reports a parent", or "no Level 2 information".
+  BIND(COALESCE(?exception, IF(BOUND(?parent), "(reports a parent)", "(no Level 2 information)")) AS ?reason)
+  # Whichever record applies.
+  BIND(COALESCE(?r1, ?r2) AS ?record)
+  # Its web address and fetch time, when there is a record.
+  OPTIONAL { ?record ex:url ?url ; ex:retrievedAt ?fetched . }
+}
+# One group per sponsor and reason.
+GROUP BY ?sponsorName ?reason
+# Sponsors alphabetically, the commonest reasons first.
+ORDER BY ?sponsorName DESC(?companies)
