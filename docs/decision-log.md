@@ -484,7 +484,7 @@ A chronological diary of every decision made in this project, what was done, and
 - **Note:** `.env` (with the keys) sat in the iCloud-synced folder from 16 to 18 Oct. It is Bruno's own private iCloud, so the risk is low. iCloud may keep old copies in its version history.
 
 #### TODO
-- [ ] Bruno: reopen VS Code at `~/Projects/seisa-kg-trial` (or through the Desktop shortcut)
+- [x] Bruno: reopen VS Code at `~/Projects/seisa-kg-trial` (superseded by D-031; now open at `~/Work Projects`)
 - [ ] Bruno: open Explore (Bloom) once
 - [ ] Bruno: decide the ~16 "review" entities once the scope step lists them
 - [ ] Next: the shared fact format and the RDF schema sketch (`docs/schema/rdf-schema.md`)
@@ -524,9 +524,9 @@ A chronological diary of every decision made in this project, what was done, and
   - Rule from now on: **rename or move the project only via Claude Code, or tell it first.**
 
 #### TODO
-- [ ] Bruno: delete the `~/Projects` folder in Finder. It only holds Claude Code's placeholder file.
+- [x] Bruno: delete the `~/Projects` folder in Finder. It only holds Claude Code's placeholder file.
 - [ ] Bruno: if wanted, re-apply the custom Work icon to `~/Work Projects` (Finder → Get Info → paste the icon onto the folder icon)
-- [ ] Bruno: reopen VS Code at `~/Work Projects/seisa-kg-trial` (or through Desktop → Work)
+- [x] Bruno: reopen VS Code at `~/Work Projects/seisa-kg-trial` (or through Desktop → Work)
 - [ ] Next: RDF schema sketch
 
 ### Handover set-up (about 3:10pm)
@@ -539,5 +539,153 @@ A chronological diary of every decision made in this project, what was done, and
   - Why it is in the repo: Seisa will see it. That is fine, because the brief encourages AI tools, and the file shows how they were used.
 
 #### TODO
-- [ ] Bruno: keep this VS Code window open for the rest of today; start the next session from Desktop → Work → `seisa-kg-trial`
+- [x] Bruno: keep this VS Code window open for the rest of today; start the next session from Desktop → Work → `seisa-kg-trial`
 - [ ] Next: RDF schema sketch (`docs/schema/rdf-schema.md`)
+
+### RDF schema decisions (afternoon, new session in `~/Work Projects`)
+
+#### Decisions
+- **D-033 · The shared fact list is one row per fact, all with the same fields.** *(Details D-012 left open.)*
+  - Fields: subject, predicate, object, extra details (e.g. start date, status), and origin.
+  - The origin is either a **source record** (URL, date fetched) or **one of our rules** (e.g. D-028).
+  - Why: both builders loop over one list, so each stays small.
+  - Why: "the same data in both graphs" becomes a count per predicate.
+  - Alternative not chosen: one Python class per kind of fact. Easier to read one kind at a time, but more code and no single loop.
+- **D-034 · Entities are named by their identifier: `lei:<LEI>` or `ch:<company number>`.**
+  - The D-025 match between an LEI and a Companies House number is a **separate link**, labelled as made by our rule D-025.
+  - Why: D-029 counts matches as our own judgement, so a wrong match can be undone without renaming anything.
+  - Cost: questions that span both sources need one extra hop.
+  - Today only GLEIF data exists, so this starts to matter on Monday.
+  - Alternative not chosen: one node per real-world entity holding both identifiers. Simpler queries, but the match is baked into the graph.
+- **D-035 · Each fact's RDF-star annotation points to a `SourceRecord` node.** *(Refines D-015.)*
+  - The node holds the source, the URL and the date fetched. Every fact from the same GLEIF record shares it.
+  - Why: fact → source record is a path you can see and draw, which the brief asks for.
+  - Why: it matches the planned `SourceRecord` node in Neo4j, so the two graphs tell the same story.
+  - Why: you can ask "what did this one record tell us?"
+  - Alternative not chosen: the URL and date written directly on every annotation. Fewer nodes, but repeated values and nothing to query.
+- **D-036 · Our scope judgements (D-028) are `ScopeDecision` nodes.**
+  - Each node holds the entity, the sponsor, the verdict (in, review or out), the reason, and "made by rule D-028".
+  - Why: it is a statement about five things, not two.
+  - **General rule from this:** a fact between two things is a triple with an RDF-star annotation; a fact about several things is a node. Deals (buyer, target, date, advisers) will be nodes for the same reason.
+  - Alternative not chosen: a "belongs to sponsor" triple carrying the verdict. A "belongs to" triple with the verdict "out" contradicts itself.
+
+#### TODO
+- [x] Bruno: read `docs/schema/rdf-schema.md` and confirm or change the points marked **Proposed** (all confirmed: D-037)
+- [ ] Bruno: open Explore (Bloom) once
+- [ ] Next: GLEIF data → shared fact list → RDF builder (check first whether SHACL can see RDF-star annotations; see the sketch's risks)
+- [ ] Bruno: write the first 3 investor questions
+- [ ] Bruno: decide the ~16 "review" entities once the scope step lists them
+
+#### Decisions (later the same afternoon)
+- **D-037 · Bruno confirmed the four points marked Proposed in the RDF schema sketch.**
+  - **Names:** our own namespace, `https://seisa-kg.example/…` (`ex:`, `lei:`, `ch:`, `src:`); one `SourceRecord` per LEI, per kind of reply, per fetch date.
+    - Why: `.example` is reserved, so it can never clash with a real site, and it is easy to change.
+  - **No `ex:Fund` class:** GLEIF's `FUND` / `GENERAL` category is a sourced value, `ex:gleifCategory`.
+    - Why: "this is a fund" is GLEIF's claim, not ours (D-029).
+    - Real example: *Apax XII USD GP L.P. Inc* has "GP" in its name, but GLEIF's category for it is `FUND`. A class would have hidden that tension.
+  - **Address as one line of text** for now.
+    - Why: the only use so far is the "care of" scope test (D-028), which reads it as text.
+  - **Hand decisions on "review" entities** create a new `ScopeDecision` (made by `ex:rule/manual-review`) linked to the automatic one by `prov:wasRevisionOf`.
+    - Why: the history stays visible, and the change can be undone.
+
+#### TODO
+- [ ] Bruno: copy the schema, one example per type, into the notebook
+- [ ] Bruno: open Explore (Bloom) once
+- [ ] Next: GLEIF data → shared fact list → RDF builder (test SHACL on RDF-star annotations first)
+- [ ] Bruno: write the first 3 investor questions
+
+### RDF schema at a glance: one example per type (for the notebook)
+
+All the examples are real Apax entities from the GLEIF cache (fetched 18 Oct 2026). The full sketch is in `docs/schema/rdf-schema.md`.
+
+#### The two rules everything follows
+1. **A fact between two things is a triple with an annotation. A fact about several things is a node.** (D-036)
+2. **Every fact says where it came from** (D-029):
+   - from a source: `prov:wasDerivedFrom` → a **SourceRecord**
+   - from us: `prov:wasGeneratedBy` → one of our **Rules**.
+
+#### A. The things (nodes)
+
+**1. LegalEntity**
+```
+lei:<LEI>  a ex:LegalEntity
+e.g. lei:894500C7AD948MWIA623      (Apax Digital II GP Co. Limited)
+```
+- Why: it's named by its identifier, not its name (D-034). Names differ between sources; identifiers don't.
+- The node itself holds almost nothing. Everything about it is a sourced fact (see B).
+- From Monday, a Companies House number becomes its own node `ch:<number>`. Our rule D-025 links it to the LEI node, so a wrong match can be undone.
+
+**2. Sponsor**
+```
+ex:sponsor/<key>  a ex:Sponsor ;  label ;  search terms
+e.g. ex:sponsor/apax   "Apax"   searched with "Apax"
+```
+- Why: a sponsor is a brand, not a legal entity. "Apax" has no single LEI, so it gets its own type.
+- Entities connect to a sponsor only through a ScopeDecision (5).
+
+**3. SourceRecord**
+```
+src:gleif/<LEI>/<kind>/<date>  a ex:SourceRecord ;  source ;  url ;  retrievedAt
+e.g. src:gleif/894500AOGUG91SHOC845/direct-parent-exception/20261018
+       source  GLEIF
+       url     https://api.gleif.org/api/v1/lei-records/894500AOGUG91SHOC845/direct-parent-reporting-exception
+       fetched 2026-10-18 13:03 UTC
+```
+- Why (D-035): one node is shared by every fact from that reply. So "fact → source" is a path you can see and draw, which the brief asks for.
+- It has the same shape as the planned SourceRecord in Neo4j.
+- Why the date is in the name: GLEIF changes daily (F7). A re-fetch makes a new record, and the old one stays, so you keep both the before and the after.
+
+**4. Rule**
+```
+ex:rule/<D-id>  a ex:Rule ;  label ;  description
+e.g. ex:rule/D-028   "Scope rule: in / review / out"
+```
+- Why: our own judgements need an origin too. Pointing at a named rule keeps "the register says" separate from "we concluded", and the rule's own text sits in the graph.
+
+**5. ScopeDecision**
+```
+ex:scope/<sponsor>/<LEI>  a ex:ScopeDecision
+    entity · sponsor · verdict (In/Review/Out) · reason · generatedBy rule
+e.g. ex:scope/apax/894500H5QJCD6LESMR63
+       entity   lei:894500H5QJCD6LESMR63   (Apax Digital II Co-Investment L.P.)
+       sponsor  ex:sponsor/apax
+       verdict  ex:In
+       reason   "legal name contains 'Apax'"
+       made by  ex:rule/D-028
+```
+- Why (D-036): this fact involves five things, not two, so it's a node.
+- A "belongs to sponsor" triple carrying the verdict "Out" would contradict itself.
+- When Bruno decides a Review case by hand: a new decision is made by `ex:rule/manual-review` and linked back with `prov:wasRevisionOf`. The history stays visible (D-037).
+
+#### B. The facts (triple + annotation → SourceRecord)
+
+**6. Value fact: a property with a plain value**
+```
+lei:894500AOGUG91SHOC845  ex:legalName      "Apax XII USD GP L.P. Inc"  {| from src:…/record/20261018 |}
+lei:894500AOGUG91SHOC845  ex:gleifCategory  "FUND"                      {| from src:…/record/20261018 |}
+```
+- Why no `Fund` class (D-037): this entity has "GP" in its name, but GLEIF's category for it is `FUND`.
+  - With a class, the graph would just say "it's a fund", as if we had decided it.
+  - As a sourced value, it reads "GLEIF says FUND", and the tension stays visible.
+
+**7. Link fact: a relationship between two entities**
+```
+lei:894500H5QJCD6LESMR63  ex:fundManagedBy  lei:894500C7AD948MWIA623
+   {| from src:…/fund-manager/20261018 ;
+      startDate 2021-01-17 ;  status ACTIVE ;  corroboration FULLY_CORROBORATED |}
+(Apax Digital II Co-Investment L.P.  →  Apax Digital II GP Co. Limited)
+```
+- Why a triple: it links two things.
+- Why the details go on the annotation (RDF-star, D-015): the start date, status and corroboration describe *the link*, not either entity.
+- Why there's no "GP" role (D-027): the manager's name says "GP Co.", but GLEIF only says "fund manager". The role waits for a second source.
+
+**8. Gap fact: "no parent, for this reason"**
+```
+lei:894500AOGUG91SHOC845  ex:directParentException  "NON_CONSOLIDATING"
+   {| from src:gleif/894500AOGUG91SHOC845/direct-parent-exception/20261018 |}
+```
+- Why (D-026): the brief asks for gaps to be shown openly. A missing edge says nothing; this fact says why there's no parent and who said so.
+- The reason code is stored as given, so new codes still work.
+
+#### Still open
+- Where the Sponsor nodes' facts say they came from. They come from our config file, not a source. Suggestion: point them at the rule for the sponsor choice, `ex:rule/D-023`. Decide at the builder step.
