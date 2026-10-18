@@ -273,10 +273,10 @@ A chronological diary of every decision made in this project, what was done, and
   - the goal is one thin slice, from start to finish, using GLEIF only
   - Companies House PSC data moves to Monday.
   - Timeline knock-on: the brief is now expected around **Thu 22 Oct**, and the GUI and translation layer around **Mon 26 Oct**.
-- **Bruno studied the three data sources** (GLEIF, Companies House, press releases) and wrote them up as a mind map in his notebook.
+- **Bruno studied the three data sources** (GLEIF, Companies House, press releases) and wrote them up as a mind map in a notebook.
   - Corrected: we use Companies House, not EDGAR. EDGAR is the US register, ruled out by D-008.
 - **Agreed the pipeline stages** below, as a shared reference.
-  - Bruno keeps dated, hand-drawn schematics of the pipeline in his notebook, so the workflow itself is snapshotted over time.
+  - Bruno keeps dated, hand-drawn schematics of the pipeline in a notebook, so the workflow itself is snapshotted over time.
 
 ### Pipeline stages (v1, 18 Oct)
 0. **Configure:** the sponsors and their search words.
