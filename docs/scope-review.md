@@ -6,9 +6,9 @@ Record decisions in `config/scope_reviews.toml` (D-052), then run `make facts` a
 
 | Sponsor | In | Review | Out |
 |---|---|---|---|
-| Hg | 98 | 7 | 0 |
-| Bridgepoint | 186 | 9 | 7 |
-| Apax | 160 | 17 | 0 |
+| Hg | 98 | 1 | 6 |
+| Bridgepoint | 186 | 4 | 12 |
+| Apax | 160 | 14 | 3 |
 
 ## 1. Entities to review
 
@@ -16,37 +16,23 @@ Record decisions in `config/scope_reviews.toml` (D-052), then run `make facts` a
 |---|---|---|---|
 | apax | `89450018BZAC290AD116` | A11 USD (Feeder No.2) L.P. | address is care of 'Apax Partners Guernsey Limited', a name not in our data |
 | apax | `89450085RW5M5KIJD919` | AIOF2 (Feeder) L.P. | address is care of 'Apax Partners Guernsey Limited', a name not in our data |
-| apax | `969500H26Q52060R5J89` | ALTAROC PARTNERS | only another name matches: 'APAX PARTNERS & CIE GESTION--APAX PARTNE' |
+| apax | `969500H26Q52060R5J89` | ALTAROC PARTNERS | only another current name matches: 'APAX PARTNERS & CIE GESTION--APAX PARTNE' (TRADING_OR_OPERATING_NAME) |
 | apax | `213800POFM7YAPTTF519` | AMI GP L.P. INC. | address is care of 'Apax Partners Guernsey Limited', a name not in our data |
 | apax | `8945008506ERYNV53H73` | AMI II GP Co. Limited | address is care of 'Apax Partners Guernsey Limited', a name not in our data |
 | apax | `213800COZQNAQJ28EW04` | AMI OPPORTUNITIES - A L.P. | address is care of 'Apax Partners Guernsey Limited', a name not in our data |
 | apax | `89450080JFHIG7AN4D48` | AMI Opportunities II - 1 L.P. | address is care of 'Apax Partners Guernsey Limited', a name not in our data |
-| apax | `969500NPRR7AALZW3Y70` | APAX DEVELOPMENT FUND II BY PEQAN | name contains 'APAX', but GLEIF says it is managed by an outside company: PEQAN |
 | apax | `549300LFHGD3TSIY2H73` | HANWELL RETIREMENT BENEFIT SCHEME | address is care of 'APAX PARTNERS HOLDINGS LTD', a name not in our data |
 | apax | `894500HKOEXE19CW3U50` | Janus Bidco Limited | address is care of 'Apax Partners Guernsey Limited', a name not in our data |
 | apax | `894500HKDBTURAP4SQ86` | Janus Midco Limited | address is care of 'Apax Partners Guernsey Limited', a name not in our data |
 | apax | `894500HLG4O8860ADM46` | Janus Topco Limited | address is care of 'Apax Partners Guernsey Limited', a name not in our data |
 | apax | `894500N9RJ0GEZYANS63` | Moon Founder GP Co. Limited | address is care of 'Apax Partners Guernsey Limited', a name not in our data |
 | apax | `894500N9X2K81ZA6BC14` | Moon Founder Partner L.P. | address is care of 'Apax Partners Guernsey Limited', a name not in our data |
-| apax | `9695002NJFLJW0BFK744` | SEVEN2 | only another name matches: 'APAX PARTNERS' |
-| apax | `969500FMF8CNWJHR0J87` | SEVEN2 MIDMARKET X SPV | only another name matches: 'APAX MIDMARKET X SPV' |
 | apax | `213800P5XDQPIBS46V19` | ΑΠΑΞ ΚΑΤΑΣΚΕΥΑΣΤΙΚΗ ΑΝΩΝΥΜΗ ΕΤΑΙΡΕΙΑ | found by GLEIF's search, but no name, address or former-name match |
-| bridgepoint | `213800EKYHYGB6AY2V97` | BBTPS NOMINEES LIMITED | only another name matches: 'BRIDGEPOINT DEVELOPMENT CAPITAL I (NOMINEES) LIMITED' |
 | bridgepoint | `2549001XMYR57IO8C698` | BP VERAISON BUYER, LLC | address is care of 'BRIDGEPOINT 10 E', a name not in our data |
-| bridgepoint | `213800SDQOWNZB2JLU36` | BRIDGEPOINT DIRECT LENDING I | name contains 'BRIDGEPOINT', but GLEIF says it is managed by an outside company: Gen II Management Company (Luxembourg) SARL |
-| bridgepoint | `9845009592A7F9CC7C42` | BRIDGEPOINT PRIVATE EQUITY FCR | name contains 'BRIDGEPOINT', but GLEIF says it is managed by an outside company: AMCHOR INVESTMENT STRATEGIES SGIIC SA |
-| bridgepoint | `213800YGQ4RXXWTCO163` | CAMELOT BIDCO LIMITED | only another name matches: 'BRIDGEPOINT EUROPE IV BIDCO 14 LIMITED' |
 | bridgepoint | `984500DAFFBE59ABAC68` | INSIDE OUT NUTRITIOUS GOODS PTY LTD | address is care of 'BRIDGEPOINT GROUP ACCOUNTING PTY LTD', a name not in our data |
-| bridgepoint | `2138001T2EH9UMJHFP02` | MAPIL BIDCO LIMITED | only another name matches: 'BRIDGEPOINT EUROPE IV BIDCO 10 LIMITED' |
 | bridgepoint | `636700T7P7BZNM6GWL91` | Nyudden Invest AB | address is care of 'Bridgepoint AB', a name not in our data |
 | bridgepoint | `984500C8EBB6E6B9V388` | TREND LABORATORIES PTY LTD | address is care of 'BRIDGEPOINT GROUP ACCOUNTING PTY LTD', a name not in our data |
 | hg | `2138008L86GS46F1K394` | ACORN BIDCO LIMITED | address is care of 'HGCAPITAL', a name not in our data |
-| hg | `213800FB6QEKF3ZFS248` | ASPER RENEWABLE POWER PARTNERS 2 A L.P. | only another name matches: 'HGCAPITAL RENEWABLE POWER PARTNERS 2 A L.P.' |
-| hg | `21380026MYHLMY9TAK89` | ASPER RENEWABLE POWER PARTNERS 2 B L.P. | only another name matches: 'HGCAPITAL RENEWABLE POWER PARTNERS 2 B L.P.' |
-| hg | `213800MJRIESBHM44E98` | ASPER RENEWABLE POWER PARTNERS 2 C L.P. | only another name matches: 'HGCAPITAL RENEWABLE POWER PARTNERS 2 C L.P.' |
-| hg | `213800YCWHJH2L3FIZ65` | ASPER RENEWABLE POWER PARTNERS 2 D L.P. | only another name matches: 'HGCAPITAL RENEWABLE POWER PARTNERS 2 D L.P.' |
-| hg | `213800OYHTHFE3ZLPD89` | HGT SATURN 4 L.P. | only another name matches: 'HG 2024 HGT L.P.' |
-| hg | `529900A4L6ZPVLJF0A29` | Nucleus HG GENESIS 10 | name contains 'HG', but GLEIF says it is managed by an outside company: Universal-Investment-Luxembourg S.A. |
 
 ## 2. Care-of names to review (one decision covers every entity using the name)
 

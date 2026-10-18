@@ -8,18 +8,21 @@ labels are worked out afresh on every run, on any day.
 
 The tests, in order (the first one that decides, wins):
 1. Name (D-047): the legal name contains one of the sponsor's name forms as
-   a whole word -> In, unless GLEIF says an outside company manages it -> Review.
+   a whole word -> In, unless GLEIF says an outside company runs it -> Out (D-055).
 2. Care of (D-048, D-050): an address is care of a sponsor company:
    - a company that is In by name, or a care-of name Bruno approved -> In
    - a care-of name Bruno rejected -> Out
    - a care-of name not in our data -> Review (and onto the care-of name list)
 3. Street (D-049): the sponsor's word appears only in a street or building
    name -> Out.
-4. Former name: only another name (e.g. a previous legal name) matches -> Review.
+4. Other names: only former legal names match -> Out (D-054); a current
+   other name (e.g. a trading name) matches -> Review.
 5. Anything else the search caught -> Review.
 
-Bruno's hand decisions (config/scope_reviews.toml, D-052) are then applied as
-second ScopeDecisions that revise the automatic ones (D-037).
+The step is fully automatic: Review is a valid final label ("the rules couldn't
+tell"). Bruno's hand decisions (config/scope_reviews.toml, D-052) are optional
+corrections, read on whichever run follows them, and applied as second
+ScopeDecisions that revise the automatic ones (D-037).
 
 It also writes docs/scope-review.md: the review lists for Bruno.
 """
@@ -128,8 +131,14 @@ def gather(rows: list[dict]) -> tuple[dict, dict, dict]:
             searched_by[lei].add(reply[len("search-"):].rsplit("_p", 1)[0])
         # Find (or start) this observation's entry.
         when, fields = observations[lei].setdefault(record, (r["origin"]["retrieved_at"], defaultdict(list)))
-        # Add the value under its predicate.
-        fields[r["predicate"]].append(r["object"]["value"])
+        # Other names keep their type (e.g. PREVIOUS_LEGAL_NAME), which the former-name test needs (D-054).
+        if r["predicate"] == "otherName":
+            # Store the name with its type.
+            fields["otherName"].append((r["object"]["value"], r["details"]["nameType"]["value"]))
+        # Every other field is stored as its value alone.
+        else:
+            # Add the value under its predicate.
+            fields[r["predicate"]].append(r["object"]["value"])
     # Keep only the latest observation of each entity (D-051); ties go to the record name, so the result is fixed.
     latest = {lei: max(obs.items(), key=lambda kv: (kv[1][0], kv[0]))[1][1] for lei, obs in observations.items()}
     # Hand back the three lookups.
@@ -150,12 +159,12 @@ def decide(lei, sponsor, ctx) -> tuple[str, str, str | None]:
     if hit:
         # Managers GLEIF names for it whose own name doesn't contain the sponsor's name.
         outside = [m for m in ctx["managers"][lei] if m in ctx["latest"] and not forms.search(ctx["latest"][m]["legalName"][0])]
-        # Managed by an outside company: send to Review (D-028).
+        # Run by an outside company: a feeder or access fund, not the sponsor's own (D-055).
         if outside:
             # The first outside manager's name, for the reason.
             mgr = ctx["latest"][sorted(outside)[0]]["legalName"][0]
-            # Review, with the reason.
-            return "Review", f"name contains '{hit.group(1)}', but GLEIF says it is managed by an outside company: {mgr}", None
+            # Out, with the reason.
+            return "Out", f"name contains '{hit.group(1)}', but GLEIF says it is run by an outside company: {mgr}", None
         # Otherwise In.
         return "In", f"legal name contains '{hit.group(1)}'", None
     # The care-of names found, and the street-only mentions, across both addresses.
@@ -196,12 +205,18 @@ def decide(lei, sponsor, ctx) -> tuple[str, str, str | None]:
     if street:
         # Out, with the reason.
         return "Out", f"'{ctx['label'][sponsor]}' appears only in a street or building name: '{street}'", None
-    # Test 4: another name (e.g. a previous legal name) contains a name form.
-    for other in f.get("otherName", []):
-        # A match in the other name.
-        if forms.search(other):
-            # Review, with the reason.
-            return "Review", f"only another name matches: '{other}'", None
+    # Test 4: other names (e.g. a previous legal name) that contain a name form.
+    matches = [(n, kind) for n, kind in f.get("otherName", []) if forms.search(n)]
+    # Only former legal names match: a past link, not a current one -> Out (D-054).
+    if matches and all(kind == "PREVIOUS_LEGAL_NAME" for _, kind in matches):
+        # Out, quoting the old name so the history stays visible.
+        return "Out", f"only a former legal name matches: '{matches[0][0]}' (a past link, not a current one)", None
+    # A current other name (e.g. a trading name) matches -> Review.
+    if matches:
+        # The first non-former match, for the reason.
+        n, kind = next(m for m in matches if m[1] != "PREVIOUS_LEGAL_NAME")
+        # Review, with the reason.
+        return "Review", f"only another current name matches: '{n}' ({kind})", None
     # Test 5: caught by the search, but nothing else matches.
     return "Review", "found by GLEIF's search, but no name, address or former-name match", None
 

@@ -929,9 +929,41 @@ lei:894500AOGUG91SHOC845  ex:directParentException  "NON_CONSOLIDATING"
 - **Interesting case:** BP VERAISON BUYER, LLC. Its headquarters address is `BRIDGEPOINT, 10 E 53rd St, New York` (Bridgepoint's New York office), but GLEIF's address lines split it so the care-of name reads "BRIDGEPOINT 10 E". It's on the care-of list.
 
 #### TODO
-- [ ] Bruno: decide the 6 care-of names and the remaining Review entities in `config/scope_reviews.toml`, using `docs/scope-review.md`
-- [ ] Bruno: skim lists 3 and 4 in `docs/scope-review.md`; mark look-alikes Out (D-053), and check Tembo Capital (F16)
+- [ ] *(Optional, any time; not needed for the prototype, D-056)* Bruno: decide the 6 care-of names and any Review entities in `config/scope_reviews.toml`, using `docs/scope-review.md`
+- [ ] *(Optional, any time)* Bruno: skim lists 3 and 4 in `docs/scope-review.md`; mark look-alikes Out (D-053), and check Tembo Capital (F16)
 - [ ] Bruno: write the first 3 investor questions
 - [ ] Bruno: open Explore (Bloom) once
 - [ ] Tests for the scope rules (one per test, with a made-up entity each)
 - [ ] After today: give annotation nodes stable names (D-045)
+
+### Scope step: made fully automatic
+
+#### Decisions
+- **D-056 · The scope step is fully automatic. "Review" is a valid final label, and hand review is an optional side loop, not a pipeline step.** *(Bruno: "isn't the whole point that this is an automatic process?")*
+  - `make rdf` runs end to end with no stop for review, on any day.
+  - "Review" means "the rules couldn't tell". It is stored with its reason; investor questions count In and can say how many are uncertain.
+  - `config/scope_reviews.toml` stays for optional corrections, read on whichever run follows them.
+  - Why: the goal today is a runnable end-to-end prototype, and the system must run unattended on future days.
+  - Why: general patterns belong in rules, which apply on every future run, not in hand decisions, which only cover today's entities.
+- **D-054 · Only a former legal name matches → Out: "a past link, not a current one".** *(Turns principle A into a rule.)*
+  - "Belongs to a sponsor" means **belongs now**. A previous legal name shows a past link only.
+  - It fires only when **every** matching other name is a `PREVIOUS_LEGAL_NAME`. A current other name (e.g. a trading name) still gives Review: ALTAROC matches through its trading name "APAX PARTNERS & CIE GESTION".
+  - The reason quotes the old name, so the history stays visible.
+  - Affects: SEVEN2 and SEVEN2 MIDMARKET X SPV (ex-Apax France), the 4 ASPER funds (ex-HgCapital Renewable Power), CAMELOT and MAPIL BIDCO (ex-Bridgepoint bidcos), BBTPS NOMINEES.
+  - **Knock-on:** HGT SATURN 4 L.P. was previously "HG 2024 HGT L.P.", so it is now Out, not Review (D-047). If it should count as Hg's, that is a one-line hand correction.
+- **D-055 · A sponsor-named fund that GLEIF says is run by an outside company → Out: "run by an outside company".** *(Turns principle B into a rule; changes D-028's "Review" for this case.)*
+  - These are feeder or access funds that outside platforms run and that invest *into* the sponsor's funds. The sponsor doesn't control them; they are closer to LPs than to sponsor entities.
+  - Why: it is what GLEIF itself says (the fund-manager link, D-027).
+  - Affects: Nucleus HG GENESIS 10, APAX DEVELOPMENT FUND II BY PEQAN, BRIDGEPOINT PRIVATE EQUITY FCR (Amchor), BRIDGEPOINT DIRECT LENDING I (Gen II).
+  - Limit: feeders with no GLEIF manager link (e.g. HQT Bridgepoint Europe V–VIII) stay In by name. That is measured error, to report.
+- **D-048 kept (Bruno):** care-of names not in our data stay **Review**. So, until a hand decision is made, the Janus Topco / Midco / Bidco chain and the other entities care of "Apax Partners Guernsey Limited" are counted as uncertain, not as Apax's.
+
+#### Results (18 Oct, after D-054 and D-055)
+| Sponsor | In | Review | Out |
+|---|---|---|---|
+| Hg | 98 | 1 | 6 |
+| Bridgepoint | 186 | 4 | 12 |
+| Apax | 160 | 14 | 3 |
+
+- 19 Review in total: 17 come from the 6 unknown care-of names, plus ALTAROC and ΑΠΑΞ.
+- Build: all checks pass; all 16 tests pass.
