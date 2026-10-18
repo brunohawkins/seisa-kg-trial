@@ -7,7 +7,7 @@
 NEO4J := tools/neo4j/bin/neo4j
 
 # Tell make these names are commands, not files to be created.
-.PHONY: setup test brief neo4j-install neo4j-start neo4j-stop neo4j-status
+.PHONY: setup test brief fetch-gleif facts rdf neo4j-install neo4j-start neo4j-stop neo4j-status
 
 # Install every Python library into the project's private environment.
 setup:
@@ -23,6 +23,21 @@ test:
 brief:
 	# Run the extraction script inside the project's environment.
 	uv run python scripts/extract_brief.py
+
+# Download GLEIF data for all three sponsors (pipeline stage 1; cached, so re-runs are quick).
+fetch-gleif:
+	# Run the GLEIF downloader inside the project's environment.
+	uv run python -m seisa_kg.sources.gleif_fetch
+
+# Build the shared fact list, data/interim/facts.jsonl, from the cache (pipeline stage 2).
+facts:
+	# Run the parsers inside the project's environment.
+	uv run python -m seisa_kg.facts
+
+# Build and check the RDF graph from the fact list, saving data/output/graph.ttl (pipeline stage 4).
+rdf: facts
+	# Run the RDF builder inside the project's environment.
+	uv run python -m seisa_kg.rdf.build
 
 # Download and set up the project's own Neo4j server (only needed once).
 neo4j-install:

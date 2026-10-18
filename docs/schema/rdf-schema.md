@@ -57,22 +57,24 @@ lei:FUND ──ex:fundManagedBy──▶ lei:MANAGER
 
 | Property | From GLEIF field | Value | Extra annotations |
 |---|---|---|---|
-| `ex:legalName` | `entity.legalName` | text | — |
-| `ex:otherName` | `entity.otherNames` | text | the name's type (e.g. `PREVIOUS_LEGAL_NAME`) |
+| `rdf:type ex:LegalEntity` | the LEI record exists | — | — |
+| `ex:legalName` | `entity.legalName` | text | `ex:language` (GLEIF's language code for the name) |
+| `ex:otherName` | `entity.otherNames` | text | `ex:nameType` (e.g. `PREVIOUS_LEGAL_NAME`), `ex:language` |
 | `ex:gleifCategory` | `entity.category` | text, as given | — |
 | `ex:legalForm` | `entity.legalForm.id` | text code | — |
 | `ex:jurisdiction` | `entity.jurisdiction` | text code | — |
 | `ex:entityStatus` | `entity.status` | text, as given | — |
-| `ex:legalAddress` | `entity.legalAddress` | one line of text | — |
+| `ex:legalAddress` | `entity.legalAddress` | one line of text: care-of line, street lines, number, city, region, postcode, country | — |
 | `ex:registeredAt` | `entity.registeredAt.id` | text code (e.g. `RA000585`) | — |
 | `ex:registeredAs` | `entity.registeredAs` | text, as given | — |
-| `ex:directParent` / `ex:ultimateParent` | Level 2 parent | `lei:` IRI | — |
+| `ex:directParent` / `ex:ultimateParent` | Level 2 parent | `lei:` IRI | same as `ex:fundManagedBy` |
 | `ex:directParentException` / `ex:ultimateParentException` | Level 2 reporting exception (D-026) | the reason code, as given | — |
 | `ex:fundManagedBy` | `IS_FUND-MANAGED_BY` relationship (D-027) | `lei:` IRI | `ex:startDate`, `ex:status`, `ex:corroboration`, `ex:gleifRelationshipId` |
 
 - **Confirmed (D-037):** the address is kept as **one line of text** for now, not split into street, city and postcode.
   - Why: the only use so far is the "care of" scope test (D-028), and that reads the line as text.
 - Every value is stored **as given**, including the 1974 start date (F6) and differently capitalised names (D-025).
+- Start dates keep GLEIF's time, e.g. `2021-01-17T23:00:00Z`. Cutting it to a date would be a silent change: 23:00 UTC is already the next day in Luxembourg.
 - No `ex:isGP` or `ex:isManager`: roles wait for a second source (D-027).
 
 ### Worked example (Turtle 1.2)
@@ -81,7 +83,7 @@ lei:FUND ──ex:fundManagedBy──▶ lei:MANAGER
 # A fund and its manager, as GLEIF states it, with the source and the details as an annotation
 lei:894500H5QJCD6LESMR63 ex:fundManagedBy lei:894500C7AD948MWIA623
     {| prov:wasDerivedFrom  src:gleif/894500H5QJCD6LESMR63/fund-manager/20261018 ;   # where it came from
-       ex:startDate         "2021-01-17"^^xsd:date ;                                 # GLEIF's relationship start
+       ex:startDate         "2021-01-17T23:00:00Z"^^xsd:dateTime ;                   # GLEIF's relationship start, as given (time included)
        ex:status            "ACTIVE" ;                                               # GLEIF's status, as given
        ex:corroboration     "FULLY_CORROBORATED" |} .                                # how well GLEIF checked it
 

@@ -29,6 +29,8 @@ dependencies = [
     "neo4j",
     # Loads secret keys from the private .env file into the program.
     "python-dotenv",
+    # Checks the RDF graph against SHACL shapes (D-013, D-038); it can't see RDF-star annotations (F12).
+    "pyshacl>=0.40.1",
 ]
 
 # Extra tools needed only while developing, not to run the project.

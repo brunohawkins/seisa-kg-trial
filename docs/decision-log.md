@@ -591,7 +591,8 @@ A chronological diary of every decision made in this project, what was done, and
 #### TODO
 - [ ] Bruno: copy the schema, one example per type, into the notebook
 - [ ] Bruno: open Explore (Bloom) once
-- [ ] Next: GLEIF data → shared fact list → RDF builder (test SHACL on RDF-star annotations first)
+- [x] Test SHACL on RDF-star annotations first (done: see F12)
+- [ ] Next: GLEIF data → shared fact list → RDF builder
 - [ ] Bruno: write the first 3 investor questions
 
 ### RDF schema at a glance: one example per type (for the notebook)
@@ -689,3 +690,118 @@ lei:894500AOGUG91SHOC845  ex:directParentException  "NON_CONSOLIDATING"
 
 #### Still open
 - Where the Sponsor nodes' facts say they came from. They come from our config file, not a source. Suggestion: point them at the rule for the sponsor choice, `ex:rule/D-023`. Decide at the builder step.
+
+### Builder step, part 1: checking the risk and starting the download
+
+#### Findings
+- **F12 · rdflib 7.6 can't read RDF 1.2 annotations, so pyshacl can't check them.**
+  - rdflib rejects the RDF-star syntax, in both Turtle and N-Triples.
+  - **It fails silently:** pyshacl was handed an empty graph and reported "Conforms: True", because an empty graph breaks no rule.
+  - Oxigraph's SPARQL sees the annotations: a test query found the one annotation we had planted with no source.
+  - Lesson for the explain-back: **a check that passes on nothing is worse than no check.**
+- **The search replies already say what to fetch.** Each cached GLEIF search record links to either its parent's relationship record or its reporting exception. So the downloader follows GLEIF's own links and never guesses.
+  - 484 unique entities across the three sponsors.
+  - **Direct parent:** 3 actual parents, 471 exceptions, 10 with no link at all.
+  - **Ultimate parent:** 5 actual parents, 469 exceptions, 10 with no link at all.
+  - 71 fund-manager links.
+  - The 10 with no link at all are a third case, different from "no parent, for reason X". To be looked at once the data is in (F13).
+
+#### Decisions
+- **D-038 · Checks: SHACL for the parts it can see, plus one SPARQL check for the annotations.** *(Adjusts D-013.)*
+  - pyshacl checks the parts with no annotations: entities have a name; SourceRecords and ScopeDecisions have all their fields.
+  - A SPARQL query in Oxigraph checks that every annotation has a source.
+  - The build also fails if the graph is empty, so the silent pass in F12 can't happen.
+  - Why: it keeps SHACL (D-013) wherever it works, and the tool's limit becomes an honest finding for the write-up.
+  - Alternatives not chosen: every check in SPARQL (simpler, but drops SHACL); a Java SHACL engine (a second language, for an optional check).
+- **D-039 · Download GLEIF Level 2 for all three sponsors today, not a sample.**
+  - 1,019 replies, 131 already cached, so 888 to fetch, about 16 minutes at GLEIF's 60 per minute, run in the background.
+  - Why: the scope rule (D-028) and the investor questions need all three sponsors anyway.
+  - Why not only the cache: just 60 entities had their exception cached. The other 424 would have looked as if they had no information, which is the silent gap D-026 avoids.
+  - Command: `make fetch-gleif` (`src/seisa_kg/sources/gleif_fetch.py`). Re-running reads from the cache and costs nothing.
+- **D-040 · The Sponsor nodes' facts come from our rule D-023, not from a source.**
+  - Why: choosing Hg, Bridgepoint and Apax was our decision (D-023). Under D-029, our decisions point to a Rule, not to a SourceRecord.
+- **D-041 · The shared fact list is a JSON Lines file: `data/interim/facts.jsonl`, one fact per line.**
+  - Why: each row can hold its nested details and origin, it can be read in any editor, and lines can be counted with grep.
+  - Alternatives not chosen: CSV (nested fields would have to be squashed into text); Parquet (can't be read by eye, and needs another library).
+
+#### TODO
+- [ ] Download finishes (`make fetch-gleif`); look at the 10 entities with no parent link at all (F13)
+- [ ] Parser: GLEIF cache → `data/interim/facts.jsonl` (stage 2)
+- [ ] RDF builder: facts → Oxigraph, then the D-038 checks (stage 4)
+- [ ] Bruno: write the first 3 investor questions
+- [ ] Bruno: open Explore (Bloom) once
+
+### Builder step, part 2: the first end-to-end slice (GLEIF → fact list → RDF)
+
+#### What we did
+- **Stage 1, fetch:** `src/seisa_kg/sources/gleif_fetch.py` (`make fetch-gleif`). It follows GLEIF's own links for each entity, then fetches the records of outside parents and managers, so every entity in the graph has a name.
+- **Stage 2, parse:** `src/seisa_kg/facts/` (`make facts`), which writes `data/interim/facts.jsonl`.
+  - `model.py`: the row format (D-033) and how rows are saved, sorted so that re-runs give identical files.
+  - `gleif_parse.py`: the GLEIF cache becomes rows. It reads the cache only and never downloads.
+  - `sponsors.py`: the sponsor rows, with origin rule D-023 (D-040).
+  - "This is a legal entity" is a row of its own, so that fact also has an origin (the GLEIF record), rather than being added by the builder with no source.
+- **Stage 4, build:** `src/seisa_kg/rdf/build.py` (`make rdf`, which runs `make facts` first). It writes `data/output/graph.ttl` (Turtle 1.2).
+  - Checks (D-038): the graph is not empty; one annotation per row for every predicate; every annotation has an origin (`checks/annotation_without_origin.rq`, in SPARQL); SHACL shapes 1–3 (`shapes.ttl`).
+  - Any failed check stops the build.
+- **Tests:** `tests/test_rdf_build.py`. Each check is tested by **breaking the graph on purpose** and confirming the check catches it (the lesson of F12). All 16 tests pass.
+- **First run, on the partial cache:** 4,805 facts → 18,583 triples. All checks passed.
+- **pyshacl added** to the project's libraries (chosen in D-013).
+- **Schema sketch updated** to match: start dates keep GLEIF's time, e.g. `2021-01-17T23:00:00Z`. Cutting it to a date would be a silent change, because 23:00 UTC is already the next day in Luxembourg.
+
+#### Decisions
+- **D-042 · An entity found in several GLEIF replies gets its Level 1 facts from every one of them.** *(Bruno's call, against the "first reply only" suggestion.)*
+  - Why (Bruno): Level 1 facts can change depending on the date of the fetch (F7), so each reply is a separate, dated observation, not a duplicate to throw away.
+  - Why: if two replies ever disagree (a renamed entity, a new address), both values stay side by side, each with its own source and date, as D-025 and D-029 ask.
+  - Knock-on: source records are now named **per reply**, not per kind of reply: `src:gleif/<LEI>/search-apax_p1/20261018`. *(Adjusts the D-037 naming.)* Two replies fetched on the same day would otherwise share a name.
+  - Effect today: 5 entities appear in two search replies; some entities also have a separately fetched LEI record from the warm-up. Facts: 4,805 → 5,187.
+- **D-043 · GLEIF's language code for a name is stored as a detail on its annotation, not as an RDF language tag.**
+  - Why: a query for the plain name "Apax Digital III SCSp" still finds it. A tagged name (`"…"@fr-LU`) only matches a query that has the tag too, an easy trap for text-to-SPARQL later.
+  - Why: the language is still recorded, as GLEIF states it.
+- **D-044 · The one-line address starts with GLEIF's "care of" field (`mailRouting`) when there is one.**
+  - Why: the D-028 scope rule tests for "care of" a sponsor, and would miss entities whose c/o is only in that field.
+- **D-045 · Annotation nodes stay anonymous (blank nodes) in today's prototype. Naming them is a TODO for after today.**
+  - **Why left out today (for Anish, if asked):**
+    - Nothing outside the graph needs to point at an annotation yet. The first thing that will is the translation layer (D-016), which comes after both graphs exist.
+    - Anonymous annotations are the standard RDF-star form (what Turtle's `{| … |}` makes), so there's nothing extra to explain or test today.
+    - Adding names later is a change to the builder only. The fact list, the schema and the queries don't change, so leaving it out costs nothing to undo.
+    - It keeps today's slice small enough to explain completely (D-009).
+  - **What naming would give:** a stable address per annotation (e.g. `ex:fact/<fingerprint of the row>`) that Neo4j and the translation layer could share, so the same fact can be matched across both graphs by ID.
+
+#### TODO
+- [x] Download finishes; rebuild; look at the 10 entities with no parent link at all (F13)
+- [x] Bruno: decide whether the 16 Oct search replies (`data/raw/gleif/sponsor_check/`) also count as observations under D-042 (yes)
+- [ ] After today: give annotation nodes stable names (D-045)
+- [ ] Bruno: write the first 3 investor questions
+- [ ] Bruno: open Explore (Bloom) once
+
+### Builder step, part 3: full GLEIF data in, 16 Oct replies added
+
+#### Decisions
+- **D-042 extended · The 16 Oct sponsor-check searches count as observations too.** *(Bruno.)*
+  - Why: the same reasoning as D-042. Each reply is a dated observation, and keeping both dates lets the graph show what changed between fetches.
+  - Only our three sponsors' search words are parsed; the Cinven, Inflexion and Permira replies stay out.
+  - **Their web address:** the 16 Oct files were saved in an older format, with the fetch time but no address. The address is taken from GLEIF's own list of page links inside each reply, so it's GLEIF's statement, not one we rebuilt.
+
+#### What we did
+- **Download finished:** 1,019 Level 2 replies for all 484 entities, plus the records of 5 outside parents or managers. No linked reply came back "not found".
+- **Full build:** 10,110 facts → 35,361 triples. All checks pass; all 16 tests pass.
+  - Facts now include 471 direct and 469 ultimate "no parent" reasons, 3 direct and 5 ultimate actual parents, and 71 fund-manager links.
+
+#### Findings
+- **F13 · 10 entities have no Level 2 link at all, and each one has a reason in GLEIF's own data:**
+  - 4 have a **retired** LEI (the entity is inactive), e.g. Apax Funds Nominees Ltd, Bridgepoint Portfolio Services.
+  - 5 have a **lapsed** LEI (not renewed), e.g. BridgePoint Bible Church, Bridgepoint Business Center I LLC.
+  - 1 is a **branch**, not a separate legal entity: Bridgepoint Fund Management S.à r.l., Sucursal.
+  - So the gap is not missing data: GLEIF stops asking for Level 2 once an LEI is retired or lapsed, and doesn't ask branches for parents.
+  - **Gap in our facts:** GLEIF's registration status (ISSUED, LAPSED, RETIRED) is not stored yet, and it is what explains this case. Decision pending (see TODO).
+- **F14 · Between 16 and 18 Oct, no Level 1 fact changed** for the 483 entities in both sets of replies.
+  - The only difference: one entity new on 18 Oct, **HG MERCURY 4 FUSION L.P.** (the new Hg entity behind F7).
+  - The cost of D-042: most Level 1 facts now have two sources, one per date (about 5,200 → 9,800 Level 1 rows).
+  - It makes "when did this entity first appear?" answerable from the graph.
+
+#### TODO
+- [ ] Bruno: decide whether to store GLEIF's registration status (F13)
+- [ ] Next: the D-028 scope step (ScopeDecision nodes), producing the list of about 16 "review" entities for Bruno
+- [ ] Bruno: write the first 3 investor questions
+- [ ] Bruno: open Explore (Bloom) once
+- [ ] After today: give annotation nodes stable names (D-045)

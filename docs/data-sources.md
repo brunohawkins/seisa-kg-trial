@@ -117,6 +117,13 @@ Companies House (who controls whom, in the UK) ──▶ our two graphs ◀─�
 - **F7 · GLEIF changes daily.** Hg had 104 entities on 16 Oct and 105 on 18 Oct. So the date each reply was fetched is part of every fact's provenance.
 - **F8 · Hg has almost no GLEIF structure** (1 fund-manager link, 0 parents). Its structure will have to come from Companies House, where 81 of its entities are registered.
 
+### Builder step (18 Oct)
+
+- **F12 · rdflib 7.6 can't read RDF 1.2 annotations, so pyshacl can't check them.** It fails silently: an empty graph "conforms". Oxigraph's SPARQL does see them. Handled by D-038.
+
+- **F13 · 10 entities have no Level 2 link at all:** 4 retired LEIs, 5 lapsed LEIs and 1 branch. GLEIF stops asking for Level 2 data in those cases, so the gap is explained by GLEIF's own registration status.
+- **F14 · Between 16 and 18 Oct, no Level 1 fact changed** for the 483 entities in both sets of replies. The only change is one new entity, HG MERCURY 4 FUSION L.P.
+
 ### What the findings mean for the schema (to decide in the schema session)
 
 - "No parent, for reason X" becomes a **stored fact** with its reason code and its source, not a missing link.

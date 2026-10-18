@@ -1,0 +1,22 @@
+# SUMMARY: Check 4 (D-038). Lists every RDF-star annotation that points neither
+# to a source record nor to one of our rules. pyshacl can't run this check,
+# because it can't read annotations (finding F12), so Oxigraph runs it.
+# A correct graph returns no rows.
+
+# The core RDF vocabulary, which holds rdf:reifies.
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# The W3C provenance vocabulary.
+PREFIX prov: <http://www.w3.org/ns/prov#>
+# Our own vocabulary.
+PREFIX ex:   <https://seisa-kg.example/def/>
+
+# Return the annotation (reifier) and the fact it describes.
+SELECT ?annotation ?fact
+WHERE {
+  # Every annotation, and the fact (triple term) it points at.
+  ?annotation rdf:reifies ?fact .
+  # Keep it only if it has no source record...
+  FILTER NOT EXISTS { ?annotation prov:wasDerivedFrom ?record . ?record a ex:SourceRecord . }
+  # ...and no rule either.
+  FILTER NOT EXISTS { ?annotation prov:wasGeneratedBy ?rule . }
+}

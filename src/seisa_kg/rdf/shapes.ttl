@@ -1,0 +1,47 @@
+# SUMMARY: SHACL shapes, i.e. rules the RDF graph must obey (D-013, D-038).
+# pyshacl checks these after every build. They cover only the parts of the
+# graph pyshacl can see: it cannot read RDF-star annotations (finding F12),
+# so "every annotation has a source" is checked by a SPARQL query instead
+# (src/seisa_kg/rdf/checks/annotation_without_origin.rq).
+
+# The SHACL vocabulary, used to write the rules.
+PREFIX sh:   <http://www.w3.org/ns/shacl#>
+# Our own vocabulary.
+PREFIX ex:   <https://seisa-kg.example/def/>
+# XML Schema datatypes, e.g. dateTime.
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+# The W3C provenance vocabulary.
+PREFIX prov: <http://www.w3.org/ns/prov#>
+
+# Check 1: every legal entity has at least one legal name.
+ex:LegalEntityShape a sh:NodeShape ;
+    # Apply this rule to everything typed ex:LegalEntity.
+    sh:targetClass ex:LegalEntity ;
+    # It must have one or more ex:legalName values.
+    sh:property [ sh:path ex:legalName ; sh:minCount 1 ] .
+
+# Check 2: every source record says which source, which address and when, exactly once each.
+ex:SourceRecordShape a sh:NodeShape ;
+    # Apply this rule to everything typed ex:SourceRecord.
+    sh:targetClass ex:SourceRecord ;
+    # Exactly one source (e.g. ex:GLEIF).
+    sh:property [ sh:path ex:source ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    # Exactly one web address.
+    sh:property [ sh:path ex:url ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    # Exactly one fetch time, which must be a proper date and time.
+    sh:property [ sh:path ex:retrievedAt ; sh:minCount 1 ; sh:maxCount 1 ; sh:datatype xsd:dateTime ] .
+
+# Check 3: every scope decision has all its parts, exactly once each (D-036).
+ex:ScopeDecisionShape a sh:NodeShape ;
+    # Apply this rule to everything typed ex:ScopeDecision.
+    sh:targetClass ex:ScopeDecision ;
+    # Exactly one entity it is about.
+    sh:property [ sh:path ex:entity ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    # Exactly one sponsor.
+    sh:property [ sh:path ex:sponsor ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    # Exactly one verdict, and it must be one of the three allowed values.
+    sh:property [ sh:path ex:verdict ; sh:minCount 1 ; sh:maxCount 1 ; sh:in ( ex:In ex:Review ex:Out ) ] ;
+    # Exactly one reason, in words.
+    sh:property [ sh:path ex:reason ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    # Exactly one rule that made it.
+    sh:property [ sh:path prov:wasGeneratedBy ; sh:minCount 1 ; sh:maxCount 1 ] .
