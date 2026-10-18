@@ -319,10 +319,46 @@ A chronological diary of every decision made in this project, what was done, and
   - If so, the ownership chains will come from the *companies* (TopCo, BidCo, …) rather than from the funds.
 
 ### TODO for next time (today, after the schematic)
-- [ ] Warm-up: open Explore (Bloom); fix the `.env.example` comments; sample GLEIF's reasons for "no parent" and its fund-manager links
+- [x] Warm-up: fix the `.env.example` comments; sample GLEIF's reasons for "no parent" and its fund-manager links (done; see below)
+- [ ] Bruno: open Explore (Bloom) in Neo4j Desktop once to check it works
 - [ ] RDF schema sketch together (`docs/schema/rdf-schema.md`)
 - [ ] GLEIF downloader → shared fact list → RDF builder with SHACL checks
 - [ ] Bruno: write the first 3 investor questions; answer them in SPARQL with sources
 - [ ] Property-graph schema, including how it records sources (still open); Neo4j builder; the same 3 questions in Cypher
 - [ ] `make build`; one Bloom view tracing a fact to its source; diary entry; commit
 - [ ] Monday: Companies House downloader, linked by D-025; check PSC coverage for English LPs
+
+### Warm-up (about 2pm)
+
+#### What we did
+- **Pipeline stage 0:** `config/sponsors.toml` lists Hg, Bridgepoint and Apax with their search words. Python reads it with its built-in TOML reader, so no extra library is needed.
+- **Pipeline stage 1:** `src/seisa_kg/sources/gleif.py` is the reusable GLEIF fetcher.
+  - It caches every reply in `data/raw/gleif/` inside an envelope: `url`, `retrieved_at`, `status`, `body`.
+  - It saves "not found" replies too, so the same question is never asked twice.
+  - It stays under GLEIF's limit of 60 requests per minute.
+  - This is the start of Monday's full downloader.
+- **`scripts/gleif_warmup.py`:**
+  - samples up to 20 "no parent" reasons per sponsor
+  - fetches every actual parent
+  - fetches every fund-manager relationship, and each manager's name.
+  - It took about 3 minutes; the report is in `docs/gleif-warmup.md`.
+- **`docs/data-sources.md`:** the data-source notes, findings F1–F8, and what they mean for the schema.
+- **`.env.example`:** comments fixed, so they now describe the project's own Neo4j server (D-018).
+
+#### Findings (details in `docs/data-sources.md`)
+- **F3 · Why there's no parent:** of 60 sampled, 50 are `NON_CONSOLIDATING`, 7 `NO_KNOWN_PERSON` and 3 `NATURAL_PERSONS`. Only 3 actual parents across all three sponsors.
+- **F4 · GLEIF's "fund manager" mixes two roles:** GP companies (e.g. Apax Digital II GP Co., 35 funds) and regulated management companies (e.g. Apax Management Luxembourg). Don't assume "fund manager = GP".
+- **F5 · Outside companies:** some Bridgepoint and Hg funds are managed by outside companies (Yacktman, Amchor, Gen II, Universal-Investment). These are look-alikes or outsourced managers, so we need a rule for which entities belong to a sponsor.
+- **F6 · Time and quality:** relationships carry start dates, a status and a corroboration level. One start date (1974) looks wrong; we store it as given.
+- **F7 · GLEIF changes daily:** Hg had 104 entities on Friday and 105 today.
+- **F8 · Hg's structure** must come from Companies House.
+
+#### Decisions
+- None yet. The findings feed the schema session, where Bruno decides.
+
+#### TODO (next: schema session)
+- [ ] Bruno: open Explore (Bloom) once
+- [ ] Decide how "no parent, for reason X" is stored
+- [ ] Decide how GP and manager roles are assigned (F4)
+- [ ] Decide the rule for which entities belong to a sponsor (F5)
+- [ ] Sketch the shared fact format and the RDF schema in `docs/schema/rdf-schema.md`

@@ -1,0 +1,25 @@
+# SUMMARY: Pipeline stage 0 (configure). Lists the three private equity firms
+# ("sponsors") the project is built around (decision D-023), and the words used
+# to search GLEIF for each sponsor's legal entities.
+# Python reads this file with its built-in TOML reader (tomllib).
+
+# Hg: a London-based investor in software and services businesses.
+[sponsors.hg]
+# The sponsor's name, as people write it.
+name = "Hg"
+# Searching for just "Hg" would match far too much, so we use its specific entity names.
+search_terms = ["HgCapital", "Hg Pooled", "Hg Genesis", "Hg Saturn", "Hg Mercury"]
+
+# Bridgepoint: a London-listed, mid-market private equity firm.
+[sponsors.bridgepoint]
+# The sponsor's name, as people write it.
+name = "Bridgepoint"
+# The firm's name is distinctive enough to search for on its own.
+search_terms = ["Bridgepoint"]
+
+# Apax: a global buyout firm headquartered in London.
+[sponsors.apax]
+# The sponsor's name, as people write it.
+name = "Apax"
+# The firm's name is distinctive enough to search for on its own.
+search_terms = ["Apax"]
