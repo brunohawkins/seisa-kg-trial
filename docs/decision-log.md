@@ -362,3 +362,78 @@ A chronological diary of every decision made in this project, what was done, and
 - [ ] Decide how GP and manager roles are assigned (F4)
 - [ ] Decide the rule for which entities belong to a sponsor (F5)
 - [ ] Sketch the shared fact format and the RDF schema in `docs/schema/rdf-schema.md`
+
+### Schema session, part 1 (about 2:30pm)
+
+#### The strategy for the warm-up issues (proposed by Claude Code, awaiting Bruno)
+- **The issues are not bugs to fix.** They are what the sources actually say.
+- **Principle:**
+  - Record exactly what each source says, with its source and the date it was fetched.
+  - Never silently "correct" a source.
+  - Our own judgements (scope, roles, matches) are **separate facts**, labelled as ours, each with its reason.
+- **Why:**
+  - Every fact stays traceable.
+  - Mistakes in our own judgement can be undone without touching the source facts.
+  - The explain-back can separate "the register says" from "we concluded".
+
+#### Decisions
+- **D-026 · "No parent" is stored as a fact on the entity:** *reason, source, date fetched.*
+  - Example: "Fund A: no reported direct parent; reason `NON_CONSOLIDATING`; source: GLEIF record; fetched 18 Oct 2026".
+  - **Why:** the information stays in the graph rather than becoming a silent gap, as the brief asks ("represent these gaps openly").
+  - **Why:** if GLEIF later changes the reason, a re-fetch adds a new fact with a new date. The old one stays, so we have the before and after.
+  - **Refinements:**
+    - Store direct and ultimate parents separately; GLEIF reports each one.
+    - Store whatever reason code GLEIF gives, rather than a fixed list, so new codes still work.
+  - In the RDF graph, the source and date go in RDF-star annotations (D-015).
+- **D-027 · No roles (GP, manager) until Companies House or the news confirms them.**
+  - **Why:** GLEIF's "fund manager" mixes GP companies and regulated management companies (F4). Guessing a role risks a wrong fact.
+  - **Why:** a role confirmed by two sources is richer and more defensible.
+  - **Refinement (proposed, awaiting Bruno):** still store GLEIF's own link exactly as GLEIF states it ("managed by, per GLEIF", with its start date, status and corroboration level), but *not* as a role.
+    - Why: it is a real, sourced fact; leaving it out would lose information.
+    - Roles are added later as separate facts, each with its own source.
+
+#### Findings
+- **F9 · What the name search actually caught** (GLEIF searches for the three sponsors, 18 Oct):
+  - **Name contains the sponsor:** Hg 99 of 105, Bridgepoint 185 of 202, Apax 140 of 177.
+  - **Name contains the sponsor, but managed by an outside company:** 4 in total. These look like *feeder or access funds* that outside platforms run into the sponsor's funds:
+    - Nucleus HG GENESIS 10 (Universal-Investment)
+    - BRIDGEPOINT PRIVATE EQUITY FCR (Amchor)
+    - BRIDGEPOINT DIRECT LENDING I (Gen II)
+    - APAX DEVELOPMENT FUND II BY PEQAN (Peqan).
+  - **Name doesn't contain the sponsor:** 60 in total, matched on another field:
+    - **"Care of" the sponsor's address (48):** includes **real deal vehicles**:
+      - ACORN BIDCO LIMITED, c/o HgCapital
+      - Janus Topco / Midco / Bidco Limited, c/o Apax: a classic acquisition chain
+      - Moon Founder GP Co. Limited
+      - Nyudden Invest AB, c/o Bridgepoint AB.
+    - **Look-alikes:** US LLCs at "225 Bridgepoint **Drive**"; a Greek company named ΑΠΑΞ.
+    - **A former or other name (10):** e.g. SEVEN2 (formerly Apax Partners France, now a separate firm), ASPER RENEWABLE POWER PARTNERS (formerly Hg), CAMELOT BIDCO and MAPIL BIDCO (former Bridgepoint names).
+  - **Lesson:** a rule that only checks names would throw away the acquisition chains we most want.
+- **F10 · Infrastructure problem: the project sits in an iCloud-synced Desktop.**
+  - iCloud marks files in `.venv` as *hidden*, and Python 3.12 skips hidden `.pth` files. So `import seisa_kg` fails at random, whenever the package is rebuilt.
+  - iCloud is also syncing the **live Neo4j database** in `data/neo4j/`, which risks corruption. The database is still empty, so nothing is lost.
+  - Work-around for now: `PYTHONPATH=src`. Fix: Bruno to decide (see the TODO list below).
+
+#### Proposed: the rule for which entities belong to a sponsor (awaiting Bruno, D-028 once decided)
+- Every entity gets an explicit **scope fact**: *in*, *review* or *out*, with the reason.
+- **In:**
+  - the legal name contains the sponsor's name, **or**
+  - the address is "care of" a sponsor entity (e.g. "c/o Apax Partners", "HgCapital, 2 More London").
+- **Review** (Bruno decides by hand; about 16 entities):
+  - managed by an outside company (4)
+  - matched only on a former or other name (10)
+  - matched on some other field (2).
+- **Out:** the sponsor's word appears only in a street name ("Bridgepoint Drive"), or the match is unrelated (ΑΠΑΞ).
+- **Why:**
+  - It keeps the acquisition chains.
+  - It drops obvious noise.
+  - It sends borderline cases to a person (the primer: "merge conservatively, record the evidence, send borderline cases to a person, make it reversible").
+  - Every decision can be explained and undone.
+
+#### TODO
+- [ ] Bruno: confirm the strategy principle above
+- [ ] Bruno: confirm the D-027 refinement (store GLEIF's link as stated, without a role)
+- [ ] Bruno: decide the scope rule (D-028)
+- [ ] Bruno: decide the iCloud fix (F10): move the project out of iCloud, or exclude folders from syncing
+- [ ] Bruno: open Explore (Bloom) once
+- [ ] Then: shared fact format and RDF schema sketch (`docs/schema/rdf-schema.md`)
