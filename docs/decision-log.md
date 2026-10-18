@@ -507,9 +507,10 @@ A chronological diary of every decision made in this project, what was done, and
 - **Desktop:**
   - Moved the old `Desktop/Work` folder to the Bin as "Work (old Desktop folder, 18 Oct)". It held only the broken shortcut, an empty "Starting project 2" folder and the custom folder icon.
   - Put a `Work` shortcut in its place.
-- **Left in place:**
-  - `~/Projects` is now a small compatibility shortcut to `~/Work Projects`.
-  - A Claude Code placeholder folder could not be removed while the session was using it.
+- **Left in place:** `~/Projects` still exists as an ordinary folder, holding only Claude Code's placeholder file `seisa-kg-trial/.claude-placeholder`.
+  - Claude Code created it to get its shell working again after the rename.
+  - A safety check blocked Claude Code from deleting it while the session was using it as its working folder, so Bruno deletes it by hand.
+  - Nothing else is in it.
 - **Checked:**
   - all 10 tests pass
   - `import seisa_kg` works
@@ -523,7 +524,7 @@ A chronological diary of every decision made in this project, what was done, and
   - Rule from now on: **rename or move the project only via Claude Code, or tell it first.**
 
 #### TODO
-- [ ] Bruno: in Finder, check that the `~/Projects` shortcut is no longer needed, and delete it (restart Claude Code from `~/Work Projects/seisa-kg-trial` first)
+- [ ] Bruno: delete the `~/Projects` folder in Finder. It only holds Claude Code's placeholder file.
 - [ ] Bruno: if wanted, re-apply the custom Work icon to `~/Work Projects` (Finder → Get Info → paste the icon onto the folder icon)
 - [ ] Bruno: reopen VS Code at `~/Work Projects/seisa-kg-trial` (or through Desktop → Work)
 - [ ] Next: RDF schema sketch
