@@ -818,3 +818,26 @@ lei:894500AOGUG91SHOC845  ex:directParentException  "NON_CONSOLIDATING"
   - ΑΠΑΞ ΚΑΤΑΣΚΕΥΑΣΤΙΚΗ (the Greek look-alike, out of scope under D-028): **PENDING_TRANSFER** on 16 Oct → **PENDING_ARCHIVAL** on 18 Oct.
   - Both values are in the graph side by side, each with its own source record and date. This is the case D-042 was chosen for.
   - Lesson: "nothing changed" only holds for the fields you looked at.
+
+### Scope step, detail 1: how a sponsor's name is matched
+
+#### Findings
+- **F15 · The name rule (D-028 "In") needs care in two directions:**
+  - **It can miss real entities.** "Hg" as a whole word misses 45 of Hg's entities, all named **HGCAPITAL …**: HGCAPITAL LLP (Hg's own manager), HGCAPITAL TRUST PLC, and the HGCAPITAL 5–8 fund vehicles. Matching "hg" anywhere in the name catches them, but only works because GLEIF's search narrowed the list first; it would also match words like "BIRCHGROVE".
+  - **It can let in look-alikes.** About 40 name matches sit outside the UK, Guernsey, Luxembourg, Jersey and Ireland. Some are clearly unrelated: BridgePoint Bible Church (Texas), BridgePoint Business Center LLCs, CSC Bridgepoint Realty, APAX CONSULTING LTD. (Marshall Islands), APAX AUTO COMPS INDIA. Some are real but run by outside companies: HQT Bridgepoint Europe V–VIII (HQ Trust feeders), NEWBURY BRIDGEPOINT. Some are real and historical: Apax's former French arm (now Seven2, F9).
+  - Under D-028 as written, all of those would be **In**. To be handled once detail 2 ("care of") is settled, since that's the obvious second signal.
+  - For Bridgepoint and Apax, whole-word and anywhere-in-the-name matching give identical results; only Hg differs.
+
+#### Decisions
+- **D-047 · The scope rule matches a list of name forms per sponsor, each as a whole word, ignoring case.** *(Refines D-028.)*
+  - Name forms, in `config/sponsors.toml`: **Hg** → Hg, HgCapital; **Bridgepoint** → Bridgepoint; **Apax** → Apax.
+  - Why: it catches the 45 HGCAPITAL entities on purpose, not by luck. Each listed form is a visible judgement that can be explained and changed.
+  - Why whole words: a form can't match by accident inside another word.
+  - Result: 100 Hg, 185 Bridgepoint and 140 Apax name matches.
+  - **"HGT" (HgCapital Trust's ticker) is not a name form.** HGT SATURN 4 L.P. goes to Review for Bruno to decide.
+    - Why: a three-letter ticker is a weaker signal than a name, and the primer says borderline cases go to a person. It costs one decision.
+
+#### TODO
+- [ ] Scope detail 2: what counts as "care of" a sponsor (and whether it is the second signal that keeps out look-alikes, F15)
+- [ ] Scope detail 3: which date's facts the rule reads
+- [ ] Then: build the scope step and produce the review list

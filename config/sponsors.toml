@@ -1,6 +1,7 @@
 # SUMMARY: Pipeline stage 0 (configure). Lists the three private equity firms
 # ("sponsors") the project is built around (decision D-023), and the words used
-# to search GLEIF for each sponsor's legal entities.
+# to search GLEIF for each sponsor's legal entities, and the forms of its name
+# the scope rule looks for in legal names (D-028, D-047).
 # Python reads this file with its built-in TOML reader (tomllib).
 
 # Hg: a London-based investor in software and services businesses.
@@ -9,6 +10,9 @@
 name = "Hg"
 # Searching for just "Hg" would match far too much, so we use its specific entity names.
 search_terms = ["HgCapital", "Hg Pooled", "Hg Genesis", "Hg Saturn", "Hg Mercury"]
+# The scope rule matches each form as a whole word, ignoring case (D-047).
+# "Hg" alone misses names like "HGCAPITAL 8 A L.P.", so "HgCapital" is listed too. "HGT" (the trust's ticker) is not: those go to review (D-047).
+name_forms = ["Hg", "HgCapital"]
 
 # Bridgepoint: a London-listed, mid-market private equity firm.
 [sponsors.bridgepoint]
@@ -16,6 +20,9 @@ search_terms = ["HgCapital", "Hg Pooled", "Hg Genesis", "Hg Saturn", "Hg Mercury
 name = "Bridgepoint"
 # The firm's name is distinctive enough to search for on its own.
 search_terms = ["Bridgepoint"]
+# The scope rule matches each form as a whole word, ignoring case (D-047).
+# The firm's name is the only form needed.
+name_forms = ["Bridgepoint"]
 
 # Apax: a global buyout firm headquartered in London.
 [sponsors.apax]
@@ -23,3 +30,6 @@ search_terms = ["Bridgepoint"]
 name = "Apax"
 # The firm's name is distinctive enough to search for on its own.
 search_terms = ["Apax"]
+# The scope rule matches each form as a whole word, ignoring case (D-047).
+# The firm's name is the only form needed.
+name_forms = ["Apax"]
