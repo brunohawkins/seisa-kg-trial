@@ -2,6 +2,8 @@
 # QUESTION: For each sponsor, how many of its companies report no parent to GLEIF, and for what reason?
 # WHY: It shows where the public register cannot reveal ownership, and why (funds don't consolidate what they own), so an investor knows where the data stops.
 # TYPE: counting, grouped; shows gaps openly (D-026, primer section 3.3).
+# KEY: sponsorName, reason
+# VALUE: companies
 # NOTE: companies that do report a parent, or give no Level 2 information at all (F13), are counted too, so every In company appears exactly once.
 
 # The core RDF vocabulary (rdf:reifies links a note to its fact).

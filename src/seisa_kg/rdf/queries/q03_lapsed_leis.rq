@@ -2,6 +2,7 @@
 # QUESTION: Which of each sponsor's companies have a lapsed or retired LEI, and when did GLEIF last tell us so?
 # WHY: A lapsed LEI means GLEIF no longer re-checks the company's data: a red flag for counterparty checks and for any fact about that company.
 # TYPE: time and data quality; the answer reads each fact's own source and fetch date (D-046, D-042).
+# KEY: sponsorName, entity|name, status
 
 # The core RDF vocabulary (rdf:reifies links a note to its fact).
 PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>

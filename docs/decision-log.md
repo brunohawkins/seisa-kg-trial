@@ -1020,3 +1020,43 @@ lei:894500AOGUG91SHOC845  ex:directParentException  "NON_CONSOLIDATING"
 - [ ] README: how someone else runs `make build`
 - [ ] *(Optional, any time)* Bruno: hand decisions in `config/scope_reviews.toml` (the 6 care-of names, the look-alikes, HGT SATURN 4, Tembo Capital)
 - [ ] After Monday: give annotation nodes stable names (D-045)
+
+### Evaluation: how answers are scored (about 4:15pm)
+
+The brief (§6) asks for each answer to be scored "for whether it is correct and whether its cited sources support it". The primer adds that automated judges "must be calibrated against domain experts". Bruno wants graded scores, not yes or no.
+
+#### Decisions
+- **D-059 · Correctness is graded 0–1 by overlap with the reference answer.**
+  - Each question has a **reference answer** from its hand-written query (the "gold set").
+  - **Precision:** of the items the candidate gave, how much is right. **Recall:** of the reference items, how much it found. **Correctness = F1** of the two.
+  - **Counts get partial credit by closeness:** 1 − |candidate − reference| ÷ reference (e.g. 118 against 124 scores 0.95).
+  - **"Not in the data" questions** score 1 if the answer says so, and 0 if it invents items.
+  - Why: it's the standard in question-answering benchmarks (QALD reports per-question precision, recall and F1), fully automatic, and it uses the same precision and recall terms as the brief's matching task.
+  - Alternatives not chosen: a 0–3 rubric judged by the language model (needs calibration against a person; may still be added for free-text vector-search answers); both together (most to build and explain).
+- **D-060 · Citation is graded 0–1 from two fractions.**
+  - **Support:** of the sources the answer cites, the fraction that really state the fact, checked against our own provenance (the RDF-star notes).
+  - **Coverage:** of the answer's items, the fraction with at least one supporting source.
+  - **Citation score = F1** of support and coverage.
+  - Why: it catches both invented sources (low support) and unsourced claims (low coverage). An answer that cites nothing scores 0, not a perfect score.
+- **D-061 · Overall score = (correctness + citation) ÷ 2, always shown beside both parts.**
+  - Why: one number to rank the approaches by, while the parts show *why* an answer scored low. Equal weights need no defending.
+  - Alternatives not chosen: correctness × citation (hides partial credit); no overall number.
+- **D-062 · The gold set starts with the 3 placeholder questions (D-058). Bruno writes the rest tomorrow, after the chat with Anish.**
+  - Why: the brief says "questions of your own", and Bruno will defend them in the explain-back. The scorer reads questions as data, so adding them later needs no code change.
+
+#### What we did
+- **The scorer:** `src/seisa_kg/evaluation/score.py`. It matches a candidate's items to the reference's **by value, not by column name** (a generated query names its own columns), and returns correctness, precision, recall, citation, support, coverage and overall, plus what went wrong: missed items, invented items, numbers off, unsupported citations, uncited items.
+- **Scoring keys** added to each question file: `# KEY:` (the columns that identify one item) and `# VALUE:` (the column holding a count).
+- **Tests:** `tests/test_score.py`, 7 hand-worked cases (e.g. missing one of two items gives correctness 0.667; a count of 8 against 10 gives 0.8 for that item). **30 tests pass.**
+  - Two tests failed at first and **caught a real bug**: our own entity addresses (`https://seisa-kg.example/lei/…`) were being counted as cited sources, so an answer with no sources got full citation marks. Fixed: only real source addresses count.
+- **Demonstration:** `make score-demo` writes `docs/scoring-demo.md`. Each reference answer is damaged one mistake at a time and scored. Q1 example: two items missed 0.938; one invented 0.944; counts 10% low 0.977; no sources 0.5; sources swapped 0.5; "not available" 0.
+
+#### Findings
+- **F20 · A citation is only as precise as its source record.** In Q3, swapping sources between items still scores 0.93 on citation. That's because Q3's facts come from GLEIF **search pages**, and one page holds up to 200 companies, so the swapped page usually does state the other company's fact as well. The scorer is right; the evidence is coarse.
+  - For the write-up: citing a search page is weaker evidence than citing the single LEI record. A finer source (one record per LEI) would make citation checks sharper.
+  - Q1's facts come from per-LEI fund-manager records, so the same swap scores 0 there.
+
+#### TODO
+- [ ] Neo4j: the property-graph schema (how it records sources), explained like the RDF one, then the builder and the 3 questions in Cypher
+- [ ] Tomorrow, after the chat with Anish: Bruno writes the remaining questions (D-062)
+- [ ] The text-to-SPARQL and text-to-Cypher candidates (Gemini), scored with this scorer; vector search once the news releases exist

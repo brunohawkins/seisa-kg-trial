@@ -7,6 +7,9 @@ Each question file opens with comment lines the runner reads:
     # WHY: ...        why an investor would ask it
     # TYPE: ...       what kind of question it is (several links, counting, ...)
     # NOTE: ...       (optional) anything a reader must know about the answer
+    # KEY: ...        for scoring (D-059): the columns that identify one answer item;
+    #                 commas mean "all of these", "|" means "either of these"
+    # VALUE: ...      (optional) for scoring: the column holding a number, given partial credit
 
 Outputs:
 - data/output/answers/rdf/<question>.json: the full answer, every source included;
@@ -47,7 +50,7 @@ TIMED_RUNS = 5
 # How many rows of each answer the report shows (the JSON keeps them all).
 REPORT_ROWS = 20
 # The header fields the runner reads from each question file.
-FIELDS = ("QUESTION", "WHY", "TYPE", "NOTE")
+FIELDS = ("QUESTION", "WHY", "TYPE", "NOTE", "KEY", "VALUE")
 
 
 # Read a question file's header lines into a dict, e.g. {"QUESTION": "...", "WHY": "..."}.

@@ -2,6 +2,8 @@
 # QUESTION: Which companies does GLEIF say manage Apax's funds, and how many fund vehicles does each one manage?
 # WHY: An investor needs to know which legal entity acts for a fund: who signs, and who the counterparty is.
 # TYPE: several links (sponsor -> scope decision -> fund -> manager), then counting.
+# KEY: manager|managerName
+# VALUE: funds
 # NOTE: GLEIF's "fund manager" can be a GP company or a management company (F4, D-027), so the answer says "manager per GLEIF", not "GP".
 
 # The core RDF vocabulary (rdf:reifies links a note to its fact).

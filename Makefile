@@ -7,7 +7,7 @@
 NEO4J := tools/neo4j/bin/neo4j
 
 # Tell make these names are commands, not files to be created.
-.PHONY: setup test brief build fetch-gleif facts rdf query neo4j-install neo4j-start neo4j-stop neo4j-status
+.PHONY: setup test brief build fetch-gleif facts rdf query score-demo neo4j-install neo4j-start neo4j-stop neo4j-status
 
 # Install every Python library into the project's private environment.
 setup:
@@ -43,6 +43,11 @@ rdf: facts
 query: rdf
 	# Run the question runner inside the project's environment.
 	uv run python -m seisa_kg.rdf.ask
+
+# Show the scorer at work: damage each reference answer on purpose and score it (D-059 to D-061).
+score-demo: query
+	# Run the scoring demonstration inside the project's environment.
+	uv run python -m seisa_kg.evaluation.demo
 
 # The single command (brief §4): fetch (cached) -> facts -> scope -> RDF graph -> checks -> questions.
 build: fetch-gleif query
