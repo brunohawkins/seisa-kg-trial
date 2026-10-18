@@ -1014,7 +1014,7 @@ lei:894500AOGUG91SHOC845  ex:directParentException  "NON_CONSOLIDATING"
 - [ ] Bruno: tweak the three questions (wording, or swap in the alternatives Q1b, Q3b or the "unanswerable" probe), then add more, towards the brief's 10–12
 - [x] Property-graph schema, including how it records sources (D-063)
 - [ ] The "what changed between RDF and the property graph" note (`docs/schema/what-changed.md`) and `docs/schema/lpg-schema.md`
-- [x] Neo4j builder from the same fact list; the same questions in Cypher; both in `make build`
+- [ ] Neo4j builder from the same fact list; the same questions in Cypher; both in `make build` *(removed; redo together on 19 Oct)*
 - [ ] Timings on a smaller and a larger dataset (brief §3)
 - [ ] One Bloom view tracing a fact to its source; Bruno: open Explore (Bloom) once
 - [ ] Tests for the scope rules (one per test, with a made-up entity each)
@@ -1058,7 +1058,7 @@ The brief (§6) asks for each answer to be scored "for whether it is correct and
   - Q1's facts come from per-LEI fund-manager records, so the same swap scores 0 there.
 
 #### TODO
-- [x] Neo4j: the property-graph schema (D-063), the builder and the 3 questions in Cypher
+- [ ] Neo4j: the property-graph schema (D-063), the builder and the 3 questions in Cypher *(built, then removed at Bruno's request: to be done together, step by step, on 19 Oct)*
 - [ ] Tomorrow, after the chat with Anish: Bruno writes the remaining questions (D-062)
 - [ ] The text-to-SPARQL and text-to-Cypher candidates (Gemini), scored with this scorer; vector search once the news releases exist
 
@@ -1099,10 +1099,37 @@ The brief (§6) asks for each answer to be scored "for whether it is correct and
   - Speed: RDF answers in 1–5 ms and Neo4j in 3–8 ms. **Not a fair comparison yet:** Oxigraph runs in memory inside the same program, while Neo4j is a separate server reached over a network connection. To be set up properly with the small and large datasets.
 
 #### TODO
-- [ ] Bruno: confirm the D-060 refinement (an item whose true answer has no source isn't penalised for citing nothing)
+- [x] Bruno: confirm the D-060 refinement (an item whose true answer has no source isn't penalised for citing nothing): confirmed, D-064
 - [ ] `docs/schema/lpg-schema.md`, and the "what changed between RDF and the property graph" note (brief deliverable)
 - [ ] One Bloom view tracing a fact to its receipt; Bruno: open Explore (Bloom) once
 - [ ] Tomorrow, after the chat with Anish: Bruno writes the remaining questions (D-062), each in SPARQL and Cypher
 - [ ] Text-to-SPARQL and text-to-Cypher with Gemini, scored with the scorer; vector search once the news releases exist
 - [ ] Timings on a smaller and a larger dataset, done fairly (F22)
 - [ ] Tests for the scope rules; README
+
+### Neo4j removed, to be built together tomorrow (about 5:15pm)
+
+#### What happened
+- The whole Neo4j side (builder, Cypher questions, runner) was built in one go after a single design question (D-063). Bruno hadn't worked through it, and needs to explain it with no code open.
+- **At Bruno's request, it has been removed**, to be built together step by step on 19 Oct:
+  - deleted: `src/seisa_kg/lpg/`, `docs/answers-lpg.md`, `data/output/answers/lpg/`, and the `make neo4j-build` / `make query-lpg` targets;
+  - the Neo4j database emptied (0 nodes) and the 5 uniqueness rules the builder created dropped;
+  - the RDF runner's Neo4j-only additions undone (reading `//` header lines; the "agreement with RDF" line).
+  - **Kept:** the Neo4j server itself (installed 16 Oct; `make neo4j-start` etc.), and everything RDF.
+  - The removed code stays in git history (commit 723f6f2), for reference only. Tomorrow starts from the design, not from that code.
+- **Checked:** `make build` runs the RDF pipeline end to end (fetch → facts → scope → RDF graph → checks → questions); `make score-demo` runs; **31 tests pass**.
+
+#### Decisions
+- **D-063 reopened.** Bruno chose "receipt boxes" for how Neo4j records sources, but it will be walked through together before any code: the concept, then the schema, then the builder, then the queries, one at a time.
+- **D-064 · The D-060 refinement is confirmed (Bruno: "fine").** An answer line whose correct answer has no source (an absence, e.g. "no Level 2 information") isn't marked down for citing nothing. Lines whose true answer has a source, and invented lines, still need citations.
+
+#### Still true from the removed build
+- **F21 stands:** the cross-check found a real bug in the RDF query Q2 (it cited all 1,051 records for lines with no record). The fix stays in the SPARQL, and the F19 correction stands (Q2 now takes about 5 ms).
+- **F22 (sizes and speeds)** was measured on the removed build. Re-measure once the Neo4j graph is rebuilt.
+
+#### TODO for tomorrow (19 Oct)
+- [ ] Neo4j together, step by step: concept (property graph vs RDF) → schema sketch (`docs/schema/lpg-schema.md`) → builder → the questions in Cypher → `make build`
+- [ ] The "what changed between RDF and the property graph" note
+- [ ] Bruno writes the remaining questions after the chat with Anish (D-062)
+- [ ] Text-to-SPARQL (and later text-to-Cypher), scored with the scorer
+- [ ] Fair timings on a smaller and a larger dataset; Bloom view; scope-rule tests; README

@@ -61,8 +61,8 @@ def read_header(text: str) -> dict:
     for line in text.splitlines():
         # Each field we look for.
         for field in FIELDS:
-            # A line like "# WHY: ..." (SPARQL) or "// WHY: ..." (Cypher).
-            if line.startswith((f"# {field}:", f"// {field}:")):
+            # A line like "# WHY: ...".
+            if line.startswith(f"# {field}:"):
                 # Keep the text after the colon.
                 header[field] = line.split(":", 1)[1].strip()
     # Hand back the fields.
@@ -131,7 +131,7 @@ def cell(column: str, text: str) -> str:
     return short(text).replace("|", "\\|")
 
 
-# Write a readable report: the given opening lines, then one section per question (shared by the Neo4j runner).
+# Write a readable report: the given opening lines, then one section per question.
 def write_report(results: list[dict], opening: list[str], path: Path = REPORT_PATH) -> None:
     # Start with the opening lines.
     L = list(opening)
@@ -147,14 +147,6 @@ def write_report(results: list[dict], opening: list[str], path: Path = REPORT_PA
             L += [f"**Note:** {r['NOTE']}", ""]
         # Size and timing of the answer.
         L += [f"**Answer:** {len(r['rows'])} rows, {r['median_ms']} ms.", ""]
-        # For the Neo4j answers: how well they agree with the RDF answer, scored by the answer scorer.
-        if r.get("agreement"):
-            # The scores, and anything that differs.
-            a = r["agreement"]
-            # One line.
-            L += [f"**Agreement with the RDF answer:** overall {a['overall']} (correctness {a['correctness']}, citation {a['citation']})"
-                  # The non-zero differences, if any.
-                  + (f"; differences: {a['errors']}" if any(a["errors"].values()) else "; identical."), ""]
         # Flag an empty answer rather than passing it silently.
         if not r["rows"]:
             # The warning.
