@@ -262,3 +262,67 @@ A chronological diary of every decision made in this project, what was done, and
 - [ ] Sketch the RDF schema together (RDF-star provenance, D-015)
 - [ ] Build the cached GLEIF downloader for the three sponsors
 - [ ] Fix the `.env.example` comments, which still describe Neo4j Desktop as the database (D-018 changed this)
+
+---
+
+## Entry 5 · Sunday 18 Oct 2026 · Data sources and pipeline (1pm session)
+
+### What we did
+- **`.env` is complete:** all 5 settings are filled in, checked without displaying any values.
+- **Revised today's plan for the 4 hours available** (1pm–5pm, instead of the ~10 planned):
+  - the goal is one thin slice, from start to finish, using GLEIF only
+  - Companies House PSC data moves to Monday.
+  - Timeline knock-on: the brief is now expected around **Thu 22 Oct**, and the GUI and translation layer around **Mon 26 Oct**.
+- **Bruno studied the three data sources** (GLEIF, Companies House, press releases) and wrote them up as a mind map in his notebook.
+  - Corrected: we use Companies House, not EDGAR. EDGAR is the US register, ruled out by D-008.
+- **Agreed the pipeline stages** below, as a shared reference.
+  - Bruno keeps dated, hand-drawn schematics of the pipeline in his notebook, so the workflow itself is snapshotted over time.
+
+### Pipeline stages (v1, 18 Oct)
+0. **Configure:** the sponsors and their search words.
+1. **Fetch:** download from each source and cache the raw replies in `data/raw/`.
+2. **Parse:** turn the raw replies into the shared fact list (D-012), with provenance on every fact.
+3. **Link:** decide which records describe the same entity.
+   - by identifier first (D-025)
+   - then by name, for the news releases.
+4. **Build:** the RDF graph (RDF-star, checked with SHACL) and the Neo4j graph, each built separately from the fact list.
+5. **Query:** the investor questions in SPARQL and in Cypher, with answers, sources and timings.
+6. **Ask:** text-to-SPARQL, text-to-Cypher and vector search, scored against the answers from stage 5.
+7. **Show:** Bloom, the GUI and the write-up.
+- *Extension (D-016):* a translation layer between the two graphs built in stage 4.
+
+### Decisions
+- **D-025 · Link GLEIF and Companies House records by registration number, not by name.** *(Bruno's realisation.)*
+  - **The rule:** two records are the same entity when the GLEIF record's register is Companies House (`registeredAt.id = RA000585`) **and** its `registeredAs` equals the Companies House company number.
+  - **Why both conditions:**
+    - Registration numbers are only unique *within one register*. Luxembourg also uses numbers like `B281103`.
+    - An exact identifier match avoids the over-merging that name matching risks.
+  - **Linking, not merging:**
+    - Both sources' facts attach to one entity, and each fact keeps its own source.
+    - Values that disagree are kept side by side, never overwritten. Example: GLEIF's `HG SATURN A L.P.` against a differently capitalised name in Companies House.
+  - **Checked against our cached GLEIF data:** 185 sponsor entities are registered at Companies House, all with properly formatted 8-character numbers:
+    - 140 `LP…` (English limited partnerships, i.e. mostly funds)
+    - 38 ordinary companies
+    - 5 `OC…` (LLPs)
+    - 2 `SL…` (Scottish LPs).
+    - All already zero-padded, so no reformatting is needed. We still normalise (upper case, pad to 8) as a safety check.
+  - **Limits:**
+    - Only UK entities that also have an LEI.
+    - Companies House entities with no LEI (many BidCos and portfolio companies) are identified by their company number alone.
+    - Offshore entities are identified by their LEI alone.
+  - **Bonus:** the companies that Companies House lists as owners in PSC records come with their own registration numbers, so ownership links can be resolved by identifier too.
+  - **Would revisit if:** numbers turn out to be missing or inconsistent once the Companies House data is downloaded.
+
+### Findings
+- **Most UK fund vehicles are English limited partnerships** (`LP…`, 140 of the 185).
+  - To check on Monday: English LPs have historically filed very little with Companies House, and may have no PSC records.
+  - If so, the ownership chains will come from the *companies* (TopCo, BidCo, …) rather than from the funds.
+
+### TODO for next time (today, after the schematic)
+- [ ] Warm-up: open Explore (Bloom); fix the `.env.example` comments; sample GLEIF's reasons for "no parent" and its fund-manager links
+- [ ] RDF schema sketch together (`docs/schema/rdf-schema.md`)
+- [ ] GLEIF downloader → shared fact list → RDF builder with SHACL checks
+- [ ] Bruno: write the first 3 investor questions; answer them in SPARQL with sources
+- [ ] Property-graph schema, including how it records sources (still open); Neo4j builder; the same 3 questions in Cypher
+- [ ] `make build`; one Bloom view tracing a fact to its source; diary entry; commit
+- [ ] Monday: Companies House downloader, linked by D-025; check PSC coverage for English LPs
