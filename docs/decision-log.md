@@ -528,3 +528,16 @@ A chronological diary of every decision made in this project, what was done, and
 - [ ] Bruno: if wanted, re-apply the custom Work icon to `~/Work Projects` (Finder → Get Info → paste the icon onto the folder icon)
 - [ ] Bruno: reopen VS Code at `~/Work Projects/seisa-kg-trial` (or through Desktop → Work)
 - [ ] Next: RDF schema sketch
+
+### Handover set-up (about 3:10pm)
+
+#### Decisions
+- **D-032 · Add a `CLAUDE.md` to the repo, and copy Claude Code's memory notes to the new folder's memory store.**
+  - Why: this chat is filed under the old folder name, so a new Claude Code session in `~/Work Projects/seisa-kg-trial` would not see it.
+  - Why: the memory notes were stored under the home folder, back when the whole home folder was one git repo, so a new session would not load them either.
+  - Why: `CLAUDE.md` is read automatically in this folder. It carries the working rules, and points every new session to the diary and the plan.
+  - Why it is in the repo: Seisa will see it. That is fine, because the brief encourages AI tools, and the file shows how they were used.
+
+#### TODO
+- [ ] Bruno: keep this VS Code window open for the rest of today; start the next session from Desktop → Work → `seisa-kg-trial`
+- [ ] Next: RDF schema sketch (`docs/schema/rdf-schema.md`)
