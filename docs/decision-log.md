@@ -488,3 +488,42 @@ A chronological diary of every decision made in this project, what was done, and
 - [ ] Bruno: open Explore (Bloom) once
 - [ ] Bruno: decide the ~16 "review" entities once the scope step lists them
 - [ ] Next: the shared fact format and the RDF schema sketch (`docs/schema/rdf-schema.md`)
+
+### Folder layout, revised (about 3pm)
+
+#### Decisions
+- **D-031 · The real working folder is `~/Work Projects`. The Desktop's `Work` is now a shortcut to it.** *(Updates D-030.)*
+  - The project lives at `~/Work Projects/seisa-kg-trial`.
+  - `~/Desktop/Work` is a symbolic link to `~/Work Projects`.
+  - Why: Bruno wants one "Work" entry point on the Desktop for all work projects, while keeping the files out of iCloud.
+  - Why a shortcut: clicking `Work` on the Desktop opens the real folder, and iCloud does not follow shortcuts, so nothing inside is uploaded.
+  - Trade-off: everything in `~/Work Projects` is local only. The code is backed up on GitHub; anything else there (notes, PDFs) needs Time Machine or another backup.
+
+#### What we did
+- Bruno renamed `~/Projects` to `~/Work Projects`, which broke the earlier shortcut and the stored paths.
+- **Fixed the paths:**
+  - Stopped Neo4j, and pointed its two folder paths at `~/Work Projects/seisa-kg-trial`.
+  - Rebuilt `.venv` in place with `uv venv --clear` + `uv sync`. `uv`'s command files now start with `#!/bin/sh` rather than a fixed path, so the environment survives future renames.
+- **Desktop:**
+  - Moved the old `Desktop/Work` folder to the Bin as "Work (old Desktop folder, 18 Oct)". It held only the broken shortcut, an empty "Starting project 2" folder and the custom folder icon.
+  - Put a `Work` shortcut in its place.
+- **Left in place:**
+  - `~/Projects` is now a small compatibility shortcut to `~/Work Projects`.
+  - A Claude Code placeholder folder could not be removed while the session was using it.
+- **Checked:**
+  - all 10 tests pass
+  - `import seisa_kg` works
+  - Neo4j starts and accepts the password
+  - the GitHub remote is unchanged.
+
+#### Findings
+- **F11 · Renaming the project folder breaks two things**, which then need updating:
+  - the Neo4j paths in `tools/neo4j/conf/neo4j.conf`
+  - the Python environment (fixed for good by the rebuild).
+  - Rule from now on: **rename or move the project only via Claude Code, or tell it first.**
+
+#### TODO
+- [ ] Bruno: in Finder, check that the `~/Projects` shortcut is no longer needed, and delete it (restart Claude Code from `~/Work Projects/seisa-kg-trial` first)
+- [ ] Bruno: if wanted, re-apply the custom Work icon to `~/Work Projects` (Finder → Get Info → paste the icon onto the folder icon)
+- [ ] Bruno: reopen VS Code at `~/Work Projects/seisa-kg-trial` (or through Desktop → Work)
+- [ ] Next: RDF schema sketch
