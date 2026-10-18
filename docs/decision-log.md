@@ -1160,3 +1160,19 @@ The brief (§6) asks for each answer to be scored "for whether it is correct and
 - Bruno meets Anish at the office at 1pm on 19 Oct to talk through the work so far.
 - Produced a 33-page study guide PDF, built for a 60–90 minute read: a core path of about 66 minutes (marked CORE), "if time" parts, a self-test, and appendices listing every decision and finding.
 - **Saved outside the repo**, at `~/Work Projects/Seisa study guide - 19 Oct 2026.pdf`, because it holds Bruno's meeting preparation, which shouldn't be in the code Seisa reviews.
+
+### Demo check and visualisation options (late evening, 18 Oct)
+- **Demo check:** `make build` ran end to end in about 7 seconds. All checks passed, the three answers were unchanged (9, 15 and 72 rows), and all 31 tests pass.
+  - It needs **no internet**: every GLEIF reply is read from the cache in `data/raw/gleif/`.
+  - Each run changes only the timings in `docs/answers-rdf.md`.
+- **Visualising the RDF graph: options put to Bruno, not yet decided.**
+  - Drawing the whole graph (49,042 triples) is unreadable. Useful views show one slice, e.g. one company and everything said about it.
+  - Most RDF viewers can't draw RDF-star, so they lose the sources on each fact. This is a point for Anish, and part of why Neo4j Bloom is on the plan.
+  - **A (recommended):** a small script that pulls one company's or sponsor's slice with SPARQL and saves an interactive web page, with source and date shown on each arrow.
+  - **B:** Oxigraph's own server, with a browser query page. Answers come as tables, not pictures.
+  - **C:** a dedicated RDF tool such as GraphDB Free. A heavy install, and RDF-star support varies.
+  - **D:** wait for Neo4j Bloom, which comes with the property-graph work.
+
+#### TODO (after the meeting with Anish, 19 Oct)
+- [ ] Bruno picks a visualisation option (A recommended); build it together, step by step
+- [ ] Then the TODOs above: Neo4j step by step, text-to-SPARQL step 2, Bruno's remaining questions
