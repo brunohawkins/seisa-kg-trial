@@ -365,7 +365,7 @@ A chronological diary of every decision made in this project, what was done, and
 
 ### Schema session, part 1 (about 2:30pm)
 
-#### The strategy for the warm-up issues (proposed by Claude Code, awaiting Bruno)
+#### The strategy for the warm-up issues (proposed by Claude Code; **confirmed by Bruno as D-029**)
 - **The issues are not bugs to fix.** They are what the sources actually say.
 - **Principle:**
   - Record exactly what each source says, with its source and the date it was fetched.
@@ -388,7 +388,7 @@ A chronological diary of every decision made in this project, what was done, and
 - **D-027 · No roles (GP, manager) until Companies House or the news confirms them.**
   - **Why:** GLEIF's "fund manager" mixes GP companies and regulated management companies (F4). Guessing a role risks a wrong fact.
   - **Why:** a role confirmed by two sources is richer and more defensible.
-  - **Refinement (proposed, awaiting Bruno):** still store GLEIF's own link exactly as GLEIF states it ("managed by, per GLEIF", with its start date, status and corroboration level), but *not* as a role.
+  - **Refinement (confirmed by Bruno):** still store GLEIF's own link exactly as GLEIF states it ("managed by, per GLEIF", with its start date, status and corroboration level), but *not* as a role.
     - Why: it is a real, sourced fact; leaving it out would lose information.
     - Roles are added later as separate facts, each with its own source.
 
@@ -414,7 +414,7 @@ A chronological diary of every decision made in this project, what was done, and
   - iCloud is also syncing the **live Neo4j database** in `data/neo4j/`, which risks corruption. The database is still empty, so nothing is lost.
   - Work-around for now: `PYTHONPATH=src`. Fix: Bruno to decide (see the TODO list below).
 
-#### Proposed: the rule for which entities belong to a sponsor (awaiting Bruno, D-028 once decided)
+#### The rule for which entities belong to a sponsor (**confirmed by Bruno as D-028**)
 - Every entity gets an explicit **scope fact**: *in*, *review* or *out*, with the reason.
 - **In:**
   - the legal name contains the sponsor's name, **or**
@@ -431,9 +431,60 @@ A chronological diary of every decision made in this project, what was done, and
   - Every decision can be explained and undone.
 
 #### TODO
-- [ ] Bruno: confirm the strategy principle above
-- [ ] Bruno: confirm the D-027 refinement (store GLEIF's link as stated, without a role)
-- [ ] Bruno: decide the scope rule (D-028)
-- [ ] Bruno: decide the iCloud fix (F10): move the project out of iCloud, or exclude folders from syncing
+- [x] Bruno: confirm the strategy principle above (D-029)
+- [x] Bruno: confirm the D-027 refinement (store GLEIF's link as stated, without a role)
+- [x] Bruno: decide the scope rule (D-028)
+- [x] Bruno: decide the iCloud fix (F10): the project is moved out of iCloud (D-030)
 - [ ] Bruno: open Explore (Bloom) once
 - [ ] Then: shared fact format and RDF schema sketch (`docs/schema/rdf-schema.md`)
+
+### Schema session, part 2: decisions confirmed and the project moved (about 2:45pm)
+
+#### Decisions
+- **D-027 refinement accepted: store GLEIF's fund-manager link exactly as GLEIF states it, but not as a role.**
+  - What it records: "managed by, per GLEIF", with its start date, status and corroboration level as annotations.
+  - Why: it is a real, sourced fact, and leaving it out would lose information.
+  - Why: a role (GP or manager) is only added once Companies House or the news confirms it, as a separate fact with its own source.
+- **D-028 · Every entity gets a scope fact (in, review or out) with a reason.**
+  - **In:** the legal name contains the sponsor's name, or the address is "care of" a sponsor entity.
+  - **Review:** borderline cases, about 16, decided by Bruno by hand:
+    - managed by an outside company
+    - matched only on a former or other name
+    - matched on some other field.
+  - **Out:** the sponsor's word appears only in a street name, or the match is unrelated.
+  - Why: a name-only rule would throw away the acquisition chains we most want (e.g. Janus Topco / Midco / Bidco, c/o Apax).
+  - Why: it drops obvious noise without hiding any decision, since each one is stored with its reason.
+  - Why: borderline cases go to a person, the primer's standard practice ("merge conservatively, record the evidence, send borderline cases to a person, make merges reversible").
+  - Why: every decision can be explained in the demo and undone later.
+- **D-029 · Strategy: record exactly what each source says; never silently correct it; our own judgements are separate, labelled facts.**
+  - "Our own judgements" covers scope, roles and matches.
+  - Why: every fact stays traceable to its source.
+  - Why: our own mistakes can be undone without touching the source facts.
+  - Why: in the explain-back, "the register says" stays clearly separate from "we concluded".
+- **D-030 · Move the project out of iCloud, to `~/Projects/seisa-kg-trial`, with a shortcut at the old location.**
+  - The shortcut is a symbolic link at `~/Desktop/Work/Seisa/Starting project`.
+  - Why: iCloud was hiding files in the Python environment, which broke imports at random (F10).
+  - Why: iCloud was also syncing the live Neo4j database, which risks corrupting it.
+  - Why the home folder: iCloud only syncs Desktop and Documents, so `~/Projects` is never uploaded.
+  - Why that name: it matches the GitHub repo, and has no spaces in the path.
+  - Why the shortcut: the work stays reachable from the Work folder on the Desktop. iCloud does not follow the shortcut, so nothing in the project is uploaded.
+  - Backup: GitHub, not iCloud.
+
+#### What we did (the move)
+- Stopped Neo4j, moved the folder, and created the shortcut.
+- Cleared the "hidden" flags iCloud had set on the project's files.
+- Rebuilt `.venv` from `uv.lock` in the new location.
+- Updated Neo4j's two folder paths in `tools/neo4j/conf/neo4j.conf` to the new location.
+  - `scripts/install_neo4j.sh` now uses `pwd -P`, so a fresh install always records the real location, never the shortcut.
+- **Checked:**
+  - `import seisa_kg` works with no work-around
+  - all 10 tests pass
+  - Neo4j starts, and accepts the password from `.env`
+  - the GitHub remote is unchanged.
+- **Note:** `.env` (with the keys) sat in the iCloud-synced folder from 16 to 18 Oct. It is Bruno's own private iCloud, so the risk is low. iCloud may keep old copies in its version history.
+
+#### TODO
+- [ ] Bruno: reopen VS Code at `~/Projects/seisa-kg-trial` (or through the Desktop shortcut)
+- [ ] Bruno: open Explore (Bloom) once
+- [ ] Bruno: decide the ~16 "review" entities once the scope step lists them
+- [ ] Next: the shared fact format and the RDF schema sketch (`docs/schema/rdf-schema.md`)

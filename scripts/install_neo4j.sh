@@ -20,7 +20,8 @@ NEO4J_SHA256="cdaa0905d9a533bbbc474d239c268f69978982eb5ca3177666c04c9792d1c399"
 NEO4J_URL="https://dist.neo4j.org/neo4j-community-${NEO4J_VERSION}-unix.tar.gz"
 
 # The project's top folder: this script's folder ("scripts"), then one level up.
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# "pwd -P" gives the real location, even when the project is opened through a shortcut (symbolic link).
+PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd -P)"
 # Where the downloaded program will be unpacked.
 NEO4J_HOME="${PROJECT_ROOT}/tools/neo4j"
 # Where the downloaded archive file is kept while we check and unpack it.

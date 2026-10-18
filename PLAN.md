@@ -186,7 +186,7 @@ The write-up asks how each model would take on the start and end dates of a stak
 ## 4. File structure **[Decided: D-014]**
 
 ```
-Starting project/            ← its own git repo (see Today, step 1)
+seisa-kg-trial/              ← ~/Projects/seisa-kg-trial, its own git repo (D-030; shortcut on the Desktop)
 ├── README.md                how to install and run, for someone else
 ├── PLAN.md                  this file
 ├── Makefile                 `make build` = the single command
