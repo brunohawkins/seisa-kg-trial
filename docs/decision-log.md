@@ -1155,3 +1155,8 @@ The brief (§6) asks for each answer to be scored "for whether it is correct and
 - [ ] **Text-to-SPARQL step 2, Bruno's decisions:** (1) how much schema the model sees; (2) whether to give one or two worked examples (never the question being tested); (3) which Gemini model; (4) one retry with the error message when a query fails, or none. Then step 3 (the call to Gemini) and step 4 (run it on the 3 questions and score), checking in after each step.
 - [ ] Neo4j together, step by step (see the list above)
 - [ ] Bruno writes the remaining questions after the chat with Anish (D-062)
+
+### Study guide for the meeting with Anish (evening, 18 Oct)
+- Bruno meets Anish at the office at 1pm on 19 Oct to talk through the work so far.
+- Produced a 33-page study guide PDF, built for a 60–90 minute read: a core path of about 66 minutes (marked CORE), "if time" parts, a self-test, and appendices listing every decision and finding.
+- **Saved outside the repo**, at `~/Work Projects/Seisa study guide - 19 Oct 2026.pdf`, because it holds Bruno's meeting preparation, which shouldn't be in the code Seisa reviews.
