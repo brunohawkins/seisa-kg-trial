@@ -850,7 +850,7 @@ lei:894500AOGUG91SHOC845  ex:directParentException  "NON_CONSOLIDATING"
   - **Care-of is often not written "c/o".** The address simply starts with the sponsor company's name:
     - Janus Topco / Midco / Bidco: `Apax Partners Guernsey Limited, Third Floor, Royal Bank Place, …`
     - ACORN BIDCO: `HGCAPITAL, 2 MORE LONDON RIVERSIDE, …`
-  - **Street and building names:** `225 Bridgepoint Drive` (6 Minnesota property companies), `Bridgepoint Parkway` and `Bridgepoint Plaza II` (Austin).
+  - **Street and building names:** `225 Bridgepoint Drive` (4 Minnesota property companies; first counted as 6 by mistake), `Bridgepoint Parkway` and `Bridgepoint Plaza II` (Austin).
   - **An unrelated namesake:** `C/O BRIDGEPOINT GROUP ACCOUNTING PTY LTD`, an Australian accounting firm (2 companies).
   - **Care of sponsor companies with no LEI in our data:** Apax Partners Guernsey Limited (about 21 entities, including the Janus chain), Apax Partners Holdings Ltd, Bridgepoint AB.
   - **Some care-of lines are only in the headquarters address:** BPSF2, the Edmond de Rothschild LBO funds (c/o Bridgepoint Portfolio Services), the A12 EUR feeder.
@@ -874,6 +874,64 @@ lei:894500AOGUG91SHOC845  ex:directParentException  "NON_CONSOLIDATING"
   - Why: without it, BPSF2, the Edmond de Rothschild funds and the A12 feeder would be missed.
 
 #### TODO
-- [ ] Scope detail 3: which date's facts the rule reads
-- [ ] F15: a different fix for name-matched look-alikes
-- [ ] Then: build the scope step; produce the two review lists (entities, and care-of names)
+- [x] Scope detail 3: which date's facts the rule reads (D-051)
+- [x] F15: a different fix for name-matched look-alikes (D-053)
+- [x] Then: build the scope step; produce the two review lists (entities, and care-of names)
+
+### Scope step, detail 3: which date, and keeping it simple
+
+#### The point of the exercise (re-checked, at Bruno's request)
+- Scope exists so investor questions ("what does Apax own?") have a defensible answer to "which companies count as Apax?". That is all it does.
+- Test for every piece: can Bruno explain it in one sentence, and does an investor question need it? If not, leave it out.
+- **History is already kept, in the facts (D-042).** Every reply is stored with its date and nothing is overwritten. A run on any later day adds that day's facts alongside the old ones. So the scope labels don't need a history of their own.
+- **Requirement from Bruno:** the programme will be run on different days in future and must work whenever it is run. Most recent information is preferred, with history kept.
+
+#### Decisions
+- **D-051 · The scope rule reads each entity's latest observation; the labels are worked out afresh on every run.**
+  - "Latest" = the most recent GLEIF reply that contains the entity.
+  - Why: one sentence to explain ("scope uses the latest thing GLEIF told us"), and it works whatever day it runs.
+  - Why: history stays in the facts, so a past label can always be recomputed from that day's facts.
+  - An entity GLEIF later drops keeps a label based on its last known facts.
+  - Alternatives not chosen: a label per observation date (multiplies labels; no question needs past verdicts); "In if any observation matches" (hides changes).
+- **D-052 · Bruno's hand decisions live in `config/scope_reviews.toml` and are applied on every run.**
+  - One entry per decision: the entity (or care-of name), the sponsor, In or Out, Bruno's reason, the date.
+  - New entities on later days land in Review automatically; earlier decisions stay.
+  - Why: readable, survives rebuilds, and git keeps the file's history for free, so no extra code for history.
+  - In the graph, a hand decision is a second ScopeDecision linked to the automatic one by `prov:wasRevisionOf` (D-037).
+- **D-053 · F15 look-alikes: keep the name rule; Bruno marks the clear look-alikes Out by hand; the precision is reported honestly.**
+  - A one-off list of name matches outside each sponsor's usual countries (UK, Guernsey, Jersey, Luxembourg, Ireland) is produced for Bruno to skim. It is a review aid, not a rule.
+  - Why: no new rule to explain, and an honest measurement (roughly 8 wrong out of 425 name matches) is what the brief rewards.
+  - Alternatives not chosen: a country rule (about 40 extra reviews, and the country list is itself a judgement: Bridgepoint really is in Spain, France and the US); requiring a second signal (care-of can't be it, F16).
+
+### Scope step built
+
+#### What we did
+- **`src/seisa_kg/facts/scope.py`**, run inside `make facts`. It reads only the fact list, takes each entity's latest observation (D-051), and runs the tests in order: name (D-047) → care-of (D-048, D-050) → street (D-049) → former name → anything else goes to Review.
+  - The "managed by an outside company" test (D-028) sits inside the name test: a name match whose GLEIF fund manager doesn't carry the sponsor's name goes to Review.
+  - Care-of names are compared by **exact** match after tidying case, accents and punctuation, never by "starts with". Otherwise an entity simply called "Bridgepoint" would quietly approve "Bridgepoint Group Accounting".
+  - When an address line runs on with no comma ("Apax Partners Guernsey Limited Third Floor …"), the care-of name is cut after its legal-form word (Limited, Ltd, LLP, S.à r.l., AB …).
+- **Hand decisions** come from `config/scope_reviews.toml` (D-052). It's empty for now, with commented examples.
+- **Rule nodes** are now in the graph (D-023, D-028, manual-review), each with a plain-English label. This settles the D-040 open point: our rules' facts point to the rule itself.
+- **`docs/scope-review.md`** is regenerated on every run: the counts, the entities to review, the care-of names to review, and two lists to skim.
+- **Build:** 15,006 facts → 49,042 triples. All checks pass; all 16 tests pass.
+
+#### Results (18 Oct)
+| Sponsor | In | Review | Out |
+|---|---|---|---|
+| Hg | 98 | 7 | 0 |
+| Bridgepoint | 186 | 9 | 7 |
+| Apax | 160 | 17 | 0 |
+
+- **6 care-of names to decide.** They settle 17 of the 33 Review entities at once. "Apax Partners Guernsey Limited" alone covers 11, including the Janus Topco / Midco / Bidco chain.
+- **16 Review entities** remain to decide one by one. This matches D-028's estimate of about 16.
+- The 4 "managed by an outside company" cases match F9's 4 exactly (Nucleus HG GENESIS 10, BRIDGEPOINT PRIVATE EQUITY FCR, BRIDGEPOINT DIRECT LENDING I, APAX DEVELOPMENT FUND II BY PEQAN).
+- All 7 Outs are street or building names: 4 Minnesota companies at 225 Bridgepoint Drive, Emerald Bay Fund (Bridgepoint Parkway), and 2 Austin companies (Bridgepoint Plaza II).
+- **Interesting case:** BP VERAISON BUYER, LLC. Its headquarters address is `BRIDGEPOINT, 10 E 53rd St, New York` (Bridgepoint's New York office), but GLEIF's address lines split it so the care-of name reads "BRIDGEPOINT 10 E". It's on the care-of list.
+
+#### TODO
+- [ ] Bruno: decide the 6 care-of names and the remaining Review entities in `config/scope_reviews.toml`, using `docs/scope-review.md`
+- [ ] Bruno: skim lists 3 and 4 in `docs/scope-review.md`; mark look-alikes Out (D-053), and check Tembo Capital (F16)
+- [ ] Bruno: write the first 3 investor questions
+- [ ] Bruno: open Explore (Bloom) once
+- [ ] Tests for the scope rules (one per test, with a made-up entity each)
+- [ ] After today: give annotation nodes stable names (D-045)

@@ -1,6 +1,7 @@
 """SUMMARY: Pipeline stage 2 (parse), run as one command. Builds the shared
-fact list, data/interim/facts.jsonl, from the cached sources and the sponsor
-settings, then prints how many facts of each kind it wrote.
+fact list, data/interim/facts.jsonl, from the cached sources, the sponsor
+settings and the scope step (with its review lists in docs/scope-review.md),
+then prints how many facts of each kind it wrote.
 
 Run it with:  make facts   (or: uv run python -m seisa_kg.facts)
 """
@@ -14,6 +15,8 @@ from seisa_kg.facts.gleif_parse import parse_all
 from seisa_kg.facts.model import FACTS_PATH, write_facts
 # The sponsor rows, from config/sponsors.toml.
 from seisa_kg.facts.sponsors import sponsor_facts
+# The scope step: our In / Review / Out judgements (D-028).
+from seisa_kg.facts.scope import REPORT_PATH, scope_facts
 
 
 # Build and save the fact list.
@@ -22,6 +25,8 @@ def main() -> None:
     rows, unusual = parse_all()
     # Add the sponsor rows.
     rows += sponsor_facts()
+    # Add the scope decisions, worked out from the rows so far; this also writes the review lists.
+    rows += scope_facts(rows)
     # Save every row to data/interim/facts.jsonl.
     write_facts(rows)
     # Say where the file is and how big it is.
@@ -30,6 +35,8 @@ def main() -> None:
     for predicate, n in Counter(r["predicate"] for r in rows).most_common():
         # e.g. "  legalName  489".
         print(f"  {predicate:<26}{n}")
+    # Say where the review lists are.
+    print(f"Review lists: {REPORT_PATH.relative_to(FACTS_PATH.parents[2])}")
     # Report any unusual cases, rather than hiding them.
     for case, n in unusual.items():
         # e.g. "Unusual: linked reply said not found: 0".

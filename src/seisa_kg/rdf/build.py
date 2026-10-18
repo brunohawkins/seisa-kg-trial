@@ -67,7 +67,9 @@ PREFIXES = {
     "xsd": "http://www.w3.org/2001/XMLSchema#",
 }
 # Predicates in rows that map to standard terms rather than to our own ex: vocabulary.
-STANDARD_PREDICATES = {"type": "rdf:type", "label": "rdfs:label"}
+STANDARD_PREDICATES = {"type": "rdf:type", "label": "rdfs:label",
+                       # The provenance links used by scope decisions (D-036, D-037).
+                       "wasGeneratedBy": "prov:wasGeneratedBy", "wasRevisionOf": "prov:wasRevisionOf"}
 # The datatype names used in rows, and the XML Schema datatypes they mean.
 DATATYPES = {"date": "xsd:date", "dateTime": "xsd:dateTime"}
 

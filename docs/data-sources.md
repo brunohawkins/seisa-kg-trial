@@ -125,6 +125,8 @@ Companies House (who controls whom, in the UK) ──▶ our two graphs ◀─�
 - **F14 · Between 16 and 18 Oct, almost nothing changed** for the 483 entities in both sets of replies: one new entity (HG MERCURY 4 FUSION L.P.), and one registration status change (ΑΠΑΞ, a Greek look-alike: PENDING_TRANSFER → PENDING_ARCHIVAL). Both dates' values are kept (D-042).
 - **Registration status (D-046):** at the latest fetch, 401 of 489 entities are ISSUED, 59 LAPSED, 28 RETIRED and 1 PENDING_ARCHIVAL.
 
+- **F16 · How sponsor addresses appear:** care-of is often not written "c/o" (the address starts with the sponsor company's name); the sponsor's word appears in street names (Bridgepoint Drive, Parkway, Plaza); an unrelated namesake (Bridgepoint Group Accounting, Australia); some care-of names have no LEI in our data (Apax Partners Guernsey Limited). See D-048 to D-050.
+
 ### What the findings mean for the schema (to decide in the schema session)
 
 - "No parent, for reason X" becomes a **stored fact** with its reason code and its source, not a missing link.
