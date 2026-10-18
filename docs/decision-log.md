@@ -838,6 +838,42 @@ lei:894500AOGUG91SHOC845  ex:directParentException  "NON_CONSOLIDATING"
     - Why: a three-letter ticker is a weaker signal than a name, and the primer says borderline cases go to a person. It costs one decision.
 
 #### TODO
-- [ ] Scope detail 2: what counts as "care of" a sponsor (and whether it is the second signal that keeps out look-alikes, F15)
+- [x] Scope detail 2: what counts as "care of" a sponsor (D-048 to D-050; it can't be F15's second signal, see F16)
 - [ ] Scope detail 3: which date's facts the rule reads
 - [ ] Then: build the scope step and produce the review list
+
+### Scope step, detail 2: what counts as "care of" a sponsor
+
+#### Findings
+- **F16 · How sponsor addresses really appear (latest GLEIF replies):**
+  - **"Care of" catches the acquisition chains.** E.g. 30 Apax entities are `c/o Apax Digital II GP Co. Limited, …`.
+  - **Care-of is often not written "c/o".** The address simply starts with the sponsor company's name:
+    - Janus Topco / Midco / Bidco: `Apax Partners Guernsey Limited, Third Floor, Royal Bank Place, …`
+    - ACORN BIDCO: `HGCAPITAL, 2 MORE LONDON RIVERSIDE, …`
+  - **Street and building names:** `225 Bridgepoint Drive` (6 Minnesota property companies), `Bridgepoint Parkway` and `Bridgepoint Plaza II` (Austin).
+  - **An unrelated namesake:** `C/O BRIDGEPOINT GROUP ACCOUNTING PTY LTD`, an Australian accounting firm (2 companies).
+  - **Care of sponsor companies with no LEI in our data:** Apax Partners Guernsey Limited (about 21 entities, including the Janus chain), Apax Partners Holdings Ltd, Bridgepoint AB.
+  - **Some care-of lines are only in the headquarters address:** BPSF2, the Edmond de Rothschild LBO funds (c/o Bridgepoint Portfolio Services), the A12 EUR feeder.
+  - **A likely data error:** Tembo Capital Mining Fund III LP (a different firm) gives its address as c/o Apax Digital II GP Co. Any address rule marks it In; the review list will flag it.
+  - **Care-of can't be the second signal for name matches (F15):** only 13 of Bridgepoint's 185 name matches and none of Hg's 99 have a care-of address. F15 needs a different fix.
+
+#### Decisions
+- **D-048 · "Care of a sponsor company" means the c/o part, or the first part of the address, names a sponsor company: one that is In by name, or a name Bruno has approved.**
+  - The care-of part is the text after "c/o" (up to the next comma); if there is no "c/o", it's the address's first part when that starts with a name.
+  - **Care-of names not in our data go to a review list of names, not of companies** (about 7, e.g. "Apax Partners Guernsey Limited", "Bridgepoint Group Accounting Pty Ltd"). Bruno decides each name once, and the answer applies to every company using it.
+  - Bruno's answers are stored as approved or rejected names, each with a reason: our judgement, labelled as ours (D-029).
+  - Why: it catches the Janus chain, which has no "c/o" and no LEI behind its care-of name.
+  - Why: it keeps out the Australian accountants, which "any sponsor word after c/o" would let in.
+  - Why decide names, not companies: one decision about "Apax Partners Guernsey Limited" settles about 21 companies at once.
+  - Alternatives not chosen: any sponsor word in the care-of part (lets in the namesake); only companies already in our data (loses the Janus chain).
+- **D-049 · A sponsor word that appears only in a street or building name gives Out, with the reason.** *(Confirms D-028's "Out" for this case.)*
+  - The test: the part names a street or building (Drive, Parkway, Plaza, Street, Road, …), or starts with a house number.
+  - Why: these are clearly unrelated (Minnesota property companies, Austin offices). About 10 hand decisions on obvious cases would waste review time.
+- **D-050 · Store GLEIF's headquarters address too (`ex:headquartersAddress`), as given, one line; the care-of check reads both addresses.**
+  - Why: the scope rule only reads facts that are in the graph, so every decision traces back to a source.
+  - Why: without it, BPSF2, the Edmond de Rothschild funds and the A12 feeder would be missed.
+
+#### TODO
+- [ ] Scope detail 3: which date's facts the rule reads
+- [ ] F15: a different fix for name-matched look-alikes
+- [ ] Then: build the scope step; produce the two review lists (entities, and care-of names)

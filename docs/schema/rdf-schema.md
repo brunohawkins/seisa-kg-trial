@@ -65,6 +65,7 @@ lei:FUND ──ex:fundManagedBy──▶ lei:MANAGER
 | `ex:jurisdiction` | `entity.jurisdiction` | text code | — |
 | `ex:entityStatus` | `entity.status` | text, as given | — |
 | `ex:legalAddress` | `entity.legalAddress` | one line of text: care-of line, street lines, number, city, region, postcode, country | — |
+| `ex:headquartersAddress` | `entity.headquartersAddress` | one line of text, same layout (D-050) | — |
 | `ex:registeredAt` | `entity.registeredAt.id` | text code (e.g. `RA000585`) | — |
 | `ex:registeredAs` | `entity.registeredAs` | text, as given | — |
 | `ex:registrationStatus` | `registration.status` | text, as given (e.g. `ISSUED`, `LAPSED`, `RETIRED`) (D-046) | — |

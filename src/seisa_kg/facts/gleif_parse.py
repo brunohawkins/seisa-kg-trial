@@ -6,7 +6,8 @@ gives the same result for the same cache.
 
 What it produces, all stated exactly as GLEIF gives them (D-029):
 - Level 1 facts for each entity: legal name, other names, category, legal
-  form, jurisdiction, status, legal address (one line, D-037), registration
+  form, jurisdiction, status, legal and headquarters addresses (one line each,
+  D-037, D-050), registration
   authority and registration number, and the LEI's registration status (D-046). These come from our search replies, or
   from a single LEI record for parents and managers our search didn't find.
 - Level 2 facts: the direct and ultimate parent, or GLEIF's stated reason for
@@ -126,6 +127,10 @@ def level1_facts(rec: dict, org: dict) -> list[dict]:
     if ent.get("legalAddress"):
         # Add the row.
         rows.append(fact(subject, "legalAddress", literal(one_line_address(ent["legalAddress"])), org))
+    # The headquarters address as one line, if there is one; some "care of" lines appear only here (D-050).
+    if ent.get("headquartersAddress"):
+        # Add the row.
+        rows.append(fact(subject, "headquartersAddress", literal(one_line_address(ent["headquartersAddress"])), org))
     # Hand back every Level 1 row for this entity.
     return rows
 
