@@ -67,6 +67,7 @@ lei:FUND ──ex:fundManagedBy──▶ lei:MANAGER
 | `ex:legalAddress` | `entity.legalAddress` | one line of text: care-of line, street lines, number, city, region, postcode, country | — |
 | `ex:registeredAt` | `entity.registeredAt.id` | text code (e.g. `RA000585`) | — |
 | `ex:registeredAs` | `entity.registeredAs` | text, as given | — |
+| `ex:registrationStatus` | `registration.status` | text, as given (e.g. `ISSUED`, `LAPSED`, `RETIRED`) (D-046) | — |
 | `ex:directParent` / `ex:ultimateParent` | Level 2 parent | `lei:` IRI | same as `ex:fundManagedBy` |
 | `ex:directParentException` / `ex:ultimateParentException` | Level 2 reporting exception (D-026) | the reason code, as given | — |
 | `ex:fundManagedBy` | `IS_FUND-MANAGED_BY` relationship (D-027) | `lei:` IRI | `ex:startDate`, `ex:status`, `ex:corroboration`, `ex:gleifRelationshipId` |

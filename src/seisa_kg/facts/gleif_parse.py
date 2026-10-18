@@ -7,7 +7,7 @@ gives the same result for the same cache.
 What it produces, all stated exactly as GLEIF gives them (D-029):
 - Level 1 facts for each entity: legal name, other names, category, legal
   form, jurisdiction, status, legal address (one line, D-037), registration
-  authority and registration number. These come from our search replies, or
+  authority and registration number, and the LEI's registration status (D-046). These come from our search replies, or
   from a single LEI record for parents and managers our search didn't find.
 - Level 2 facts: the direct and ultimate parent, or GLEIF's stated reason for
   reporting none (D-026); and the fund-manager link as GLEIF states it, with
@@ -113,6 +113,8 @@ def level1_facts(rec: dict, org: dict) -> list[dict]:
         "registeredAt": (ent.get("registeredAt") or {}).get("id"),
         # The registration number at that authority, as given.
         "registeredAs": ent.get("registeredAs"),
+        # The LEI's own registration status, e.g. ISSUED, LAPSED or RETIRED (D-046, explains F13).
+        "registrationStatus": (rec["attributes"].get("registration") or {}).get("status"),
     }
     # Add a row for each field GLEIF actually fills in (an empty field states nothing, so no row).
     for predicate, value in simple.items():

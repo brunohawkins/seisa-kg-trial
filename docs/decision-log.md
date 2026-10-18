@@ -800,8 +800,21 @@ lei:894500AOGUG91SHOC845  ex:directParentException  "NON_CONSOLIDATING"
   - It makes "when did this entity first appear?" answerable from the graph.
 
 #### TODO
-- [ ] Bruno: decide whether to store GLEIF's registration status (F13)
+- [x] Bruno: decide whether to store GLEIF's registration status (F13): yes, D-046
 - [ ] Next: the D-028 scope step (ScopeDecision nodes), producing the list of about 16 "review" entities for Bruno
 - [ ] Bruno: write the first 3 investor questions
 - [ ] Bruno: open Explore (Bloom) once
 - [ ] After today: give annotation nodes stable names (D-045)
+
+#### Decisions
+- **D-046 · Store GLEIF's registration status (`ex:registrationStatus`: ISSUED, LAPSED, RETIRED) as a Level 1 fact, as given.**
+  - Why: it explains the 10 entities with no parent information (F13) from GLEIF's own data, not from a note of ours.
+  - Why: a LAPSED LEI means GLEIF hasn't re-checked the data, which matters to an investor reading any fact about that entity.
+  - Alternative not chosen: also an explicit "no Level 2 information" fact. GLEIF doesn't say that, so it would be our own judgement, and a query finds the same thing (no parent and no exception).
+  - **Effect:** of the 489 entities, at the latest fetch 401 are ISSUED, **59 LAPSED**, 28 RETIRED and 1 PENDING_ARCHIVAL. So about 1 entity in 5 has data GLEIF no longer keeps up to date.
+
+#### Findings
+- **F14 corrected · One fact did change between 16 and 18 Oct**, which the first comparison missed because registration status wasn't parsed yet:
+  - ΑΠΑΞ ΚΑΤΑΣΚΕΥΑΣΤΙΚΗ (the Greek look-alike, out of scope under D-028): **PENDING_TRANSFER** on 16 Oct → **PENDING_ARCHIVAL** on 18 Oct.
+  - Both values are in the graph side by side, each with its own source record and date. This is the case D-042 was chosen for.
+  - Lesson: "nothing changed" only holds for the fields you looked at.
