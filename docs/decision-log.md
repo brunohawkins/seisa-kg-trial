@@ -1012,8 +1012,9 @@ lei:894500AOGUG91SHOC845  ex:directParentException  "NON_CONSOLIDATING"
 
 #### TODO for tomorrow (19 Oct)
 - [ ] Bruno: tweak the three questions (wording, or swap in the alternatives Q1b, Q3b or the "unanswerable" probe), then add more, towards the brief's 10–12
-- [ ] Property-graph schema, including how it records sources (open since the plan); the "what changed between RDF and the property graph" note
-- [ ] Neo4j builder from the same fact list; the same questions in Cypher; add both to `make build`
+- [x] Property-graph schema, including how it records sources (D-063)
+- [ ] The "what changed between RDF and the property graph" note (`docs/schema/what-changed.md`) and `docs/schema/lpg-schema.md`
+- [x] Neo4j builder from the same fact list; the same questions in Cypher; both in `make build`
 - [ ] Timings on a smaller and a larger dataset (brief §3)
 - [ ] One Bloom view tracing a fact to its source; Bruno: open Explore (Bloom) once
 - [ ] Tests for the scope rules (one per test, with a made-up entity each)
@@ -1057,6 +1058,51 @@ The brief (§6) asks for each answer to be scored "for whether it is correct and
   - Q1's facts come from per-LEI fund-manager records, so the same swap scores 0 there.
 
 #### TODO
-- [ ] Neo4j: the property-graph schema (how it records sources), explained like the RDF one, then the builder and the 3 questions in Cypher
+- [x] Neo4j: the property-graph schema (D-063), the builder and the 3 questions in Cypher
 - [ ] Tomorrow, after the chat with Anish: Bruno writes the remaining questions (D-062)
 - [ ] The text-to-SPARQL and text-to-Cypher candidates (Gemini), scored with this scorer; vector search once the news releases exist
+
+### Neo4j: how the property graph records sources
+
+#### Decisions
+- **D-063 · Neo4j records sources with "receipt boxes": each GLEIF reply is a `SourceRecord` node holding what that reply said, linked to its entity by `STATED_IN`.** *(Settles the plan's open item, "provenance in the property graph".)*
+  - **The problem:** in a property graph a node holds its values inside itself, and relationships can hold properties. But you can't attach a note to a single value, and a relationship can't point to another relationship or to a node. So RDF-star's "note → receipt" has no direct equivalent.
+  - **The design:**
+    - `(:LegalEntity)-[:STATED_IN]->(:SourceRecord {source, url, retrievedAt, …the values that reply gave})`, one per reply, so history is kept (D-042).
+    - The entity node also carries its **latest** values as properties, for easy querying (D-051's "latest observation"). This is a convenience copy; the facts come from the records.
+    - Links are direct relationships (`MANAGED_BY`, `DIRECT_PARENT`, `ULTIMATE_PARENT`) carrying their details (start date, status, corroboration) and a `sources` list of record IDs as properties.
+    - Our judgements stay nodes: `(:ScopeDecision {verdict, reason})` with `ABOUT` → entity, `FOR` → sponsor, `MADE_BY` → rule, and `REVISES` for hand decisions.
+  - Why: the fact → source path stays visible in Bloom (the brief requires it), history is kept, and queries stay simple: values on nodes, direct relationships.
+  - **What changed from RDF (for the "what changed" note):** a relationship's source becomes a property, not a path, and sources are recorded per reply rather than per fact. But every RDF note points to a per-reply record anyway, so little is lost.
+  - Alternatives not chosen: properties only (no path to the source; history lost); every fact a node (copies RDF-star exactly, but every question needs an extra hop, and it's RDF in disguise rather than a designed property graph).
+
+### Neo4j built; both graphs answer the same questions identically (about 5pm)
+
+#### What we did
+- **Neo4j builder:** `src/seisa_kg/lpg/build.py` (`make neo4j-build`). It reads the same fact list as the RDF builder (D-012) and **rebuilds our own Neo4j database from scratch on every run**, as the RDF build does.
+  - Result: 15,006 facts → **2,991 nodes and 3,546 relationships** (RDF: 49,042 triples).
+  - Checks (any failure stops the build): not empty; node and relationship counts match the fact list; **every source fact is on its receipt node, and every value on a receipt is a source fact, checked both ways**; every entity has a receipt; every relationship names a source.
+  - **The checks were tested by damaging the graph on purpose.** The first version caught only 1 of 2 faults: it looked for missing facts but not invented ones. After making it two-way, it caught all 4 kinds of damage (a deleted relationship, a changed value, an invented value, an entity with no receipt).
+- **The 3 questions in Cypher:** `src/seisa_kg/lpg/queries/*.cypher`, same filenames and header lines as the SPARQL versions.
+- **Cypher runner:** `src/seisa_kg/lpg/ask.py` (`make query-lpg`). It shares the RDF runner's report format (`docs/answers-lpg.md`) and **scores every Cypher answer against the RDF answer** with the answer scorer. **All three agree fully: 1.0.**
+- **`make build`** now runs everything: fetch (cached) → facts → scope → both graphs → their checks → questions in SPARQL and Cypher → agreement scores. **9 seconds.** Neo4j must be running first (`make neo4j-start`).
+- **31 tests pass.**
+
+#### Findings
+- **F21 · Cross-checking the two graphs found a bug in the RDF reference query.** Q2 first agreed at only 0.964. Both answers were identical, but RDF cited 1,051 sources for the "(no Level 2 information)" rows, where Neo4j correctly cited none.
+  - Cause: when a company had no record, the SPARQL step that looks up a record's address ran with nothing to look up, so it matched *every* record in the graph. Fixed by doing the lookup inside each OPTIONAL block.
+  - Lesson for the write-up: two independently built graphs answering the same question is a strong test. It caught an error that each graph's own checks could not.
+  - It also exposed a gap in the scorer: an item whose true answer has no source (an absence) was penalised for citing nothing. **Refinement to D-060 (Claude Code's; Bruno to confirm):** such items are left out of coverage, and with no citations needed, support is full. A test pins this down.
+- **F19 corrected.** Q2's slowness (108 ms) wasn't caused by the OPTIONAL blocks, as first guessed. It was the F21 bug, which made the query look up every record. Fixed, it takes 5 ms.
+- **F22 · First size and speed comparison** (the same 15,006 facts):
+  - Size: RDF has **49,042 triples**; Neo4j has **2,991 nodes + 3,546 relationships**. RDF needs one note (reifier) per fact; Neo4j keeps values inside nodes and puts sources on per-reply receipts.
+  - Speed: RDF answers in 1–5 ms and Neo4j in 3–8 ms. **Not a fair comparison yet:** Oxigraph runs in memory inside the same program, while Neo4j is a separate server reached over a network connection. To be set up properly with the small and large datasets.
+
+#### TODO
+- [ ] Bruno: confirm the D-060 refinement (an item whose true answer has no source isn't penalised for citing nothing)
+- [ ] `docs/schema/lpg-schema.md`, and the "what changed between RDF and the property graph" note (brief deliverable)
+- [ ] One Bloom view tracing a fact to its receipt; Bruno: open Explore (Bloom) once
+- [ ] Tomorrow, after the chat with Anish: Bruno writes the remaining questions (D-062), each in SPARQL and Cypher
+- [ ] Text-to-SPARQL and text-to-Cypher with Gemini, scored with the scorer; vector search once the news releases exist
+- [ ] Timings on a smaller and a larger dataset, done fairly (F22)
+- [ ] Tests for the scope rules; README

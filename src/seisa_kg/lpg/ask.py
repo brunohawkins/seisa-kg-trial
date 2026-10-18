@@ -1,0 +1,122 @@
+"""SUMMARY: Pipeline stage 5 (query) for the Neo4j graph. Runs every investor
+question in lpg/queries/*.cypher against Neo4j and records each answer with its
+sources and timing, exactly like the RDF runner (rdf/ask.py), whose report
+format it shares.
+
+It also scores each Cypher answer against the RDF answer to the same question,
+with the answer scorer (D-059 to D-061). Both graphs are built from one fact
+list (D-012), so every question should agree fully (overall 1.0). Anything less
+shows exactly where the two models differ.
+
+Outputs: data/output/answers/lpg/<question>.json and docs/answers-lpg.md.
+Run it with:  make query-lpg
+"""
+
+# Reads and writes JSON.
+import json
+# The middle value of a list of timings.
+from statistics import median
+# A precise clock for timing queries.
+import time
+
+# The scorer, used to compare the Cypher answers with the RDF answers.
+from seisa_kg.evaluation.score import score
+# The Neo4j connection.
+from seisa_kg.lpg.build import connect
+# The shared header reader, report writer and settings from the RDF runner.
+from seisa_kg.rdf.ask import ANSWERS_DIR as RDF_ANSWERS, PROJECT_ROOT, TIMED_RUNS, read_header, write_report
+
+# This file's folder.
+HERE = __import__("pathlib").Path(__file__).resolve().parent
+# Where the Cypher question files live.
+QUERIES_DIR = HERE / "queries"
+# Where the full Neo4j answers are saved.
+ANSWERS_DIR = PROJECT_ROOT / "data" / "output" / "answers" / "lpg"
+# The readable report.
+REPORT_PATH = PROJECT_ROOT / "docs" / "answers-lpg.md"
+
+
+# Turn one answer value into plain text (Neo4j gives numbers as numbers; missing values as None).
+def plain(v) -> str:
+    # Missing becomes empty text; anything else becomes its text form.
+    return "" if v is None else str(v)
+
+
+# Run one question: time it, and return its header, columns, rows, timings and agreement with RDF.
+def run_question(session, path) -> dict:
+    # The question file's text.
+    text = path.read_text(encoding="utf-8")
+    # Run it once untimed, so the first timed run isn't slowed by one-off setup.
+    session.run(text).consume()
+    # The timed runs, in milliseconds.
+    timings = []
+    # Repeat the timed runs.
+    for _ in range(TIMED_RUNS):
+        # Start the clock.
+        start = time.perf_counter()
+        # Run the query and read every row (the query only finishes when its rows are read).
+        result = session.run(text)
+        # Read all the rows.
+        records = list(result)
+        # Stop the clock and keep the time.
+        timings.append((time.perf_counter() - start) * 1000)
+    # The column names, in the order the RETURN lists them.
+    columns = list(result.keys())
+    # The answer as a list of {column: text} rows.
+    rows = [{c: plain(rec[c]) for c in columns} for rec in records]
+    # Everything about this run.
+    out = {"file": path.name, **read_header(text), "columns": columns, "rows": rows,
+           # The median time, and every timing.
+           "median_ms": round(median(timings), 2), "timings_ms": [round(t, 2) for t in timings]}
+    # The RDF answer to the same question, if it exists.
+    rdf_path = RDF_ANSWERS / f"{path.stem}.json"
+    # Score the Cypher answer against it.
+    if rdf_path.exists():
+        # The agreement scores (1.0 means the two graphs give the same answer, with the same sources).
+        out["agreement"] = score(json.loads(rdf_path.read_text(encoding="utf-8")), {"rows": rows})
+    # Hand back the result.
+    return out
+
+
+# Run every Cypher question, save the answers and the report.
+def main() -> None:
+    # Make sure the answers folder exists.
+    ANSWERS_DIR.mkdir(parents=True, exist_ok=True)
+    # Every question's result.
+    results = []
+    # Connect, and close the connection at the end.
+    with connect() as driver, driver.session() as session:
+        # How big the graph is, for the report.
+        nodes = session.run("MATCH (n) RETURN count(n)").single()[0]
+        # The relationships too.
+        rels = session.run("MATCH ()-[r]->() RETURN count(r)").single()[0]
+        # Each question file, in name order.
+        for path in sorted(QUERIES_DIR.glob("*.cypher")):
+            # Run it.
+            result = run_question(session, path)
+            # Save the full answer.
+            (ANSWERS_DIR / f"{path.stem}.json").write_text(json.dumps(result, indent=1, ensure_ascii=False), encoding="utf-8")
+            # Keep it for the report.
+            results.append(result)
+            # The agreement with RDF, for the progress line.
+            agree = result.get("agreement", {}).get("overall", "n/a")
+            # One progress line, flagging an empty answer.
+            print(f"{path.name}: {len(result['rows'])} rows, {result['median_ms']} ms, agreement with RDF {agree}"
+                  # The flag.
+                  + ("  <- NO ROWS" if not result["rows"] else ""))
+    # Write the readable report, in the same format as the RDF one.
+    write_report(results, ["# Investor questions: Neo4j answers (generated by `make query-lpg`; do not edit by hand)", "",
+                           # Size and timing basis.
+                           f"Graph: {nodes:,} nodes and {rels:,} relationships. Timings are the median of {TIMED_RUNS} runs.",
+                           # What the agreement line means.
+                           "Each answer is scored against the RDF answer to the same question (D-059 to D-061); 1.0 means the two graphs agree fully.", ""],
+                 # Where to save it.
+                 REPORT_PATH)
+    # Say where it is.
+    print(f"Report: {REPORT_PATH.relative_to(PROJECT_ROOT)}")
+
+
+# Run main() when this file is run directly, not when it is imported.
+if __name__ == "__main__":
+    # Start.
+    main()

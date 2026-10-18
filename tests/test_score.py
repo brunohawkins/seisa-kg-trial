@@ -90,3 +90,15 @@ def test_not_available_question():
     assert score(empty, {"not_available": True})["overall"] == 1.0
     # Inventing an answer is wrong.
     assert score(empty, {"rows": [{"x": "made up"}]})["overall"] == 0.0
+
+
+# An item whose true answer has no source (e.g. "no Level 2 information") isn't penalised for citing nothing (F21).
+def test_item_with_no_true_source_needs_no_citation():
+    # A reference where one item has a source and one has none.
+    ref = {"KEY": "reason", "rows": [{"reason": "NON_CONSOLIDATING", "sources": "https://api.gleif.org/x"},
+                                     # An absence: there is no record to cite.
+                                     {"reason": "(no Level 2 information)", "sources": ""}]}
+    # The candidate gives the same, citing nothing for the absence.
+    s = score(ref, {"rows": ref["rows"]})
+    # Full marks.
+    assert s["overall"] == 1.0

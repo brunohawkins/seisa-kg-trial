@@ -25,10 +25,10 @@ Correctness = F1 of precision and recall; citation = F1 of support and coverage;
 |---|---|---|---|---|---|---|---|---|
 | Perfect copy | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | **1.0** | nothing |
 | Two items missed | 0.929 | 1.0 | 0.867 | 1.0 | 1.0 | 1.0 | **0.964** | missed items: 2 |
-| One item invented | 0.968 | 0.938 | 1.0 | 0.968 | 1.0 | 0.938 | **0.968** | invented items: 1, unsupported citations: 1 |
+| One item invented | 0.968 | 0.938 | 1.0 | 0.962 | 0.998 | 0.929 | **0.965** | invented items: 1, unsupported citations: 1 |
 | Every count 10% low | 0.929 | 0.929 | 0.929 | 1.0 | 1.0 | 1.0 | **0.965** | numbers off: 9 |
-| No sources cited | 1.0 | 1.0 | 1.0 | 0.0 | 0.0 | 0.0 | **0.5** | uncited items: 15 |
-| Sources swapped between items | 1.0 | 1.0 | 1.0 | 0.109 | 0.069 | 0.267 | **0.555** | unsupported citations: 2363 |
+| No sources cited | 1.0 | 1.0 | 1.0 | 0.0 | 0.0 | 0.0 | **0.5** | uncited items: 13 |
+| Sources swapped between items | 1.0 | 1.0 | 1.0 | 0.0 | 0.0 | 0.0 | **0.5** | unsupported citations: 435, uncited items: 2 |
 | Says 'not available' | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | **0.0** | missed items: 15 |
 
 ## q03_lapsed_leis

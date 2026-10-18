@@ -1,13 +1,14 @@
 # SUMMARY: Short, memorable commands for running the project.
 # Type `make <name>` in the project folder, e.g. `make test`.
-# `make build` is the single command that runs the whole pipeline from scratch
-# (RDF graph today; the Neo4j graph joins it on 19 Oct, D-057).
+# `make build` is the single command that runs the whole pipeline from scratch:
+# both graphs (RDF and Neo4j), their checks, and the questions in both languages.
+# Neo4j must be running first: `make neo4j-start`.
 
 # Where the project's own copy of Neo4j lives (see scripts/install_neo4j.sh).
 NEO4J := tools/neo4j/bin/neo4j
 
 # Tell make these names are commands, not files to be created.
-.PHONY: setup test brief build fetch-gleif facts rdf query score-demo neo4j-install neo4j-start neo4j-stop neo4j-status
+.PHONY: setup test brief build fetch-gleif facts rdf query neo4j-build query-lpg score-demo neo4j-install neo4j-start neo4j-stop neo4j-status
 
 # Install every Python library into the project's private environment.
 setup:
@@ -44,15 +45,25 @@ query: rdf
 	# Run the question runner inside the project's environment.
 	uv run python -m seisa_kg.rdf.ask
 
+# Build and check the Neo4j graph from the same fact list (pipeline stage 4, D-063). Needs `make neo4j-start` first.
+neo4j-build: facts
+	# Run the Neo4j builder inside the project's environment.
+	uv run python -m seisa_kg.lpg.build
+
+# Run every investor question in Cypher, and score each answer against the RDF answer (pipeline stage 5).
+query-lpg: neo4j-build query
+	# Run the Cypher question runner inside the project's environment.
+	uv run python -m seisa_kg.lpg.ask
+
 # Show the scorer at work: damage each reference answer on purpose and score it (D-059 to D-061).
 score-demo: query
 	# Run the scoring demonstration inside the project's environment.
 	uv run python -m seisa_kg.evaluation.demo
 
-# The single command (brief §4): fetch (cached) -> facts -> scope -> RDF graph -> checks -> questions.
-build: fetch-gleif query
+# The single command (brief §4): fetch (cached) -> facts -> scope -> both graphs -> checks -> questions in both languages.
+build: fetch-gleif query-lpg
 	# Say the whole pipeline finished.
-	@echo "Build complete: data/output/graph.ttl, docs/answers-rdf.md"
+	@echo "Build complete: data/output/graph.ttl, Neo4j, docs/answers-rdf.md, docs/answers-lpg.md"
 
 # Download and set up the project's own Neo4j server (only needed once).
 neo4j-install:

@@ -30,18 +30,22 @@ WHERE {
   ?sponsor rdfs:label ?sponsorName .
   # GLEIF's stated reason for no direct parent, if there is one, with its record.
   OPTIONAL { ?entity ex:directParentException ?exception .
-             # The note on that fact, and the record it came from.
-             ?n1 rdf:reifies <<( ?entity ex:directParentException ?exception )>> ; prov:wasDerivedFrom ?r1 . }
+             # The note on that fact, the record it came from, and the record's address and fetch time.
+             ?n1 rdf:reifies <<( ?entity ex:directParentException ?exception )>> ; prov:wasDerivedFrom ?r1 .
+             # Looked up here, inside the OPTIONAL, so a company with no record never matches every record (F21).
+             ?r1 ex:url ?u1 ; ex:retrievedAt ?f1 . }
   # An actual direct parent, if there is one, with its record.
   OPTIONAL { ?entity ex:directParent ?parent .
-             # The note on that fact, and the record it came from.
-             ?n2 rdf:reifies <<( ?entity ex:directParent ?parent )>> ; prov:wasDerivedFrom ?r2 . }
+             # The note on that fact, the record it came from, and the record's address and fetch time.
+             ?n2 rdf:reifies <<( ?entity ex:directParent ?parent )>> ; prov:wasDerivedFrom ?r2 .
+             # Looked up inside the OPTIONAL, for the same reason.
+             ?r2 ex:url ?u2 ; ex:retrievedAt ?f2 . }
   # The answer's category: GLEIF's reason, or "reports a parent", or "no Level 2 information".
   BIND(COALESCE(?exception, IF(BOUND(?parent), "(reports a parent)", "(no Level 2 information)")) AS ?reason)
-  # Whichever record applies.
-  BIND(COALESCE(?r1, ?r2) AS ?record)
-  # Its web address and fetch time, when there is a record.
-  OPTIONAL { ?record ex:url ?url ; ex:retrievedAt ?fetched . }
+  # Whichever record's address applies; none for "no Level 2 information" (there is no source for an absence).
+  BIND(COALESCE(?u1, ?u2) AS ?url)
+  # And its fetch time.
+  BIND(COALESCE(?f1, ?f2) AS ?fetched)
 }
 # One group per sponsor and reason.
 GROUP BY ?sponsorName ?reason

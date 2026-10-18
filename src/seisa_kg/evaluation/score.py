@@ -171,10 +171,15 @@ def score(reference: dict, candidate: dict) -> dict:
     cited = sum(len(c.sources) for c in cands)
     # The cited sources that really state the fact: those shared with the matching reference item.
     supported = sum(len(c.sources & r.sources) for r, c in pairs)
-    # Support: the fraction of citations that hold up (D-060).
-    support = supported / cited if cited else 0.0
-    # Coverage: the fraction of candidate items with at least one supporting source (D-060).
-    coverage = sum(1 for r, c in pairs if c.sources & r.sources) / len(cands) if cands else 0.0
+    # Items whose true answer has no source (e.g. "no Level 2 information": there's no record for an absence).
+    # Citing nothing for them is right, so they are left out of coverage (F21).
+    exempt = sum(1 for r, c in pairs if not r.sources and not c.sources)
+    # Support: the fraction of citations that hold up (D-060); with no citations, full marks only if nothing needed one.
+    support = supported / cited if cited else (1.0 if cands and exempt == len(cands) else 0.0)
+    # The items that needed a source.
+    needing = len(cands) - exempt
+    # Coverage: the fraction of those items with at least one supporting source (D-060).
+    coverage = sum(1 for r, c in pairs if c.sources & r.sources) / needing if needing else (1.0 if cands else 0.0)
     # Citation = F1 of support and coverage.
     citation = f1(support, coverage)
     # What went wrong, for the error analysis.
@@ -185,8 +190,8 @@ def score(reference: dict, candidate: dict) -> dict:
               "numbers_off": sum(1 for r, c in pairs if closeness(r, c) < 1),
               # Citations that don't hold up.
               "unsupported_citations": cited - supported,
-              # Candidate items with no citation at all.
-              "uncited_items": sum(1 for c in cands if not c.sources)}
+              # Candidate items with no citation at all, apart from those that needed none.
+              "uncited_items": sum(1 for c in cands if not c.sources) - exempt}
     # Every score, rounded for reading, plus the error counts.
     return {"correctness": round(correctness, 3), "precision": round(precision, 3), "recall": round(recall, 3),
             # The citation scores.
