@@ -1335,3 +1335,40 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - It's built so the model is a one-word switch. Bruno plans to compare it with `gemini-3.8-flash` later (newer and likely more capable), using the same scorer.
   - Why pinned: results stay reproducible and explainable; a moving "latest" alias could change underneath us.
 - **D-085 · A field whose quote doesn't match its sentence is rejected and logged, not retried.** The rest of the release still loads. The log is part of the honest results ("what didn't work").
+- **First extraction run (gemini-2.5-pro):** 30 releases, 29 deals, 5 fund closes, 426 mentions; **36 fields rejected** by the quote check; about 195k tokens.
+  - **F41:** Gemini rewrote amounts ("$1.393 billion" → "1393000000") despite "as written", and the check caught them.
+  - **F42:** a whole release (Zuto) was lost, because Gemini wrote sentence IDs as "s01".
+  - **F43:** adviser names and roles were sometimes paraphrased.
+  - **F44:** the Helio exit was dropped, because only its kind failed.
+- **Bruno's spot-check of 3 UK deals (Street Group, Foods Connected, mydentist), and his decisions:**
+  - **D-086 · Price and valuation are separate fields.**
+    - `price` is what the buyer agreed to pay; `valuation` is what the company is said to be worth, which nobody necessarily paid.
+    - Whether a price has actually been paid is read from the deal's status. Why (Bruno): a valuation is theoretical until money moves.
+  - **D-087 · Status is "completed" only when the text says completed, closed or has acquired.** "Secures", "to acquire" and "agreed" mean **agreed** (pending).
+    - Why (Bruno): a secured deal can still fall through. Another source (e.g. a new Companies House controller) may later confirm completion.
+  - **D-088 · The buyer is kept exactly as written (e.g. "funds advised by Bridgepoint"), plus a separate `sponsor` field.**
+    - Why (Bruno): an adviser isn't necessarily the buyer. This is the sponsor-versus-fund distinction.
+  - **D-089 · Short sentence IDs ("s01") are accepted when they can only mean this release's sentence.** This is a fixed code rule, and each use is counted.
+  - **D-090 · A required field that fails the check is kept as "unknown", labelled with why, not dropped.**
+    - Why (Bruno): dropping loses information. "Unknown" keeps the question visible, and can be filled in when another source answers it.
+- **Second extraction run, with D-086 to D-090:** 30 releases, **30 deals**, 5 fund closes, 438 mentions; **9 fields rejected** (down from 36); about 202k tokens.
+  - Zuto and Helio are recovered. Street Group now shows price "not disclosed", valuation "more than £200m" and status agreed. mydentist's buyer is "funds advised by Bridgepoint", with sponsor "Bridgepoint".
+  - The remaining rejections are paraphrased adviser names (J.P. Morgan, Baird), two "agreed" quotes, and two buyers in one Hg release.
+- **The graph now holds all three sources:** GLEIF, Companies House and the news. **31,437 facts → 104,304 triples, and every check passes.**
+  - One query follows the full trail: deal → stated reason → exact quote and model → sentence → release → website.
+- **Spotted for the next spot-check:**
+  - Helio's `sponsor` came out as ECI Partners (the buyer's sponsor), but Bridgepoint is the selling sponsor. The sponsor field needs defining for exits.
+  - Zuto says "completed": check it against D-087.
+
+#### TODO (Tuesday 20 Oct, 10:00–18:00)
+- [x] Companies House: fetched, parsed, in the RDF graph (D-074 to D-078)
+- [x] News: 30 releases approved, sentences, Gemini extraction with quote checks, in the RDF graph (D-079 to D-090)
+- [ ] Spot-check more extractions (at least one per sponsor per type); define `sponsor` for exits; check Zuto's status
+- [ ] **Entity matching:** release names → LEI / `ch:` nodes, with 50 pairs hand-checked, precision and recall (brief deliverable)
+- [ ] Questions Q4–Q12 in SPARQL, with sources and timings (the RDF system complete, D-072)
+- [ ] Then Neo4j step by step (D-063 reopened), the "what changed" note, the questions in Cypher
+- [ ] Text-to-SPARQL step 2 (Bruno's four choices), scored; later text-to-Cypher and vector search over the news sentences
+- [ ] Compare `gemini-3.8-flash` with `gemini-2.5-pro` on extraction (D-084)
+- [ ] Bruno's people question, and which question it replaces (D-074)
+- [ ] Open point: should `fundManagedBy`'s status and start date move off the note (D-075)?
+- [ ] Tests for the number-tidying rule and the quote check; README

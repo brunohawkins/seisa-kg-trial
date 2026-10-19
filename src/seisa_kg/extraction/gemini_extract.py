@@ -95,16 +95,20 @@ class Deal(BaseModel):
     kind: Field
     # The company bought, invested in or sold.
     target: Field
-    # Who is buying or investing, as written.
+    # Who is buying or investing, exactly as written, e.g. "funds advised by Bridgepoint" (D-088).
     buyers: list[Field] = []
+    # The sponsor named as advising or managing the buying funds, e.g. "Bridgepoint" (D-088).
+    sponsor: Optional[Field] = None
     # Who is selling, as written.
     sellers: list[Field] = []
     # Any funds named as making the deal.
     funds: list[Field] = []
     # The size of the stake, as written (e.g. "majority stake").
     stake: Optional[Field] = None
-    # The price or value, as written, or "not disclosed".
-    value: Optional[Field] = None
+    # What the buyer agreed to pay, as written, or "not disclosed" (D-086).
+    price: Optional[Field] = None
+    # What the company is said to be worth, as written (not a price; D-086).
+    valuation: Optional[Field] = None
     # agreed or completed.
     status: Optional[Field] = None
     # The reasons the release gives for the deal.
@@ -159,7 +163,13 @@ Return JSON in the given schema. Rules:
 4. deals.kind is one of: acquisition (a sponsor's funds buy a company or a controlling stake),
    investment (a growth or minority investment), add-on (a portfolio company buys another company),
    exit (a sponsor sells all or part of a company), other.
-   deals.status is "agreed" (signed, to acquire, will) or "completed".
+   deals.status is "completed" ONLY if the text says the deal has completed, closed or that they have
+   acquired; otherwise (secures, to acquire, will, agreed, signed) it is "agreed".
+   deals.buyers: write the buyer exactly as the text puts it, e.g. "funds advised by Bridgepoint", not just
+   "Bridgepoint". deals.sponsor: the private-equity firm named as advising or managing the buying funds.
+   deals.price: what the buyer pays or agreed to pay (or "not disclosed"). deals.valuation: what the company is
+   said to be worth (e.g. "at a valuation of", "enterprise value"). Never put a valuation in price.
+   Copy amounts exactly as written (e.g. "$1.393 billion"), never as plain digits.
 5. deals.reasons: each reason the release gives for the deal, as a short exact quote.
 6. advisers: banks, law firms and consultants named as advising on the deal, with role
    (financial, legal or other) and whom they advised.
@@ -178,7 +188,7 @@ def even(text: str) -> str:
 
 # Check one field against its sentence; returns the reason it fails, or None if it passes.
 def check_field(name: str, f: dict, sentences: dict[str, str]) -> str | None:
-    # The sentence must exist in this release.
+    # The sentence must exist in this release (short IDs like "s01" were already expanded, D-089).
     if f["sid"] not in sentences:
         # Explain the failure.
         return f"sentence {f['sid']} does not exist"
@@ -192,6 +202,30 @@ def check_field(name: str, f: dict, sentences: dict[str, str]) -> str | None:
         return "value not found in its quote"
     # Passed.
     return None
+
+
+# Expand short sentence IDs like "s01" to "<release>#s01" everywhere in an answer (D-089); returns how many.
+def expand_short_ids(node, doc_id: str) -> int:
+    # How many were expanded.
+    n = 0
+    # A field (it has a "sid"): expand its ID if it is the short form.
+    if isinstance(node, dict) and isinstance(node.get("sid"), str) and re.fullmatch(r"s\d+", node["sid"]):
+        # e.g. "s01" -> "bridgepoint-03#s01".
+        node["sid"] = f"{doc_id}#{node['sid']}"
+        # Count it.
+        n += 1
+    # Look inside dictionaries and lists for more fields.
+    for child in (node.values() if isinstance(node, dict) else node if isinstance(node, list) else []):
+        # Expand inside the child.
+        n += expand_short_ids(child, doc_id)
+    # Hand back the count.
+    return n
+
+
+# An explicit "unknown" for a required field that failed its check (D-090), saying why.
+def unknown(problem: str) -> dict:
+    # No sentence or quote: the value is unknown because the check failed.
+    return {"value": "unknown", "sid": None, "quote": None, "why": problem}
 
 
 # Walk an extracted answer and drop every field that fails its check; returns (clean answer, rejections).
@@ -226,12 +260,16 @@ def verify(data: dict, sentences: dict[str, str], doc_id: str) -> tuple[dict, li
     for i, d in enumerate(data.get("deals", []), start=1):
         # Where it is, for the log.
         where = f"deal {i}"
-        # Its target and kind are required: without them the deal is dropped.
-        if keep("target", d["target"], where) is None or keep("kind", d["kind"], where) is None:
-            # Dropped (the reason is already logged).
-            continue
-        # The deal with every other field checked.
+        # The deal with every field checked (advisers below).
         out = {k: keep(k, v, where) for k, v in d.items() if k != "advisers"}
+        # Required fields that failed are kept as an explicit "unknown", saying why (D-090).
+        for req in ("target", "kind"):
+            # Failed (or missing): mark it unknown.
+            if out.get(req) is None:
+                # The reason, from the last rejection of this field here, if any.
+                why = next((r["problem"] for r in reversed(rejected) if r["where"] == where and r["field"] == req), "not given")
+                # Unknown, with why.
+                out[req] = unknown(why)
         # Each adviser: its name must pass; its role and client are checked too.
         out["advisers"] = [{"name": a["name"], "role": keep("role", a.get("role"), where), "advising": keep("advising", a.get("advising"), where)}
                            # Only advisers whose name passes.
@@ -314,6 +352,8 @@ def process(client: genai.Client, model: str, path: Path) -> dict:
     saved = ask(client, model, doc)
     # Its structured data.
     data = json.loads(saved["answer"])
+    # Expand short sentence IDs (D-089), counting them for the report.
+    short_ids = expand_short_ids(data, doc["id"])
     # Every field checked against its sentence.
     clean, rejected = verify(data, sentences, doc["id"])
     # The checked result, with the release's provenance carried along.
@@ -323,7 +363,7 @@ def process(client: genai.Client, model: str, path: Path) -> dict:
     # Save it.
     (OUT_DIR / model / f"{doc['id']}.json").write_text(json.dumps(out, ensure_ascii=False, indent=1), encoding="utf-8")
     # The summary numbers.
-    return {"release": doc["id"], "deals": len(clean["deals"]), "fund_closes": len(clean["fund_closes"]), "mentions": len(clean["mentions"]),
+    return {"release": doc["id"], "short_ids": short_ids, "deals": len(clean["deals"]), "fund_closes": len(clean["fund_closes"]), "mentions": len(clean["mentions"]),
             # Tokens, for the cost note.
             "tokens": saved["input_tokens"] + saved["output_tokens"], "rejected": rejected}
 
@@ -355,6 +395,8 @@ def main() -> None:
          # More totals.
          f"{sum(r['mentions'] for r in results)} mentions · **{len(rejected)} fields rejected** by the quote check (D-085) · {sum(r['tokens'] for r in results):,} tokens", "",
          # The per-release table.
+         f"Short sentence IDs expanded (D-089): {sum(r['short_ids'] for r in results)}.", "",
+         # The per-release table header.
          "| Release | Deals | Fund closes | Mentions | Rejected |", "|---|---|---|---|---|"]
     # One row per release.
     L += [f"| {r['release']} | {r['deals']} | {r['fund_closes']} | {r['mentions']} | {len(r['rejected'])} |" for r in results]
@@ -365,7 +407,7 @@ def main() -> None:
     # Save the report.
     REPORT_PATH.write_text("\n".join(L) + "\n", encoding="utf-8")
     # Say what happened.
-    print(L[2].replace("**", ""))
+    print(L[2].replace("**", "")); print(L[4])
     # Say where the report is.
     print(f"Report: {REPORT_PATH.relative_to(PROJECT_ROOT)}")
 

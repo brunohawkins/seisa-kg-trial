@@ -33,7 +33,7 @@ GRAPH_MODEL = "gemini-2.5-pro"
 # Each extracted field name, and the predicate it becomes in the graph.
 PREDICATES = {"kind": "dealKind", "target": "targetName", "buyers": "buyerName", "sellers": "sellerName", "funds": "fundName",
               # The rest of a deal.
-              "stake": "stake", "value": "dealValue", "status": "dealStatus", "reasons": "statedReason",
+              "stake": "stake", "price": "price", "valuation": "valuation", "status": "dealStatus", "reasons": "statedReason", "sponsor": "sponsorName",
               # A fund close.
               "fund_name": "fundName", "size": "fundSize", "close_type": "closeType", "date": "closeDate",
               # A mention or an adviser.
@@ -58,6 +58,10 @@ def field_rows(node: str, name: str, value, doc: dict, model: str) -> list[dict]
     if not value:
         # Nothing.
         return []
+    # An explicit "unknown" (D-090): our judgement, saying why, not a quote from the text.
+    if value.get("sid") is None:
+        # Labelled as made by rule D-090, with the reason on its note.
+        return [fact(node, PREDICATES[name], literal("unknown"), {"kind": "rule", "rule": "D-090"}, {"why": literal(value.get("why", ""))})]
     # One fact: the value as written, from its sentence, with the quote and the model on its note.
     return [fact(node, PREDICATES[name], literal(value["value"]), sentence_origin(doc, value["sid"]),
                  # The note's details: the exact quote and who extracted it.
@@ -88,12 +92,14 @@ def release_rows(doc: dict, ext: dict, model: str) -> list[dict]:
     for i, d in enumerate(ext["deals"], start=1):
         # The deal's node.
         node = f"ex:deal/{doc['id']}-d{i}"
-        # "This is a deal" and its release, sourced to the sentence that names the target.
-        rows += [fact(node, "type", iri("ex:Deal"), sentence_origin(doc, d["target"]["sid"])),
+        # The sentence that best anchors the deal: its target's, or its kind's, or the release's first.
+        anchor = d["target"]["sid"] or d["kind"]["sid"] or doc["sentences"][0]["sid"]
+        # "This is a deal" and its release, sourced to that sentence.
+        rows += [fact(node, "type", iri("ex:Deal"), sentence_origin(doc, anchor)),
                  # Which release announced it.
-                 fact(node, "announcedIn", iri(rel), sentence_origin(doc, d["target"]["sid"]))]
+                 fact(node, "announcedIn", iri(rel), sentence_origin(doc, anchor))]
         # Each field except the advisers.
-        for name in ("kind", "target", "buyers", "sellers", "funds", "stake", "value", "status", "reasons"):
+        for name in ("kind", "target", "buyers", "sponsor", "sellers", "funds", "stake", "price", "valuation", "status", "reasons"):
             # Its rows.
             rows += field_rows(node, name, d.get(name), doc, model)
         # Each adviser: its own node (several parts: name, role, client; D-036).
@@ -144,5 +150,11 @@ def parse_all(model: str = GRAPH_MODEL) -> list[dict]:
         doc = json.loads((NEWS_DIR / path.name).read_text(encoding="utf-8"))
         # Its rows.
         rows += release_rows(doc, ext, model)
+    # The rule behind every "unknown" (D-090), so a reader can see what it says.
+    if any(r["origin"].get("rule") == "D-090" for r in rows):
+        # "This is a rule", and its label.
+        rows += [fact("ex:rule/D-090", "type", iri("ex:Rule"), {"kind": "rule", "rule": "D-090"}),
+                 # Its plain-English label.
+                 fact("ex:rule/D-090", "label", literal("A required field that failed the quote check is kept as unknown, saying why"), {"kind": "rule", "rule": "D-090"})]
     # Hand back the rows.
     return rows
