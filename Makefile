@@ -64,8 +64,8 @@ score-demo: query
 	# Run the scoring demonstration inside the project's environment.
 	uv run python -m seisa_kg.evaluation.demo
 
-# The single command (brief §4): fetch GLEIF, then Companies House (cached) -> facts -> scope -> RDF graph -> checks -> questions.
-build: fetch-gleif fetch-ch query
+# The single command (brief §4): fetch GLEIF, then Companies House, then news sentences + Gemini extraction (all cached) -> facts -> scope -> RDF graph -> checks -> questions.
+build: fetch-gleif fetch-ch extract query
 	# Say the whole pipeline finished.
 	@echo "Build complete: data/output/graph.ttl, docs/answers-rdf.md"
 

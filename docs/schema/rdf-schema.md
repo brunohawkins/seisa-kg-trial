@@ -1,6 +1,6 @@
 # RDF schema sketch (v1, 18 Oct 2026)
 
-The shape of the RDF graph for the first slice: **GLEIF data only, three sponsors**. Companies House and the news releases are added later, and get their own sections then.
+The shape of the RDF graph: GLEIF (sections 1–8), Companies House (section 9) and the news releases (section 10), for the three sponsors.
 
 - **Settled by Bruno:** D-015, D-025, D-026, D-027, D-028, D-029, D-033, D-034, D-035, D-036, D-037.
 
@@ -208,3 +208,47 @@ lei:XXXX ──ex:sameEntityAs──▶ ch:03220373        (rule D-025: register
 ### Open points for Bruno
 1. Officers: **current and past**, or current only? Past ones are history (88 of 96 at Bridgepoint Advisers Ltd).
 2. The `fundManagedBy` note question raised by D-075: its status and start date are facts, so should they move? (Not today.)
+
+---
+
+## 10. Facts from the news releases (v1, 19 Oct; D-079 to D-090)
+Built from Gemini's extractions (`gemini-2.5-pro`, D-084), after every field's quote has been checked against its sentence in code (D-085).
+
+### The trail: fact → sentence → release → website
+```
+ex:deal/apax-01-d1  a ex:Deal
+   ├─ ex:targetName   "Foods Connected" ──note──▶ prov:wasDerivedFrom src:news/apax-01/s01
+   │                                             ex:quote       "Foods Connected"
+   │                                             ex:extractedBy "gemini-2.5-pro"
+   ├─ ex:buyerName    "The Apax Global Impact Fund"      (exactly as written, D-088)
+   ├─ ex:sponsorName  "Apax Partners LLP"               (the adviser/manager of the buying funds, D-088)
+   ├─ ex:price        "£22m" · ex:dealStatus "agreed"   (price vs valuation, D-086; agreed vs completed, D-087)
+   ├─ ex:statedReason "accelerate its next phase of growth"   (one per reason)
+   └─ ex:announcedIn  ex:release/apax-01
+
+src:news/apax-01/s01  a ex:SourceRecord ; ex:text "…the exact sentence…" ; ex:inRelease ex:release/apax-01 ;
+                      ex:url "https://www.apax.com/news-views/…" ; ex:retrievedAt …
+ex:release/apax-01    a ex:Release ; ex:title … ; ex:publishedOn … ; ex:publishedBy ex:sponsor/apax ;
+                      ex:obtained "downloaded by the program …" | "saved by hand … (D-082)"
+```
+
+### Nodes and arrows
+| Node | Arrows (all values as written) |
+|---|---|
+| `ex:Release` | `title`, `publishedOn` (date), `publishedBy` → Sponsor, `obtained` |
+| sentence (`src:news/<id>/sNN`) | `text` (the exact sentence), `inRelease` → Release, plus `url` and `retrievedAt` like any source record |
+| `ex:Deal` | `dealKind` (acquisition, investment, add-on, exit, other), `targetName`, `buyerName`, `sponsorName`, `sellerName`, `fundName`, `stake`, `price`, `valuation`, `dealStatus` (agreed, completed), `statedReason`, `adviser` → Adviser, `announcedIn` → Release |
+| `ex:Adviser` | `name`, `adviserRole` (financial, legal, other), `advising` |
+| `ex:FundClose` | `fundName`, `fundSize`, `closeType` (final, first, other), `closeDate`, `announcedIn` → Release |
+| `ex:Mention` | `mentionKind` (person, organisation), `name`, `title`, `organisation`, `mentionedIn` → Release |
+
+### Rules that apply here
+- **Every note carries the exact quote and the model** (`ex:quote`, `ex:extractedBy`), so an LLM's reading is never mistaken for the text itself (D-029).
+- **"Unknown" is kept, not dropped (D-090):** a required field that failed its check becomes `"unknown"`. It is labelled as made by rule D-090, with `ex:why` on its note.
+- **Short sentence IDs** ("s01") are expanded by code when they can only mean this release's sentence (D-089).
+- **Names are not yet linked to companies.** `targetName` and the others are text. Entity matching (next) will add links to `lei:` / `ch:` nodes, labelled with the rule and evidence, and leave the rest explicitly unresolved.
+
+### Checks (SHACL 8–10)
+- Every Release has one title and one sponsor.
+- Every Deal has one release, a target and a kind (even if "unknown").
+- Every FundClose has one release and a fund name.

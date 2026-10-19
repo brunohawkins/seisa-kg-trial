@@ -45,3 +45,59 @@ ex:ScopeDecisionShape a sh:NodeShape ;
     sh:property [ sh:path ex:reason ; sh:minCount 1 ; sh:maxCount 1 ] ;
     # Exactly one rule that made it.
     sh:property [ sh:path prov:wasGeneratedBy ; sh:minCount 1 ; sh:maxCount 1 ] .
+
+# --- Companies House and news shapes (19 Oct; schema sections 9 and 10) ---
+
+# Check 5: every Stake belongs to exactly one company and names its controller (D-075).
+ex:StakeShape a sh:NodeShape ;
+    # Apply this rule to everything typed ex:Stake.
+    sh:targetClass ex:Stake ;
+    # Exactly one company it is a stake in.
+    sh:property [ sh:path ex:company ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    # At least one controller name, as given.
+    sh:property [ sh:path ex:holderName ; sh:minCount 1 ] .
+
+# Check 6: every Appointment is at exactly one company and has a role (D-077).
+ex:AppointmentShape a sh:NodeShape ;
+    # Apply this rule to everything typed ex:Appointment.
+    sh:targetClass ex:Appointment ;
+    # Exactly one company.
+    sh:property [ sh:path ex:company ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    # At least one role, as given.
+    sh:property [ sh:path ex:role ; sh:minCount 1 ] .
+
+# Check 7: every Person has a name (D-074).
+ex:PersonShape a sh:NodeShape ;
+    # Apply this rule to everything typed ex:Person.
+    sh:targetClass ex:Person ;
+    # At least one name, as given.
+    sh:property [ sh:path ex:name ; sh:minCount 1 ] .
+
+# Check 8: every Release has one title and one sponsor whose website it came from (D-079).
+ex:ReleaseShape a sh:NodeShape ;
+    # Apply this rule to everything typed ex:Release.
+    sh:targetClass ex:Release ;
+    # Exactly one title.
+    sh:property [ sh:path ex:title ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    # Exactly one sponsor.
+    sh:property [ sh:path ex:publishedBy ; sh:minCount 1 ; sh:maxCount 1 ] .
+
+# Check 9: every Deal comes from exactly one release and has a target and a kind, even if "unknown" (D-083, D-090).
+ex:DealShape a sh:NodeShape ;
+    # Apply this rule to everything typed ex:Deal.
+    sh:targetClass ex:Deal ;
+    # Exactly one release.
+    sh:property [ sh:path ex:announcedIn ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    # At least one target name.
+    sh:property [ sh:path ex:targetName ; sh:minCount 1 ] ;
+    # At least one kind.
+    sh:property [ sh:path ex:dealKind ; sh:minCount 1 ] .
+
+# Check 10: every FundClose comes from exactly one release and names its fund (D-083).
+ex:FundCloseShape a sh:NodeShape ;
+    # Apply this rule to everything typed ex:FundClose.
+    sh:targetClass ex:FundClose ;
+    # Exactly one release.
+    sh:property [ sh:path ex:announcedIn ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    # At least one fund name.
+    sh:property [ sh:path ex:fundName ; sh:minCount 1 ] .

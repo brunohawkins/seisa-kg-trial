@@ -1384,3 +1384,7 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - **What the merge shows straight away (for Q5):**
   - **F45 · Names agree for all 153 linked companies.** Addresses agree for **none**, but only because of formatting ("5 MARBLE ARCH, LONDON, GB-LND, W1H 7EJ, GB" vs "5 Marble Arch, London, W1H 7EJ, United Kingdom"). Q5 needs a tidy comparison rule for addresses (like D-076), or every pair looks like a conflict.
   - **F46 · Status differs for 12 linked companies.** 5 are GLEIF INACTIVE vs Companies House dissolved: the same meaning in different words, which needs a value mapping. **7 are GLEIF INACTIVE vs Companies House active: real disagreements**, and exactly what Q5 is for.
+- **`make build` now runs all three sources:** GLEIF → Companies House → news sentences and Gemini extraction (cached) → facts → graph → checks → questions. About 20 seconds from the cache.
+- **SHACL checks 5–10 added:** Stake, Appointment, Person, Release, Deal and FundClose. All pass.
+- **Schema doc section 10 written:** the news nodes, arrows and trail.
+- Small note: the extraction report's token count includes cached answers, so it shows the cost of the original calls, not of the re-run.
