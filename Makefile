@@ -34,6 +34,16 @@ fetch-ch:
 	# Run the Companies House downloader inside the project's environment.
 	uv run python -m seisa_kg.sources.companies_house
 
+# Split the approved news releases into numbered sentences, data/interim/news/ (D-079 to D-082).
+sentences:
+	# Run the sentence splitter inside the project's environment.
+	uv run python -m seisa_kg.extraction.sentences
+
+# Ask Gemini to extract deals, fund closes and mentions, then check every quote in code (D-083 to D-085; answers cached).
+extract: sentences
+	# Run the extractor inside the project's environment.
+	uv run python -m seisa_kg.extraction.gemini_extract
+
 # Build the shared fact list, data/interim/facts.jsonl, from the cache (pipeline stage 2).
 facts:
 	# Run the parsers inside the project's environment.

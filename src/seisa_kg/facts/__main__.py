@@ -12,6 +12,8 @@ from collections import Counter
 
 # The Companies House parser: cached replies -> rows (schema section 9).
 from seisa_kg.facts import ch_parse
+# The news parser: checked Gemini extractions -> rows (D-083).
+from seisa_kg.facts import news_parse
 # The GLEIF parser: cached replies -> rows.
 from seisa_kg.facts.gleif_parse import parse_all
 # Saving the rows, and where they are saved.
@@ -32,6 +34,8 @@ def main() -> None:
     rows += scope_facts(rows)
     # Add the Companies House rows, including the D-025 links to the GLEIF rows above.
     rows += ch_parse.parse_all(rows)
+    # Add the news rows: releases, sentences, and the deals, fund closes and mentions Gemini extracted.
+    rows += news_parse.parse_all()
     # Save every row to data/interim/facts.jsonl.
     write_facts(rows)
     # Say where the file is and how big it is.

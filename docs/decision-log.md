@@ -1320,3 +1320,18 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - **D-082 · Bridgepoint's releases are saved by hand by Bruno, from his browser, into `data/raw/news/bridgepoint/`.**
   - Their provenance is recorded honestly: "saved by hand from bridgepointgroup.com", with the save date.
   - Why: the site's bot challenge (F39) refuses programs, and getting around it would be wrong. A person reading the site is its intended use, and the source stays the sponsor's own website.
+
+### News: approved releases, sentences, and the extraction design (5pm)
+- **The approved 30 are in `config/news_releases.toml`:** 10 per sponsor.
+  - Bruno saved Kayne Anderson Real Estate instead of GBA Group. That's a deal by Bridgepoint Group plc itself, not by a fund, and it stays as an interesting contrast.
+  - Fund closes outside 2025–26 were allowed for Hg (Saturn 1, 2023) and Apax (Apax XI, 2024), because there were none in the window (F40).
+- **Sentences:** `src/seisa_kg/extraction/sentences.py` gives about 1,000 numbered sentences (e.g. `apax-08#s05`) in `data/interim/news/`. Each release records how it was obtained (by the program, or saved by hand, D-082).
+- **D-083 · The extraction design (approved):**
+  - Gemini returns Deals (kind, target, buyers, sellers, funds, stake, value, status, stated reasons, advisers), FundCloses (fund, size, close type, date) and Mentions (people and organisations named).
+  - **Every field carries a sentence ID and an exact quote.** Code checks the quote against that sentence; the model is not trusted to do this.
+  - Names stay as written; matching them to LEI and `ch:` nodes comes later.
+  - In the graph, a Deal or FundClose is a node (as D-036 and D-075). Its facts point to their sentence, and the sentence points to the release: fact → sentence → release → website.
+- **D-084 · Model: `gemini-2.5-pro`, a pinned stable version, for the first version.**
+  - It's built so the model is a one-word switch. Bruno plans to compare it with `gemini-3.8-flash` later (newer and likely more capable), using the same scorer.
+  - Why pinned: results stay reproducible and explainable; a moving "latest" alias could change underneath us.
+- **D-085 · A field whose quote doesn't match its sentence is rejected and logged, not retried.** The rest of the release still loads. The log is part of the honest results ("what didn't work").

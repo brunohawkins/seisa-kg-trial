@@ -1,0 +1,255 @@
+# SUMMARY: The ~30 news releases approved by Bruno on 19 Oct (D-079 to D-082).
+# Each [[release]] gives its sponsor, its address, our type label and where the target is based (as judged from the text).
+# Hg and Apax pages are downloaded by the program (cached in data/raw/news/<sponsor>/<slug>.json).
+# Bridgepoint pages were saved by hand by Bruno from his browser (D-082): "file" names the saved page in data/raw/news/bridgepoint/.
+# "id" is the release's short name in the graph, e.g. hg-01; sentence IDs are built from it (hg-01#s07).
+
+[[release]]
+# Release 1.
+id = "hg-01"
+sponsor = "hg"
+url = "https://hgcapital.com/insights/nourish-secures-strategic-growth-investment-from-hg"
+type = "deal"
+target_country = "UK"
+
+[[release]]
+# Release 2.
+id = "hg-02"
+sponsor = "hg"
+url = "https://hgcapital.com/insights/street-group-secures-a-strategic-growth-investment-from-hg"
+type = "deal"
+target_country = "UK"
+
+[[release]]
+# Release 3.
+id = "hg-03"
+sponsor = "hg"
+url = "https://hgcapital.com/insights/hg-agrees-sale-of-quantios-to-vista-equity-partners"
+type = "exit"
+target_country = "UK?"
+
+[[release]]
+# Release 4.
+id = "hg-04"
+sponsor = "hg"
+url = "https://hgcapital.com/insights/kkr-to-acquire-gen-ii-fund-services-for-more-than-5-billion-from-hg-and-general-atlantic"
+type = "exit"
+target_country = "US"
+
+[[release]]
+# Release 5.
+id = "hg-05"
+sponsor = "hg"
+url = "https://hgcapital.com/insights/hg-agrees-sale-of-gtreasury-to-ripple"
+type = "exit"
+target_country = "US"
+
+[[release]]
+# Release 6.
+id = "hg-06"
+sponsor = "hg"
+url = "https://hgcapital.com/insights/onestream-to-be-acquired-by-hg"
+type = "deal"
+target_country = "US"
+
+[[release]]
+# Release 7.
+id = "hg-07"
+sponsor = "hg"
+url = "https://hgcapital.com/insights/entersoftone-secures-majority-investment-from-hg"
+type = "deal"
+target_country = "Greece"
+
+[[release]]
+# Release 8.
+id = "hg-08"
+sponsor = "hg"
+url = "https://hgcapital.com/insights/rightsline-announces-500-million-strategic-growth-investment-from-hg"
+type = "deal"
+target_country = "US"
+
+[[release]]
+# Release 9.
+id = "hg-09"
+sponsor = "hg"
+url = "https://hgcapital.com/insights/a-lign-announces-strategic-investment-from-hg"
+type = "deal"
+target_country = "US"
+
+[[release]]
+# Release 10.
+id = "hg-10"
+sponsor = "hg"
+url = "https://hgcapital.com/insights/hg-announces-final-closing-of-hg-saturn-1-fund-at-gbp1-5bn"
+type = "fund close"
+target_country = "-"
+
+[[release]]
+# Release 1.
+id = "apax-01"
+sponsor = "apax"
+url = "https://www.apax.com/news-views/apax-global-impact-fund-to-make-strategic-investment-in-foods-connected-accelerating-future-growth/"
+type = "deal"
+target_country = "UK"
+
+[[release]]
+# Release 2.
+id = "apax-02"
+sponsor = "apax"
+url = "https://www.apax.com/news-views/apax-funds-make-strategic-investment-in-sedex/"
+type = "deal"
+target_country = "UK?"
+
+[[release]]
+# Release 3.
+id = "apax-03"
+sponsor = "apax"
+url = "https://www.apax.com/news-views/apax-digital-funds-invest-60-million-in-milltech-to-fuel-north-american-expansion/"
+type = "deal"
+target_country = "UK?"
+
+[[release]]
+# Release 4.
+id = "apax-04"
+sponsor = "apax"
+url = "https://www.apax.com/news-views/funds-advised-by-apax-to-acquire-techoraco-and-institutional-investor-from-delinian/"
+type = "deal"
+target_country = "UK?"
+
+[[release]]
+# Release 5.
+id = "apax-05"
+sponsor = "apax"
+url = "https://www.apax.com/news-views/wgsn-acquires-iwsr-enhancing-its-ai-data-analytics-and-business-intelligence-capabilities-for-the-alcoholic-beverage-industry/"
+type = "add-on"
+target_country = "UK?"
+
+[[release]]
+# Release 6.
+id = "apax-06"
+sponsor = "apax"
+url = "https://www.apax.com/news-views/accenture-to-acquire-faculty-an-apax-digital-fund-i-portfolio-company-to-scale-ai-capabilities/"
+type = "exit"
+target_country = "UK"
+
+[[release]]
+# Release 7.
+id = "apax-07"
+sponsor = "apax"
+url = "https://www.apax.com/news-views/apax-funds-sign-agreement-to-sell-tosca/"
+type = "exit"
+target_country = "US"
+
+[[release]]
+# Release 8.
+id = "apax-08"
+sponsor = "apax"
+url = "https://www.apax.com/news-views/apax-funds-complete-acquisition-of-nextgen-security-from-dunes-point-capital/"
+type = "deal"
+target_country = "US"
+
+[[release]]
+# Release 9.
+id = "apax-09"
+sponsor = "apax"
+url = "https://www.apax.com/news-views/funds-advised-by-apax-to-acquire-co-investor-warburg-pincus-s-stake-in-odido-backing-its-next-phase-of-growth/"
+type = "deal"
+target_country = "Netherlands"
+
+[[release]]
+# Release 10.
+id = "apax-10"
+sponsor = "apax"
+url = "https://www.apax.com/news-views/apax-holds-final-close-for-eleventh-global-buyout-fund/"
+type = "fund close"
+target_country = "-"
+
+[[release]]
+# Release 1.
+id = "bridgepoint-01"
+sponsor = "bridgepoint"
+url = "https://www.bridgepointgroup.com/about-us/news-and-insights/press-releases/2025/bridgepoint-completes-acquisition-of-eckoh"
+type = "deal"
+target_country = "UK"
+file = "Bridgepoint completes acquisition of Eckoh - Bridgepoint.html"
+
+[[release]]
+# Release 2.
+id = "bridgepoint-02"
+sponsor = "bridgepoint"
+url = "https://www.bridgepointgroup.com/about-us/news-and-insights/press-releases/2025/bridgepoint-to-partner-with-mydentist-the-uks-leading-provider-of-affordable-dentistry"
+type = "deal"
+target_country = "UK"
+file = "Bridgepoint to partner with mydentist, the UK’s leading provider of affordable dentistry, as Palamon exits - Bridgepoint.html"
+
+[[release]]
+# Release 3.
+id = "bridgepoint-03"
+sponsor = "bridgepoint"
+url = "https://www.bridgepointgroup.com/about-us/news-and-insights/press-releases/2025/zuto-secures-majority-investment-from-bridgepoint-to-accelerate-next-phase-of-growth"
+type = "deal"
+target_country = "UK"
+file = "Zuto secures majority investment from Bridgepoint to accelerate next phase of growth - Bridgepoint.html"
+
+[[release]]
+# Release 4.
+id = "bridgepoint-04"
+sponsor = "bridgepoint"
+url = "https://www.bridgepointgroup.com/about-us/news-and-insights/press-releases/2025/bridgepoint-to-partner-with-htdigital"
+type = "deal"
+target_country = "UK"
+file = "Bridgepoint to partner with ht.digital, the leading digital asset transparency layer - Bridgepoint.html"
+
+[[release]]
+# Release 5.
+id = "bridgepoint-05"
+sponsor = "bridgepoint"
+url = "https://www.bridgepointgroup.com/about-us/news-and-insights/press-releases/2025/idhl-acquires-the-mtm-agency-to-scale-integrated-offer"
+type = "add-on"
+target_country = "UK?"
+file = "IDHL acquires The MTM Agency to scale integrated offer - Bridgepoint.html"
+
+[[release]]
+# Release 6.
+id = "bridgepoint-06"
+sponsor = "bridgepoint"
+url = "https://www.bridgepointgroup.com/about-us/news-and-insights/press-releases/2026/bridgepoint-to-acquire-kayne-anderson-real-estate-strengthening-its-position-as-a-leading-global-middle-market-private-markets-platform"
+type = "deal (by Bridgepoint Group plc)"
+target_country = "US"
+file = "Bridgepoint to acquire Kayne Anderson Real Estate, strengthening its position as a leading global middle-market private markets platform - Bridgepoint.html"
+
+[[release]]
+# Release 7.
+id = "bridgepoint-07"
+sponsor = "bridgepoint"
+url = "https://www.bridgepointgroup.com/about-us/news-and-insights/press-releases/2026/bridgepoint-exits-flexitallic-a-global-leader-in-high-performance-sealing-and-joint-integrity-solutions"
+type = "exit"
+target_country = "UK?"
+file = "Bridgepoint exits Flexitallic, a global leader in high-performance sealing and joint integrity solutions - Bridgepoint.html"
+
+[[release]]
+# Release 8.
+id = "bridgepoint-08"
+sponsor = "bridgepoint"
+url = "https://www.bridgepointgroup.com/about-us/news-and-insights/press-releases/2026/bridgepoint-and-bowmark-capital-agree-sale-of-helio-intelligence-to-eci-partners"
+type = "exit"
+target_country = "UK?"
+file = "Bridgepoint and Bowmark Capital agree sale of Helio Intelligence to ECI Partners - Bridgepoint.html"
+
+[[release]]
+# Release 9.
+id = "bridgepoint-09"
+sponsor = "bridgepoint"
+url = "https://www.bridgepointgroup.com/about-us/news-and-insights/press-releases/2026/bridgepoint-closes-fourth-direct-lending-fund-vintage-bdl-iv-above-target"
+type = "fund close"
+target_country = "-"
+file = "Bridgepoint closes fourth Direct Lending Fund vintage, BDL IV, above target at €5.1 billion - Bridgepoint.html"
+
+[[release]]
+# Release 10.
+id = "bridgepoint-10"
+sponsor = "bridgepoint"
+url = "https://www.bridgepointgroup.com/about-us/news-and-insights/press-releases/2026/bridgepoint-credit-announces-eur1bn-continuation-vehicle-led-by-pantheon"
+type = "fund close"
+target_country = "-"
+file = "Bridgepoint Credit announces €1.2 billion continuation vehicle, led by Pantheon - Bridgepoint.html"
