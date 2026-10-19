@@ -1214,8 +1214,31 @@ The brief (§6) asks for each answer to be scored "for whether it is correct and
   - Bruno thinks first, then Claude reviews with sources. Bruno decides, Claude codes in small pieces, and Bruno explains each step back.
   - Why: Anish's advice. Bruno must own the reasoning, because the explain-back is done with no code open.
 
+### What makes a good triple (Bruno's answers, reviewed together)
+Bruno answered seven questions first; Claude reviewed each one against sources and our data (D-067).
+- **D-068 · The parent arrows are renamed to GLEIF's own words.**
+  - `directParent` → `directlyConsolidatedBy`, and `ultimateParent` → `ultimatelyConsolidatedBy`. GLEIF calls these `IS_DIRECTLY_CONSOLIDATED_BY` and `IS_ULTIMATELY_CONSOLIDATED_BY`.
+  - Why: "parent" reads as "owns me", but GLEIF means "adds me into its accounts". Companies House brings a second kind of parent (whoever controls more than 25%), and the two must not be confused. Using the source's own word also follows D-029.
+  - The exception arrows keep their names (`directParentException`), because GLEIF itself calls them "parent reporting exceptions".
+  - The answers are unchanged, and 31 tests pass.
+- **D-069 · Addresses stay as one line of text, not a node.**
+  - Why (Bruno): a shared address would link unrelated companies.
+  - Evidence: 414 of our companies share an address with another. Some shared addresses mix In and Out companies, e.g. 1 Royal Plaza, St Peter Port (57 companies, Hg In and Out) and 5 Marble Arch (57, Bridgepoint In and Out). These are probably administrators' offices.
+  - The same building is also spelt two ways ("ST PETER PORT" / "ST. PETER PORT"), so a node wouldn't merge reliably anyway.
+  - The lesson: **sharing a value is not a relationship.** Country stays as text for the same reason, and because no question needs facts about a country.
+- **D-070 · Keep facts that come straight from the source record, even if no question uses them yet.**
+  - This covers e.g. `gleifCategory`, `legalForm` and `registeredAt`.
+  - Why (Bruno): the questions will change. These cost almost nothing, they're recorded as given, and `legalForm` may help tell funds (LPs) from GP companies.
+  - The limit: we don't **invent** derived facts that no question needs. The schema the LLM sees (text-to-SPARQL) can leave out unused arrows if they confuse it.
+- **The LEI as the name of each company: confirmed.**
+  - It's permanent (ISO 17442), never reused, and stays the same when the name changes. A merged company's LEI is retired and points to its successor.
+  - **Bruno's finding:** a Companies House number doesn't mean a company has an LEI (e.g. Seisa AI has none). Most UK companies don't, and many portfolio companies in the news won't either.
+  - So an **identity rule** is needed before Companies House goes in (Tuesday): the LEI if there is one; otherwise the Companies House number (`ch:`); otherwise our own ID, marked unresolved. A company with both stays one node.
+- **Missing facts.** A source saying "no" (e.g. NON_CONSOLIDATING) is a fact, and is stored. A source saying nothing is **unknown, not false**: RDF's "open world" assumption. Another source (e.g. Companies House) may fill the gap.
+
 #### TODO (rest of Monday, until 6pm)
-- [ ] Good-triple criteria: Bruno drafts answers to the seven questions; then review against the sources
+- [x] Good-triple criteria: Bruno drafts answers to the seven questions; then review against the sources (D-068 to D-070)
+- [ ] Tuesday, before Companies House: decide the identity rule (LEI → Companies House number → our own unresolved ID)
 - [ ] Bruno writes the 10–12 investor questions
 - [ ] Decide how to prove the pipeline is right
 - [ ] Commit and push

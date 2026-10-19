@@ -43,10 +43,10 @@ SEARCH_DIRS = ("sponsor_check", "search")
 CONFIG_PATH = PROJECT_ROOT / "config" / "sponsors.toml"
 # The Level 2 reply files we turn into facts, and the predicate each one produces.
 LEVEL2_PARTS = {
-    # An actual direct parent.
-    "direct-parent-relationship": "directParent",
-    # An actual ultimate parent.
-    "ultimate-parent-relationship": "ultimateParent",
+    # An actual direct parent: GLEIF calls this IS_DIRECTLY_CONSOLIDATED_BY, i.e. "adds me into its accounts" (D-068).
+    "direct-parent-relationship": "directlyConsolidatedBy",
+    # An actual ultimate parent: GLEIF calls this IS_ULTIMATELY_CONSOLIDATED_BY (D-068).
+    "ultimate-parent-relationship": "ultimatelyConsolidatedBy",
     # The stated reason for reporting no direct parent (D-026).
     "direct-parent-reporting-exception": "directParentException",
     # The stated reason for reporting no ultimate parent (D-026).

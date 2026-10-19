@@ -69,7 +69,7 @@ lei:FUND ──ex:fundManagedBy──▶ lei:MANAGER
 | `ex:registeredAt` | `entity.registeredAt.id` | text code (e.g. `RA000585`) | — |
 | `ex:registeredAs` | `entity.registeredAs` | text, as given | — |
 | `ex:registrationStatus` | `registration.status` | text, as given (e.g. `ISSUED`, `LAPSED`, `RETIRED`) (D-046) | — |
-| `ex:directParent` / `ex:ultimateParent` | Level 2 parent | `lei:` IRI | same as `ex:fundManagedBy` |
+| `ex:directlyConsolidatedBy` / `ex:ultimatelyConsolidatedBy` | Level 2 parent: GLEIF's `IS_DIRECTLY_CONSOLIDATED_BY` / `IS_ULTIMATELY_CONSOLIDATED_BY`, meaning "adds me into its accounts", not "owns me" (D-068) | `lei:` IRI | same as `ex:fundManagedBy` |
 | `ex:directParentException` / `ex:ultimateParentException` | Level 2 reporting exception (D-026) | the reason code, as given | — |
 | `ex:fundManagedBy` | `IS_FUND-MANAGED_BY` relationship (D-027) | `lei:` IRI | `ex:startDate`, `ex:status`, `ex:corroboration`, `ex:gleifRelationshipId` |
 
