@@ -1388,3 +1388,18 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - **SHACL checks 5–10 added:** Stake, Appointment, Person, Release, Deal and FundClose. All pass.
 - **Schema doc section 10 written:** the news nodes, arrows and trail.
 - Small note: the extraction report's token count includes cached answers, so it shows the cost of the original calls, not of the re-run.
+- **D-092 · Status comparison through a mapping table (rule, for comparing only).**
+  - Companies House "active", and the insolvency states in which the company still exists, count as ACTIVE. "dissolved", "removed", "closed" and "converted-closed" count as INACTIVE. An unknown word gets no key.
+  - The original words stay in the graph.
+- **D-093 · Address comparison by postcode plus building number, after tidying (rule, for comparing only).** The building is the first all-digit word before the postcode, wherever it sits (care-of lines and floors vary in order).
+- **D-094 · Fresh data comes in through an explicit `make refresh`, which fetches a new dated snapshot and keeps the old one.** `make build` always uses saved data, so it stays fast and repeatable. **Decided; to be built Tuesday** (it touches every downloader and the GLEIF parser's folders).
+- **Q5 (first version: status and address) runs: 15 disagreements**, in `src/seisa_kg/rdf/queries/q05_source_disagreements.rq`.
+  - **7 status conflicts:** GLEIF INACTIVE vs Companies House active (Apax Europe V funds, HgCapital 6 D, Bridgepoint Credit II "D").
+  - **6 real address conflicts**, e.g. Bridgepoint Credit at 95 Wigmore Street (GLEIF) vs 5 Marble Arch (Companies House).
+  - **F47 · 2 are false alarms from a typo in Companies House itself** ("1royal Plaza"): the rule can't see the building number. That's a known limit, and a good "what didn't work" example.
+
+#### TODO (Tuesday 20 Oct), updated
+- [ ] **First: entity matching** (news names → `lei:` / `ch:`). Bruno thinks about the approach first; then 50 pairs hand-checked, with precision and recall. Example of the difficulty: "mydentist" is a brand, and its legal name differs.
+- [ ] Build `make refresh` with dated snapshots (D-094)
+- [ ] Q5: add names and parents to the comparison; Q4 and Q6–Q12 in SPARQL
+- [ ] Then the earlier list: spot-checks (Helio's sponsor, Zuto's status), Neo4j step by step, text-to-SPARQL, 3.8-flash comparison, people question, tests, README

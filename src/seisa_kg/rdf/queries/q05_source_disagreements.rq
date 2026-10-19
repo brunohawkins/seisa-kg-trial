@@ -1,0 +1,35 @@
+# SUMMARY: Investor question 5 (D-071), first version: status and address only.
+# QUESTION: Where do GLEIF and Companies House disagree about the same company's status or address, and what does each say?
+# WHY: A disagreement flags a stale or wrong record before anyone relies on it; e.g. GLEIF calling a company INACTIVE while Companies House says it is active.
+# TYPE: cross-source conflict; compares tidy keys (D-092, D-093) but shows each source's own words and record.
+# KEY: company|name, field
+
+# The core RDF vocabulary (rdf:reifies links a note to its fact).
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# The W3C provenance vocabulary.
+PREFIX prov: <http://www.w3.org/ns/prov#>
+# Our own vocabulary.
+PREFIX ex:   <https://seisa-kg.example/def/>
+
+# One row per company and field where the two sources' tidy keys differ.
+SELECT ?company ?name ?field ?gleifSays ?chSays
+       # Every record behind each side, separated by spaces (GLEIF may have stated it on two dates).
+       (GROUP_CONCAT(DISTINCT ?gleifSource; SEPARATOR=" ") AS ?gleifSources) (GROUP_CONCAT(DISTINCT ?chSource; SEPARATOR=" ") AS ?chSources)
+WHERE {
+  # A GLEIF company linked to a Companies House company by rule D-025.
+  ?company ex:sameEntityAs ?ch ; ex:legalName ?name .
+  # The two fields compared: each with its tidy key and its as-given value.
+  VALUES (?field ?key ?asGiven) { ("status" ex:statusGroup ex:entityStatus) ("address" ex:addressKey ex:legalAddress) }
+  # Each side's tidy key (made by our rules, for comparing only).
+  ?company ?key ?gleifKey . ?ch ?key ?chKey .
+  # Only the real disagreements.
+  FILTER (?gleifKey != ?chKey)
+  # What GLEIF actually says, and the record it came from.
+  ?company ?asGiven ?gleifSays . ?n1 rdf:reifies <<( ?company ?asGiven ?gleifSays )>> ; prov:wasDerivedFrom ?r1 . ?r1 ex:url ?gleifSource .
+  # What Companies House actually says, and the record it came from.
+  ?ch ?asGiven ?chSays . ?n2 rdf:reifies <<( ?ch ?asGiven ?chSays )>> ; prov:wasDerivedFrom ?r2 . ?r2 ex:url ?chSource .
+}
+# One row per company, field and pair of values.
+GROUP BY ?company ?name ?field ?gleifSays ?chSays
+# Grouped by field, then by name.
+ORDER BY ?field ?name
