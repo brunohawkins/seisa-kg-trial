@@ -1242,3 +1242,37 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - [ ] Bruno writes the 10–12 investor questions
 - [ ] Decide how to prove the pipeline is right
 - [ ] Commit and push
+
+### The 12 investor questions chosen, and the source study begins (4pm)
+- **D-071 · Bruno's 12 investor questions.** Anish liked Q1–Q3, so they stay. Bruno's themes: where data comes from; duplicated or deleted data; "why" questions.
+  1. Which companies manage Apax's funds, and how many funds does each run?
+  2. For each sponsor, how many companies report no parent, and why?
+  3. Which sponsor companies have a lapsed or retired LEI, and when were we told?
+  4. For company X, every fact we hold and the exact record or sentence each came from.
+  5. Where do two sources disagree about the same company (name, status, parent), and what does each say?
+  6. Which companies have a retired LEI that points to a successor, so they could be counted twice? *(needs a new GLEIF fact)*
+  7. What changed between our fetches: new companies, changed names or status, ones no longer returned?
+  8. Which companies did each sponsor buy or sell in 2025–26, and what reason did the announcement give?
+  9. Which buys were add-ons (merged into an existing portfolio company), and what reason was given?
+  10. For a deal in the news, trace fund → holding companies → the company bought, with a source for each link.
+  11. Which funds did each sponsor close, how big were they, and when?
+  12. Which banks or law firms advised on deals for more than one of our sponsors?
+  - **Dropped:** "who controls UK company X" and the unanswerable LP question. Without the latter, no question tests whether a method says "not available". It can be added back.
+  - **Why the "why" questions are worded as "what reason did the announcement give":** a graph can store the stated reason, tied to its sentence, but never the true reason.
+- **D-072 · Companies House and the news both come in. The RDF system is completed first; Neo4j comes after.**
+  - Each new source gets a **source study first**: real records, looked at together; what it provides, its structure, limits and traps. Then the fact design, then the pipeline.
+  - Why: Bruno wants to understand each source before it's piped in, and to check that the sources fit the UK case study.
+  - The cost: Neo4j, text-to-Cypher and Bloom all move to Wednesday, which is tight.
+- **Companies House source study: findings F23–F33** in `docs/data-sources.md`. The headlines:
+  - most fund vehicles are offshore (F23)
+  - English LPs have no control records (F24)
+  - ordinary companies' control chains climb cleanly (F26)
+  - control comes in kinds and bands (F27)
+  - history is kept (F28)
+  - chains can loop (F29)
+  - registration numbers are messy (F30)
+  - a stated "no controller" exists (F31).
+
+#### TODO
+- [ ] Bruno reviews F23–F33 and explains them back; then decide the Companies House fact design (which questions are open is listed in the chat)
+- [ ] Tuesday morning: news source study (2–3 real releases), then the identity rule

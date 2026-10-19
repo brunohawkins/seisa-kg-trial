@@ -133,3 +133,48 @@ Companies House (who controls whom, in the UK) ──▶ our two graphs ◀─�
 - A fund-manager relationship becomes a link carrying **RDF-star annotations**: the source record, the date fetched, the start date, the status and the corroboration level. This is a natural fit for D-015, and a direct answer to the brief's question about how each model handles a new kind of fact with dates.
 - The roles **GP** and **manager** are only assigned on evidence (finding F4).
 - We need a **rule for which entities belong to a sponsor** (finding F5).
+
+### Source study: how UK-based our companies are, and Companies House (19 Oct)
+Real records were fetched with `scripts/ch_sample.py` and cached in `data/raw/companies_house/`. There were five samples, one of each kind: an ordinary company, two LLPs, a Scottish LP and an English LP.
+
+- **F23 · Our "UK" sponsors keep most of their fund vehicles offshore.** In-scope companies by country:
+  - **Hg:** 79 GB, 10 GG, 7 LU, 2 US. Mostly UK.
+  - **Bridgepoint:** 87 LU, 65 GB, 12 IE, and others.
+  - **Apax:** 101 GG, 27 LU, 14 GB, and others.
+
+  153 of the 444 In-scope companies are at Companies House: 124 English LPs, 25 ordinary companies, 2 LLPs and 2 Scottish LPs. So the "UK" part is the **sponsors' firms and their UK companies**; many funds are offshore and visible only in GLEIF.
+- **F24 · English LPs have no control (PSC) record and no officers.**
+  - HGCAPITAL 5, L.P. (LP010937): the PSC list says "not found", and so do the PSC statements.
+  - So Companies House says almost nothing about **most of our UK fund vehicles** (124 of them).
+- **F25 · Scottish LPs do have PSC records.**
+  - HG SATURN FAF L.P. (SL032338) names Hg Pooled Management Ltd, HgCapital LLP, and a private individual (50–75% share of surplus assets).
+- **F26 · For ordinary companies, the PSC chain climbs cleanly:**
+  - Bridgepoint Advisers Ltd → Bridgepoint Advisers Holdings → Bridgepoint Advisers Group Ltd → Bridgepoint Group Holdings Ltd → Bridgepoint Op GP Ltd. Before 11 Oct 2024, the top was Bridgepoint Group plc.
+  - Each step is "owns 75–100% of shares and votes, and can appoint the directors".
+  - This is the "who controls whom" that GLEIF lacks.
+- **F27 · Control comes in kinds and bands, not one "owns" arrow.**
+  - Each controller has a list of "natures of control": shares 25–50 / 50–75 / 75–100%, votes, the right to appoint directors, or "significant influence".
+  - Exact percentages are never given.
+- **F28 · History is kept.**
+  - Controllers have `ceased_on` dates (Bridgepoint Group plc ceased 2024-10-11; Lux Topco 1 Sàrl ceased 2022-10-31).
+  - Previous names have date ranges (Bridgepoint Advisers Ltd was NatWest Private Equity Ltd, 1996–97).
+  - This fits Q7 ("what changed") and the brief's question about start and end dates.
+- **F29 · Chains can loop.**
+  - Bridgepoint Group Holdings Ltd lists Bridgepoint Advisers Ltd (the company we started from) as having "significant influence".
+  - Any chain-climbing query must guard against going round in circles.
+- **F30 · Registration numbers in PSC records are typed by hand and messy:**
+  - "1899316" (missing its leading zero)
+  - "Oc301825" and "Sc257176" (lower case)
+  - "B263996" (a Luxembourg number)
+  - **none at all** for a UK company in one record (Group Holdco 1 Ltd), though another record has it (13868078).
+
+  Store them as given (D-029); linking them to companies is a matching step.
+- **F31 · A stated "no controller" exists, as in GLEIF.**
+  - Group Holdco 1 Ltd's PSC statement is `no-individual-or-entity-with-signficant-control` (Companies House's own spelling, typo included).
+  - That's a stated absence, like GLEIF's reporting exceptions (D-026).
+  - This is why the HgCapital chain stops there: HgCapital LLP → Group Holdco 1 Ltd → "no registrable controller".
+- **F32 · Chains end at people or offshore companies.**
+  - Apax Partners LLP is controlled by two named individuals (members' appointment rights).
+  - Hg's chain once led to Lux Topco 1 Sàrl in Luxembourg, which Companies House can't follow; GLEIF might.
+- **F33 · Officers are numerous and mostly history:** Bridgepoint Advisers Ltd has 8 active and 88 resigned officers. They're personal data, and none of our 12 questions needs them.
+- **Profile fields:** name, number, type (`ltd`, `llp`, `limited-partnership`), status, creation date, registered office (split into lines), SIC industry codes, previous names, accounts and filing dates, and flags (charges, insolvency).
