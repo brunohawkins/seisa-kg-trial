@@ -1,6 +1,6 @@
-# Seisa trial: project plan (v2, draft for Bruno's review)
+# Seisa trial: project plan (v3)
 
-**Status:** v2.2. On 16 Oct 2026 Bruno accepted every recommendation in this plan, chose RDF-star for RDF provenance (D-015), and made the translation layer a post-task extension (D-016). Items marked **[Decided: D-0xx]** are settled. **The full log now lives in [docs/decision-log.md](docs/decision-log.md)**, which is the source of truth from here on. Sponsors chosen: Hg, Bridgepoint and Apax (D-023). Still open: provenance in the property graph.
+**Status:** v3 (19 Oct 2026): the timeline (§6) is rewritten for finishing on Wednesday 21 Oct and presenting on Thursday 22 Oct; the cuts in §6 await Bruno. Earlier: v2.2. On 16 Oct 2026 Bruno accepted every recommendation in this plan, chose RDF-star for RDF provenance (D-015), and made the translation layer a post-task extension (D-016). Items marked **[Decided: D-0xx]** are settled. **The full log now lives in [docs/decision-log.md](docs/decision-log.md)**, which is the source of truth from here on. Sponsors chosen: Hg, Bridgepoint and Apax (D-023). Still open: provenance in the property graph.
 **Sources:** Trial brief, Knowledge graph primer, Private markets primer, Candidate pack README (all read in full on 16 Oct 2026).
 
 ---
@@ -56,9 +56,9 @@ So every design choice below should be defensible in one sentence.
 
 ## 2. Deliverables checklist (brief §4)
 
-- [ ] Decision log
+- [x] Decision log (kept up to date in docs/decision-log.md)
 - [ ] A repo with **one command** that builds both graphs from scratch, and a README that lets someone else run it
-- [ ] A schema sketch for the RDF graph and for the property graph, plus the "what changed between them" note
+- [ ] A schema sketch for the RDF graph (done: docs/schema/rdf-schema.md) and for the property graph, plus the "what changed between them" note
 - [ ] 10–12 investor questions, each with why it matters, the SPARQL and Cypher queries, the answers, the sources, and timings at a small and a large data size
 - [ ] The facts extracted from news releases, the 50-pair hand-checked matching sample, precision and recall, and an explanation of the errors
 - [ ] The results of the three-way comparison, and how they were scored
@@ -233,56 +233,93 @@ seisa-kg-trial/              ← ~/Work Projects/seisa-kg-trial, its own git rep
 
 ---
 
-## 6. Timeline
+## 6. Timeline (v3, 19 Oct): finish Wednesday, present Thursday
 
-**Time available before Monday:** about 1 hour today plus about 10 hours on Sunday (excluding 3–5pm). That isn't enough to do all eight parts *well*. The brief has no fixed end date and says "if you'd like more time, you carry on".
+**Hours:**
+- Mon 19 Oct, 15:00–18:00 (3 h)
+- Tue 20 Oct, 10:00–18:00 (8 h)
+- Wed 21 Oct, 10:00–18:00 (8 h)
 
-**Plan for Monday** *(D-009)*: show a **thin slice you can explain completely**, plus this plan for the rest, and ask to continue.
+That's about 19 hours, or about 16 of real work after breaks. **Thu 22 Oct: present.**
 
-### Today (~1 hour)
-*Progress: steps 1–4 done on 16 Oct; 10 setup tests pass. Steps 5–6 remain.*
+**Way of working (D-067, 19 Oct, after the meeting with Anish; also in CLAUDE.md):**
+- Bruno thinks first; Claude reviews with sources.
+- Bruno decides; Claude codes in small pieces.
+- Bruno explains each step back before moving on.
 
-1. **Repo:** create a git repo in this folder. *Right now the whole home folder is a git repo, so this project needs its own.* Add a `.gitignore` covering `data/`, `.env`, `brief/` and `.venv/`.
-2. **Environment:** create it with `uv` and Python 3.12 *(D-006)*, and install `pymupdf` and `python-docx` (brief extraction), `httpx`, `rdflib`, `pyoxigraph`, `neo4j`, `python-dotenv` and `pytest`. LLM and embedding libraries come later, when needed.
-3. **Brief text:** `scripts/extract_brief.py` saves the PDFs and DOCX as text in `docs/brief_text/` (gitignored), so the brief can be searched.
-4. **Decision log:** create `docs/decision-log.md` and add the decisions so far (section 8).
-5. **Admin with lead time:**
-   - register a Companies House API key
-   - install Neo4j Desktop *(D-007)*
-   - check whether the Seisa LLM key has arrived, and from which provider.
-6. **If time is left:** the sponsor spike (3.5).
+This is slower than Claude building alone, so the plan below cuts the extensions (D-066).
 
-### Sunday morning: thin slice, one sponsor
-1. Settle the sponsor choice, then build the GLEIF downloader with caching.
-2. Define the shared fact format and its provenance fields.
-3. **RDF first:**
-   1. Sketch the schema.
-   2. Build the RDF graph.
-   3. Answer 3 investor questions in SPARQL, with their sources.
-4. **Property graph second:**
-   1. Sketch the schema and write the "what changed" note.
-   2. Build the Neo4j graph.
-   3. Answer the same 3 questions in Cypher.
-5. **Milestone:** `make build` rebuilds both graphs from scratch for one sponsor.
+> The earlier timeline (16–18 Oct: thin slice, then widen) is done or replaced. It stays in git history.
 
-### Sunday evening: widen
-1. Grow to 3 sponsors and add Companies House (PSCs and officers).
-2. News: collect 10 releases first (target 30), saving each one's text, URL and retrieval date.
-3. Run LLM extraction with sentence IDs and quote checking.
-4. Write a first, simple matcher. Extracted names need it before they can join the graph:
-   - identifier match first
-   - then a cleaned-name match
-   - then GLEIF's fuzzy search
-   - anything not matched stays explicitly "unresolved".
-5. Bring the questions up to 10–12 and add a timing harness for the small and large datasets.
-6. Make one Bloom view that shows a fact → source path.
+### Where we are (Mon 19 Oct, 3pm)
+**Done:**
+- GLEIF fetch: 3 sponsors, 993 companies
+- shared fact list: 15,006 facts
+- automatic scope step: In / Review / Out, with reasons
+- RDF graph: 49,042 triples, with RDF-star sources and SHACL checks
+- 3 questions in SPARQL, with sources and timings
+- graded scorer
+- `make build`, about 7 seconds, offline
+- 31 tests
 
-### After Monday (if more time is agreed)
-- 50-pair matching evaluation with precision, recall and an error analysis
-- The three-way comparison and its scoring
-- Your GUI
-- The translation layer
-- The write-up
+**Not started:**
+- Neo4j (deleted 18 Oct, to be built together)
+- news releases
+- entity matching
+- text-to-SPARQL, text-to-Cypher, vector search
+- visualisation
+- timings at two sizes
+- README
+- write-up
+
+### Scope for Wednesday (D-066, Bruno, 19 Oct)
+| | Decision | Notes |
+|---|---|---|
+| **Dropped** | The translation layer and the custom GUI (Bruno's extensions) | Listed as next steps in the write-up |
+| **Visualisation** | The **standard** ways of viewing knowledge graphs: Neo4j Bloom, plus one other standard tool for the brief's "one other tool" (chosen on Wednesday) | A simple GUI only if those tools fall short |
+| **Kept** | Companies House (UK control records, PSCs), joined through GLEIF's `registeredAs` number | Gives "who controls whom" for UK companies |
+| **Kept** | About 30 news releases (the brief's number) | |
+
+> **Honest budget:** with Companies House and 30 releases kept, the days below add up to about **3 hours more than the time available**. The "drop in this order" list at the end is how we absorb that.
+
+### Monday 19 Oct, 15:00–18:00: think and decide (no new pipeline code)
+1. Confirm the way of working (10 min).
+2. **What makes a good triple.** Bruno drafts his criteria from the seven questions, then Claude reviews them against the sources. Apply them to our graph and list any triples to change (1 h).
+3. **Bruno writes the 10–12 investor questions** (1 h). These are the "competency questions": they also justify which triples we keep.
+4. **Proving the pipeline is right.** Decide the method, e.g. Bruno hand-labels a sample of scope verdicts and we measure precision and recall (45 min).
+5. Diary, commit, push (15 min).
+
+### Tuesday 20 Oct, 10:00–18:00: the second graph, Companies House, and the questions in both languages
+1. **Neo4j, step by step:** concept → schema sketch → "what changed" note (1.5 h).
+2. Builder and checks, so `make build` builds both graphs (1.5 h).
+3. **Companies House:** fetch the PSC records for UK In-scope companies by their `registeredAs` number, then turn them into facts in both graphs (2 h).
+4. The registry questions in SPARQL and Cypher, with answers and sources (2.5 h).
+5. Diary, commit, push (30 min).
+
+### Wednesday 21 Oct, 10:00–18:00: news, matching, comparison, visuals, write-up
+1. **News:** collect about 30 releases (Claude finds candidates, Bruno picks), saving text, URL and date, split into numbered sentences (1.5 h).
+2. **Gemini extraction** against a schema, with sentence IDs and quote checks. Load the results into both graphs, and add the news questions in both languages (2 h).
+3. **Matching:** match the extracted names to LEIs, hand-check 50 pairs, and report precision, recall and the errors (1.5 h).
+4. **Three-way comparison:** text-to-SPARQL, text-to-Cypher and vector search on the questions, all scored (2 h).
+5. **Visuals:** a Bloom view of the fact → source path, plus the second standard tool (1 h).
+6. Timings on small and large data (30 min).
+7. README, plus the ~2-page write-up (1.5 h).
+8. **17:30 freeze:** `make build` from a clean copy, all tests, commit, push (30 min).
+
+### Thursday 22 Oct: present
+- Before the presentation: rehearse the explain-back with no code open, using the expected questions in §1.
+
+### If we fall behind, drop in this order (proposed; Bruno decides at the time)
+1. Large-data timings: describe the method instead.
+2. News down to 15 releases.
+3. Companies House narrowed to the In-scope UK companies that appear in our questions.
+4. Vector search, as a last resort: compare text-to-SPARQL and text-to-Cypher only, and say so.
+
+**Never drop:**
+- both graphs answering the questions, with sources
+- news extraction with quote checks
+- the 50-pair matching sample
+- the write-up
 
 ---
 

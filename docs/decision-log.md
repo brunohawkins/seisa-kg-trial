@@ -1176,3 +1176,46 @@ The brief (§6) asks for each answer to be scored "for whether it is correct and
 #### TODO (after the meeting with Anish, 19 Oct)
 - [ ] Bruno picks a visualisation option (A recommended); build it together, step by step
 - [ ] Then the TODOs above: Neo4j step by step, text-to-SPARQL step 2, Bruno's remaining questions
+
+## 19 Oct 2026 (Monday)
+
+### After the meeting with Anish: his pointers
+- **What makes a good triple, and what counts as one?** Bruno is to work out his own criteria and be able to defend them.
+- **Why is our pipeline doing the right thing?** Bruno needs evidence that the rules are correct (fact-making, scope), not just that they run.
+- **The way Bruno and Claude work together.** Bruno wants to become the expert on architecture and data format, not offload it.
+  - Bruno's view: Claude is mostly for coding and note-taking, plus decision suggestions backed by facts or sources that explain the why.
+  - A workflow was proposed (below). Bruno accepted it as D-067, and it is now in CLAUDE.md.
+
+#### The workflow (D-067, accepted)
+1. **Bruno thinks first.** For each design question, Claude gives the questions to consider and the sources to read. Bruno writes a first answer before seeing Claude's.
+2. **Claude reviews with evidence.** It agrees or pushes back, citing a source or a finding from our own data, and labels which parts are fact and which are opinion.
+3. **Bruno decides,** and writes the why in his own words. Claude logs it here.
+4. **Claude codes in small pieces,** commented line by line. Bruno runs each piece and reads the output.
+5. **Explain-back before moving on.** Bruno explains the step without code open, and Claude asks the questions Anish might ask.
+
+#### TODO
+- [x] Bruno confirms or changes the workflow; then add it to CLAUDE.md's working rules (D-067)
+- [ ] Bruno drafts his own "what makes a good triple" criteria; then review them against the sources
+- [ ] Decide how to prove the pipeline is right (e.g. a hand-checked sample of scope verdicts, measured for precision and recall)
+- [ ] Carried over: visualisation option (A–D), Neo4j step by step, text-to-SPARQL step 2, Bruno's remaining questions
+
+### New deadline and plan v3 (3pm)
+- **D-065 · Finish by Wednesday 21 Oct, and present on Thursday 22 Oct.**
+  - Bruno works Mon 15:00–18:00, then Tue and Wed 10:00–18:00, about 19 hours.
+  - PLAN.md §6 is rewritten as a day-by-day plan (v3).
+  - Why: a fixed date makes the scope honest. With Bruno thinking first, the work is slower, so some breadth has to go.
+- **D-066 · Drop the extensions; keep Companies House and about 30 news releases.**
+  - Dropped: the translation layer and the custom GUI. They're Bruno's own add-ons, not in the brief. They become "next steps" in the write-up.
+  - Visualisation: use the **standard** ways of viewing knowledge graphs (Neo4j Bloom plus one other standard tool). Build a simple GUI only if those fall short.
+  - Kept: Companies House (UK control records) and about 30 news releases, the brief's number.
+  - Why: spend the time on what the brief asks for. Standard tools are what a reviewer expects, and easier to defend than a home-made viewer.
+  - Honest budget: the plan is now about 3 hours over the time available. PLAN.md §6 has a "drop in this order if behind" list, and Bruno decides at the time.
+- **D-067 · The way of working is now a standing rule in CLAUDE.md.**
+  - Bruno thinks first, then Claude reviews with sources. Bruno decides, Claude codes in small pieces, and Bruno explains each step back.
+  - Why: Anish's advice. Bruno must own the reasoning, because the explain-back is done with no code open.
+
+#### TODO (rest of Monday, until 6pm)
+- [ ] Good-triple criteria: Bruno drafts answers to the seven questions; then review against the sources
+- [ ] Bruno writes the 10–12 investor questions
+- [ ] Decide how to prove the pipeline is right
+- [ ] Commit and push

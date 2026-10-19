@@ -11,7 +11,7 @@ Claude Code reads this file automatically when it opens in this folder. It holds
   - Entity matching, with precision and recall.
   - A comparison of text-to-Cypher, text-to-SPARQL and vector search.
   - Visualisations and a write-up.
-- **Bruno's own extensions**, built after the core task: a translation layer between the two graphs, and a GUI.
+- **Bruno's own extensions** (a translation layer, a GUI) were **dropped on 19 Oct (D-066)** to finish by Wednesday 21 Oct and present on Thursday 22 Oct. Visualisation uses the standard tools: Neo4j Bloom plus one other.
 - **What matters most:** the explain-back, which Bruno does with no code open. Depth and understanding beat coverage.
 
 ## Read these first, every session
@@ -21,6 +21,12 @@ Claude Code reads this file automatically when it opens in this folder. It holds
 
 ## Working rules
 - **Bruno makes every decision.** Propose options with a recommendation and the reasons, then wait. Never make a design choice silently.
+- **Bruno becomes the expert; Claude codes and takes notes (D-067).** For every design question:
+  1. **Bruno thinks first.** Claude gives the questions to consider and the sources to read, not the answer. Bruno writes a first answer.
+  2. **Claude reviews it with evidence:** a cited source (W3C spec, paper, docs) or a finding from our own data. Label what's fact and what's opinion.
+  3. **Bruno decides,** and writes the why in his own words. Claude logs it.
+  4. **Claude codes in small pieces.** Bruno runs each one and reads the output.
+  5. **Bruno explains the step back** with no code open, and Claude asks the questions Seisa might ask, before moving on.
 - **Log every decision** in `docs/decision-log.md`.
   - One dated entry per session, in bullet points, with permanent IDs (D-0xx).
   - Give the **why** for each decision, in short sentences Bruno can copy into a notebook.
