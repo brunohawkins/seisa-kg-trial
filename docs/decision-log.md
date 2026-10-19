@@ -1372,3 +1372,15 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - [ ] Bruno's people question, and which question it replaces (D-074)
 - [ ] Open point: should `fundManagedBy`'s status and start date move off the note (D-075)?
 - [ ] Tests for the number-tidying rule and the quote check; README
+
+### Fitting the sources together (5:30pm)
+- **D-091 · One arrow per concept across sources, merging only where it's clearly the same idea (Bruno: "be conservative, but where it's obvious, do it").**
+  - Merged: Companies House's registered office → `legalAddress`, and its company status → `entityStatus`. These are the same ideas as GLEIF's fields, with values kept as given.
+  - Kept separate:
+    - `registrationStatus`: about the LEI, not the company
+    - `otherName` vs `previousName`: GLEIF's other names include trading names and translations
+    - news `name`: as written in a release, not a legal name
+  - Why: with one arrow and each value on its own sourced note, Q5 ("where do sources disagree?") becomes one simple query.
+- **What the merge shows straight away (for Q5):**
+  - **F45 · Names agree for all 153 linked companies.** Addresses agree for **none**, but only because of formatting ("5 MARBLE ARCH, LONDON, GB-LND, W1H 7EJ, GB" vs "5 Marble Arch, London, W1H 7EJ, United Kingdom"). Q5 needs a tidy comparison rule for addresses (like D-076), or every pair looks like a conflict.
+  - **F46 · Status differs for 12 linked companies.** 5 are GLEIF INACTIVE vs Companies House dissolved: the same meaning in different words, which needs a value mapping. **7 are GLEIF INACTIVE vs Companies House active: real disagreements**, and exactly what Q5 is for.

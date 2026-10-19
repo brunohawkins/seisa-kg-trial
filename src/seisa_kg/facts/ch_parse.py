@@ -4,6 +4,8 @@
 What it makes, per company in data/raw/companies_house/<number>/:
 - The company itself (ch:<number>, D-034): name, type, status, incorporation
   date, registered office (one line, as D-069), SIC codes, previous names.
+  Name, status and registered office use the same arrows as GLEIF
+  (legalName, entityStatus, legalAddress), because they are the same idea (D-091).
 - One Stake per control (PSC) record (D-075): the company, the controller as
   given (name, kind, registration number, country), each nature of control,
   and the notified and ceased dates. Our rule "ch-natures" reads the share
@@ -118,16 +120,18 @@ def profile_facts(number: str, env: dict) -> list[dict]:
     p, org = env["body"], origin(number, "profile", env)
     # "This is a legal entity", its name, type and status.
     rows = [fact(s, "type", iri("ex:LegalEntity"), org), fact(s, "legalName", literal(p["company_name"]), org),
-            # Type (e.g. ltd, llp, limited-partnership) and status (e.g. active), as given.
-            fact(s, "companyType", literal(p.get("type", "")), org), fact(s, "companyStatus", literal(p.get("company_status", "")), org)]
+            # Type (e.g. ltd, llp, limited-partnership), as given.
+            fact(s, "companyType", literal(p.get("type", "")), org),
+            # Status (e.g. active, dissolved), as given, on the same arrow as GLEIF's entityStatus: the same idea (D-091).
+            fact(s, "entityStatus", literal(p.get("company_status", "")), org)]
     # The incorporation date, if given.
     if p.get("date_of_creation"):
         # A proper date.
         rows.append(fact(s, "incorporatedOn", date(p["date_of_creation"]), org))
     # The registered office, as one line of text, if given.
     if one_line(p.get("registered_office_address")):
-        # One line, as D-069.
-        rows.append(fact(s, "registeredOffice", literal(one_line(p["registered_office_address"])), org))
+        # One line, as D-069, on the same arrow as GLEIF's legalAddress: the same idea (D-091).
+        rows.append(fact(s, "legalAddress", literal(one_line(p["registered_office_address"])), org))
     # Each SIC industry code.
     for code in p.get("sic_codes", []):
         # One row per code.

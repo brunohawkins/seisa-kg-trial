@@ -176,9 +176,9 @@ lei:XXXX ──ex:sameEntityAs──▶ ch:03220373        (rule D-025: register
 | `rdf:type ex:LegalEntity` | any Companies House company | — |
 | `ex:legalName` | `company_name` | text, as given |
 | `ex:companyType` | `type` | e.g. `ltd`, `llp`, `limited-partnership` |
-| `ex:companyStatus` | `company_status` | e.g. `active`, `dissolved` |
+| `ex:entityStatus` | `company_status` | e.g. `active`, `dissolved`. **Same arrow as GLEIF's `entityStatus` (D-091)**; values kept as given |
 | `ex:incorporatedOn` | `date_of_creation` | a date |
-| `ex:registeredOffice` | `registered_office_address` | one line of text (as D-069) |
+| `ex:legalAddress` | `registered_office_address` | one line of text (as D-069). **Same arrow as GLEIF's `legalAddress` (D-091)** |
 | `ex:sicCode` | `sic_codes` | one per code |
 | `ex:previousName` | `previous_company_names` | the name, with its from and to dates on the note (like GLEIF's `otherName`) |
 
