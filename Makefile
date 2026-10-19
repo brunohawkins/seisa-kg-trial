@@ -29,6 +29,11 @@ fetch-gleif:
 	# Run the GLEIF downloader inside the project's environment.
 	uv run python -m seisa_kg.sources.gleif_fetch
 
+# Download Companies House data for our In-scope UK companies, climbing control chains (stage 1; cached).
+fetch-ch:
+	# Run the Companies House downloader inside the project's environment.
+	uv run python -m seisa_kg.sources.companies_house
+
 # Build the shared fact list, data/interim/facts.jsonl, from the cache (pipeline stage 2).
 facts:
 	# Run the parsers inside the project's environment.
@@ -49,8 +54,8 @@ score-demo: query
 	# Run the scoring demonstration inside the project's environment.
 	uv run python -m seisa_kg.evaluation.demo
 
-# The single command (brief §4): fetch (cached) -> facts -> scope -> RDF graph -> checks -> questions.
-build: fetch-gleif query
+# The single command (brief §4): fetch GLEIF, then Companies House (cached) -> facts -> scope -> RDF graph -> checks -> questions.
+build: fetch-gleif fetch-ch query
 	# Say the whole pipeline finished.
 	@echo "Build complete: data/output/graph.ttl, docs/answers-rdf.md"
 

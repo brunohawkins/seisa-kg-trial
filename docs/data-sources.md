@@ -178,3 +178,21 @@ Real records were fetched with `scripts/ch_sample.py` and cached in `data/raw/co
   - Hg's chain once led to Lux Topco 1 Sàrl in Luxembourg, which Companies House can't follow; GLEIF might.
 - **F33 · Officers are numerous and mostly history:** Bridgepoint Advisers Ltd has 8 active and 88 resigned officers. They're personal data, and none of our 12 questions needs them.
 - **Profile fields:** name, number, type (`ltd`, `llp`, `limited-partnership`), status, creation date, registered office (split into lines), SIC industry codes, previous names, accounts and filing dates, and flags (charges, insolvency).
+
+### Source study: news releases (19 Oct)
+Probed the three sponsors' news pages and two real deal releases: Apax's NextGen Security (9 Sep 2026) and Hg's A-LIGN (8 Jul 2025).
+- **F34 · Hg and Apax list their releases in plain HTML; Bridgepoint's list is loaded by JavaScript.**
+  - A program sees no article links on Bridgepoint's page.
+  - Bridgepoint releases have to be found another way (a search engine or a newswire); the article pages themselves may still be plain HTML.
+- **F35 · The text comes out cleanly** with a standard main-text extractor, including the title and publication date. One quirk: Apax repeats its first paragraph as a teaser, so the same sentence appears twice. De-duplicate sentences before extraction.
+- **F36 · What a deal release contains** (both samples):
+  - **buyer:** usually the sponsor as a brand ("Hg"), or its funds via the adviser entity: "Funds advised by Apax Partners LLP". Apax Partners LLP is our `ch:OC303117`.
+  - **target:** NextGen Security, A-LIGN
+  - **seller:** Dunes Point Capital, LP; Warburg Pincus (and FTV Capital thanked)
+  - **stake:** "a majority stake" (Hg), or not said
+  - **price:** "Financial terms … were not disclosed"
+  - **date:** the publication date, plus the text's own (sometimes without a year: "July 8th")
+  - **stated reasons:** "to accelerate its growth by … selective acquisitions", "accelerate its global expansion". These support Q8–Q9.
+  - **people quoted:** the target's CEO and sponsor partners.
+- **F37 · Both sample targets are US companies.** Companies House can't climb their chains. For the UK case study, choosing releases about UK companies matters (Bruno to decide).
+- **F38 · Names in releases are brands and short forms** ("Hg", "Apax Funds", "the Company"), not legal names. Matching them to LEIs or Companies House numbers is the entity-matching step (50 pairs hand-checked).

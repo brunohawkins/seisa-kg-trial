@@ -31,6 +31,7 @@ dependencies = [
     "python-dotenv",
     # Checks the RDF graph against SHACL shapes (D-013, D-038); it can't see RDF-star annotations (F12).
     "pyshacl>=0.40.1",
+    "trafilatura>=2.3.1",
 ]
 
 # Extra tools needed only while developing, not to run the project.

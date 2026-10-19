@@ -1298,3 +1298,22 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - Each number or name is stored as the source gave it (with its source), plus a tidy version made by a named rule.
   - Queries use the tidy version. Every tidying failure (e.g. a missing number) goes into a short report.
   - Why (Bruno): the raw value is how any answer is traced back to what the source actually said; the tidy value is what makes queries work.
+
+### Companies House: schema approved; the build starts (4:40pm)
+- **The schema is approved:** section 9 of `docs/schema/rdf-schema.md`, drawn at https://claude.ai/artifact/Eai2LvKuvt9XM4h8Gxbfgt (private).
+  - Bruno's summary: Companies House adds control, people and status to GLEIF's identity, and every fact points to its source.
+  - The only value both sources share is the Companies House number. GLEIF records it as `registeredAs`, and D-025 uses it to draw the `sameEntityAs` link.
+- **D-077 · Officers: current and past.** Why: history with dates fits Q7 ("what changed") and costs little. Some officers are companies (corporate LLP members, nominee secretaries); they get the same as-given name plus a tidy link as a stake's holder (D-076).
+- **D-078 · Companies reached only by climbing a control chain are fetched as "related", with no verdict.**
+  - The climb goes up to 4 steps, UK companies only, and stops at loops (F29).
+  - Why: the same as GLEIF's outside parents. The chain is Companies House's main value, but the scope rule was designed for name-search results.
+- **Built:**
+  - `src/seisa_kg/facts/ch_tidy.py`: the number-tidying rule (D-076, F30). "1899316" → 01899316, "Oc301825" → OC301825, and "B263996" (Luxembourg) is refused.
+  - `src/seisa_kg/sources/companies_house.py`, run with `make fetch-ch`. It is now part of `make build`.
+- **News source study: findings F34–F38** in `docs/data-sources.md`.
+- **D-079 · Which releases: about 10 per sponsor, UK first.**
+  - Per sponsor: about 6 deals (buys and add-ons), 2 exits and 2 fund closes, from 2025–26.
+  - Prefer UK-based target companies; fill up with others if a sponsor is short.
+  - Why: the questions need a mix of announcement types (Q8–Q12). UK targets let Companies House climb from the bought company up to the fund (Q10). Equal numbers keep the sponsors comparable.
+- **D-080 · Bridgepoint's releases are found by web search, then downloaded from Bridgepoint's own site.** Why: their news list needs JavaScript (F34). This keeps all three sponsors on the same kind of source, their own website.
+- **D-081 · Claude lists about 40 candidates (title, date, type, the target's country); Bruno approves the final 30 before they are downloaded for good.**

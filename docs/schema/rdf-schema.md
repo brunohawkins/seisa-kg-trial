@@ -147,3 +147,64 @@ ex:rule/D-028 a ex:Rule ;
   - Test this first in the builder step.
   - Fallback: write check 4 as a SPARQL query run in Oxigraph, and say so openly.
 - **Many annotations:** every source fact gets its own hidden reifier node, so the graph is roughly 3× larger than the plain facts. That's fine at a few hundred entities; it is something to note in the timing runs.
+
+---
+
+## 9. Facts from Companies House (draft v2, 19 Oct, for Bruno's review)
+Built from Bruno's decisions D-074 (people), D-075 (stake nodes) and D-076 (as-given plus tidy), and the earlier D-025, D-034 and D-036. Every source fact gets the usual RDF-star note → `src:ch/<number>/<part>/<date>`.
+
+### The picture
+```
+ch:03220373 (Bridgepoint Advisers Ltd)                     ch:01899316 (Bridgepoint Advisers Holdings)
+     ▲                                                              ▲
+     │ ex:company                                                   │ ex:holder   (tidy link, rule D-076)
+     │                                                              │
+ ex:stake/03220373/<psc-id>  a ex:Stake ───────────────────────────┘
+     ├─ ex:holderName               "Bridgepoint Advisers Holdings"      (as given)
+     ├─ ex:holderRegistrationNumber "1899316"                            (as given)
+     ├─ ex:natureOfControl          "ownership-of-shares-75-to-100-percent"   (as given; one per kind)
+     ├─ ex:shareBand "75-100" · ex:voteBand "75-100" · ex:appointsDirectors true   (read from the codes)
+     ├─ ex:notifiedOn 2016-04-06
+     └─ ex:ceasedOn   (only if it has ended)
+
+lei:XXXX ──ex:sameEntityAs──▶ ch:03220373        (rule D-025: register RA000585 + same number)
+```
+
+### Companies (from the profile)
+| Arrow | From | Value |
+|---|---|---|
+| `rdf:type ex:LegalEntity` | any Companies House company | — |
+| `ex:legalName` | `company_name` | text, as given |
+| `ex:companyType` | `type` | e.g. `ltd`, `llp`, `limited-partnership` |
+| `ex:companyStatus` | `company_status` | e.g. `active`, `dissolved` |
+| `ex:incorporatedOn` | `date_of_creation` | a date |
+| `ex:registeredOffice` | `registered_office_address` | one line of text (as D-069) |
+| `ex:sicCode` | `sic_codes` | one per code |
+| `ex:previousName` | `previous_company_names` | the name, with its from and to dates on the note (like GLEIF's `otherName`) |
+
+### Control: the stake node (D-075, D-036)
+- **One `ex:Stake` per PSC record:** `ex:stake/<company number>/<PSC id>`.
+- **As given:** the controller's name, kind (company, person or legal person), registration number and country; each nature of control code; and the notified and ceased dates.
+- **Read from the codes:** `shareBand`, `voteBand` and `appointsDirectors`.
+  - These are simple readings of Companies House's fixed codes, e.g. `ownership-of-shares-75-to-100-percent` gives share band 75–100.
+  - Marked as made by our rule `ex:rule/ch-natures`.
+- **The tidy link `ex:holder`** (rule D-076) points to:
+  - `ch:<number>`, when the controller is a UK company with a usable number (padded to 8 characters, upper case)
+  - a **person** node, when the controller is a person
+  - nothing, when it can't be resolved; this is then listed in the tidying report (e.g. Lux Topco 1 Sàrl, or a missing number).
+- **A stated "no controller"** (F31) is stored like GLEIF's exceptions: `ch:13868078 ex:pscStatement "no-individual-or-entity-with-signficant-control"`.
+
+### People (D-074)
+- **An officer** is `ex:person/officer/<Companies House officer ID>`, holding name, month and year of birth, nationality and country of residence.
+  - Each **appointment** is a node (D-036: a fact about several things): `ex:appointment/<company>/<officer ID>`, with person, company, role, appointed-on and resigned-on.
+- **A PSC individual** has no Companies House ID. So each one is its **own** person node, `ex:person/psc/<company>/<PSC id>`, with the same details.
+  - Linking them to an officer, or to each other, is a later matching step that compares every detail. No merges are made today, so two different people are never merged by mistake.
+
+### Which companies are fetched
+- Every In-scope company registered at Companies House (153; F23): profile, officers (all pages), PSC list and PSC statements.
+- **Climbing:** for each controller that is a UK company, fetch that company too, up to 4 steps up, stopping at loops (F29).
+- About 700 requests. At Companies House's limit this takes about 7 minutes, and only once (cached).
+
+### Open points for Bruno
+1. Officers: **current and past**, or current only? Past ones are history (88 of 96 at Bridgepoint Advisers Ltd).
+2. The `fundManagedBy` note question raised by D-075: its status and start date are facts, so should they move? (Not today.)
