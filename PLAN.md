@@ -289,22 +289,29 @@ This is slower than Claude building alone, so the plan below cuts the extensions
 4. **Proving the pipeline is right.** Decide the method, e.g. Bruno hand-labels a sample of scope verdicts and we measure precision and recall (45 min).
 5. Diary, commit, push (15 min).
 
-### Tuesday 20 Oct, 10:00–18:00: the second graph, Companies House, and the questions in both languages
-1. **Neo4j, step by step:** concept → schema sketch → "what changed" note (1.5 h).
-2. Builder and checks, so `make build` builds both graphs (1.5 h).
-3. **Companies House:** fetch the PSC records for UK In-scope companies by their `registeredAs` number, then turn them into facts in both graphs (2 h).
-4. The registry questions in SPARQL and Cypher, with answers and sources (2.5 h).
-5. Diary, commit, push (30 min).
+### Monday 19 Oct: what actually happened (beyond plan)
+- Done: the way of working (D-067), good-triple criteria (D-068 to D-070), 12 questions (D-071), Companies House **and** news **and** Gemini extraction, all in the RDF graph; `make build` runs all three sources; Q5 runs. See the diary, 19 Oct.
 
-### Wednesday 21 Oct, 10:00–18:00: news, matching, comparison, visuals, write-up
-1. **News:** collect about 30 releases (Claude finds candidates, Bruno picks), saving text, URL and date, split into numbered sentences (1.5 h).
-2. **Gemini extraction** against a schema, with sentence IDs and quote checks. Load the results into both graphs, and add the news questions in both languages (2 h).
-3. **Matching:** match the extracted names to LEIs, hand-check 50 pairs, and report precision, recall and the errors (1.5 h).
-4. **Three-way comparison:** text-to-SPARQL, text-to-Cypher and vector search on the questions, all scored (2 h).
-5. **Visuals:** a Bloom view of the fact → source path, plus the second standard tool (1 h).
-6. Timings on small and large data (30 min).
-7. README, plus the ~2-page write-up (1.5 h).
-8. **17:30 freeze:** `make build` from a clean copy, all tests, commit, push (30 min).
+### Tuesday 20 Oct, 10:00–18:00 (D-095): the whole MVP, including the property graph
+**Morning (10:00–13:00): finish the RDF system**
+1. Read the study guide (Bruno, before 10:00 or first thing).
+2. **Entity matching** (news names → `lei:` / `ch:`): Bruno's approach first, then the build, then 50 pairs hand-checked, with precision and recall (1.5 h).
+3. `make refresh` with dated snapshots (D-094) (30 min).
+4. The remaining questions in SPARQL: Q4, Q6–Q12 (1 h).
+
+**Afternoon (14:00–18:00): the labelled property graph (Neo4j), step by step (D-063 reopened)**
+1. Concept: property graph vs RDF, and provenance options (the "receipt boxes" idea) (30 min).
+2. The schema sketch (`docs/schema/lpg-schema.md`) and the "what changed" note (45 min).
+3. The builder: `facts.jsonl` → Neo4j, with checks that both graphs hold the same facts (1 h).
+4. The 12 questions in Cypher, scored against the SPARQL answers (1.25 h).
+5. A Bloom view of fact → source (30 min).
+
+### Wednesday 21 Oct, 10:00–18:00: comparison, measurements, write-up
+1. Text-to-SPARQL and text-to-Cypher (Gemini) plus vector search over the news sentences, on 10 questions, scored (3 h).
+2. The gemini-3.8-flash vs 2.5-pro extraction comparison (D-084) (30 min).
+3. Timings on small and large data (1 h).
+4. README, plus the ~2-page write-up, including the talking points (2 h).
+5. **17:30 freeze:** `make build` from a clean copy, all tests, commit, push.
 
 ### Thursday 22 Oct: present
 - Before the presentation: rehearse the explain-back with no code open, using the expected questions in §1.

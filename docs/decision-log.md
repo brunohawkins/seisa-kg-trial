@@ -1403,3 +1403,14 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - [ ] Build `make refresh` with dated snapshots (D-094)
 - [ ] Q5: add names and parents to the comparison; Q4 and Q6–Q12 in SPARQL
 - [ ] Then the earlier list: spot-checks (Helio's sponsor, Zuto's status), Neo4j step by step, text-to-SPARQL, 3.8-flash comparison, people question, tests, README
+
+### End of day (6pm)
+- **D-095 · Tuesday's goal: the whole MVP, including the labelled property graph (LPG, Neo4j).**
+  - Morning: finish the RDF system (matching, `make refresh`, the remaining SPARQL questions).
+  - Afternoon: the LPG, step by step (concept → schema sketch → "what changed" note → builder → Cypher questions → Bloom).
+  - Why (Bruno): Seisa works with property graphs, so the LPG must be solid, not rushed into Wednesday.
+  - PLAN.md §6 is updated to match.
+- **A study guide for Tuesday morning** (1.5–2 hours of reading) covers the whole pipeline from scratch, today's changes, tomorrow's TODOs and questions for the team. It's saved outside the repo, like the first one.
+- **Numbers at the end of the day:**
+  - 32,538 facts → 107,615 lines of `graph.ttl` (107,607 triples); 10 SHACL checks plus 3 code checks pass; 33 tests pass.
+  - Nodes: 1,152 company nodes (GLEIF and Companies House), 51 stakes, 880 appointments, 839 people, 30 releases, 968 sentences, 30 deals, 105 advisers, 5 fund closes, 438 mentions.
