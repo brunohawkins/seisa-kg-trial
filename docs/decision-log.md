@@ -1276,3 +1276,10 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 #### TODO
 - [ ] Bruno reviews F23–F33 and explains them back; then decide the Companies House fact design (which questions are open is listed in the chat)
 - [ ] Tuesday morning: news source study (2–3 real releases), then the identity rule
+
+### Sources settled; Companies House design under review (5pm)
+- **D-073 · Stay with three sources: GLEIF, Companies House and the news. The gaps become talking points.**
+  - Why: the brief says *"Expect the data to be imperfect … represent these gaps openly"* and *"report … what did not work"*.
+  - Richer data (fund investors, exact stakes) is private, and only paid databases have it. EDGAR would cover only about 15 US vehicles. Wikidata is a fallback for unworkable sources only.
+  - The talking points are collected in `docs/talking-points.md`, for the write-up and the discussion with Anish.
+- **Officers' fields as given** (checked on real records): name, role, appointment date, nationality, country of residence, **month and year** of birth, and a **service address** (usually the office, e.g. 5 Marble Arch), plus a stable officer ID link. **No email or phone.** The officer list is paged (35 per page by default; 96 in total for Bridgepoint Advisers Ltd).
