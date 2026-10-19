@@ -1283,3 +1283,18 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - Richer data (fund investors, exact stakes) is private, and only paid databases have it. EDGAR would cover only about 15 US vehicles. Wikidata is a fallback for unworkable sources only.
   - The talking points are collected in `docs/talking-points.md`, for the write-up and the discussion with Anish.
 - **Officers' fields as given** (checked on real records): name, role, appointment date, nationality, country of residence, **month and year** of birth, and a **service address** (usually the office, e.g. 5 Marble Arch), plus a stable officer ID link. **No email or phone.** The officer list is paged (35 per page by default; 96 in total for Bridgepoint Advisers Ltd).
+- **D-074 · People: keep the details that best tell people apart.**
+  - Keep: name, role, appointment and end dates, the officer ID (officers only), month and year of birth, nationality, and country of residence.
+  - Why (Bruno): so two different people with similar names are never merged by mistake.
+  - This is also the data-protection answer: each field kept serves a stated purpose (telling people apart). That is what data minimisation asks (UK GDPR Art. 5(1)(c)).
+  - Companies House gives no email or phone.
+  - Bruno's question swap (a question about people) is still to choose.
+- **D-075 · Control is a "stake" node, not a note on an arrow.**
+  - A stake links the company and its controller. It carries the share band, the vote band, the right to appoint directors, other kinds of control, and its start and end dates.
+  - Why (Bruno): a stake is a **fact about the world**, not metadata about where a fact came from, so it doesn't belong in an RDF-star note. Shares, votes and board rights are **different kinds of power**: equity and control aren't the same thing, so each needs its own field.
+  - The stake's own source and fetch date still go on RDF-star notes, as for every fact.
+  - Open point (Bruno's rule applied to what exists): `fundManagedBy` keeps its status and start date on the note. Are those facts, too? Revisit when the Companies House schema is sketched.
+- **D-076 · Queries use tidy values; the as-given values stay in the graph.**
+  - Each number or name is stored as the source gave it (with its source), plus a tidy version made by a named rule.
+  - Queries use the tidy version. Every tidying failure (e.g. a missing number) goes into a short report.
+  - Why (Bruno): the raw value is how any answer is traced back to what the source actually said; the tidy value is what makes queries work.
