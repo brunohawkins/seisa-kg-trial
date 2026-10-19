@@ -71,7 +71,7 @@ STANDARD_PREDICATES = {"type": "rdf:type", "label": "rdfs:label",
                        # The provenance links used by scope decisions (D-036, D-037).
                        "wasGeneratedBy": "prov:wasGeneratedBy", "wasRevisionOf": "prov:wasRevisionOf"}
 # The datatype names used in rows, and the XML Schema datatypes they mean.
-DATATYPES = {"date": "xsd:date", "dateTime": "xsd:dateTime"}
+DATATYPES = {"date": "xsd:date", "dateTime": "xsd:dateTime", "boolean": "xsd:boolean"}
 
 
 # Turn a short name like "lei:ABC" into a full web address (an RDF "named node").

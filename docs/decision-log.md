@@ -1317,3 +1317,6 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - Why: the questions need a mix of announcement types (Q8–Q12). UK targets let Companies House climb from the bought company up to the fund (Q10). Equal numbers keep the sponsors comparable.
 - **D-080 · Bridgepoint's releases are found by web search, then downloaded from Bridgepoint's own site.** Why: their news list needs JavaScript (F34). This keeps all three sponsors on the same kind of source, their own website.
 - **D-081 · Claude lists about 40 candidates (title, date, type, the target's country); Bruno approves the final 30 before they are downloaded for good.**
+- **D-082 · Bridgepoint's releases are saved by hand by Bruno, from his browser, into `data/raw/news/bridgepoint/`.**
+  - Their provenance is recorded honestly: "saved by hand from bridgepointgroup.com", with the save date.
+  - Why: the site's bot challenge (F39) refuses programs, and getting around it would be wrong. A person reading the site is its intended use, and the source stays the sponsor's own website.

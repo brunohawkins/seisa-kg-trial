@@ -196,3 +196,5 @@ Probed the three sponsors' news pages and two real deal releases: Apax's NextGen
   - **people quoted:** the target's CEO and sponsor partners.
 - **F37 · Both sample targets are US companies.** Companies House can't climb their chains. For the UK case study, choosing releases about UK companies matters (Bruno to decide).
 - **F38 · Names in releases are brands and short forms** ("Hg", "Apax Funds", "the Company"), not legal names. Matching them to LEIs or Companies House numbers is the entity-matching step (50 pairs hand-checked).
+- **F39 · Bridgepoint's article pages sit behind a bot challenge.** A program receives a 2 KB "Challenge Validation" page, not the release. We do not try to get around it (D-082).
+- **F40 · No Hg or Apax fund close was published in 2025–26.** The latest are Apax XI (final close 31 Mar 2024, over $12bn) and Hg Saturn 1 (older). Bridgepoint has BDL IV (€5.1bn, 2026).
