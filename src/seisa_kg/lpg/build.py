@@ -20,6 +20,12 @@ Built step by step with Bruno (D-067). So far:
   HAS_OTHER_NAME / HAS_PREVIOUS_NAME. A link to a company we never fetched
   ends at a :NotFetched stub that holds only its id (D-113).
   Check: each relationship type's count equals the link facts that map to it.
+- Step 4: the receipts (D-110). Each node gets one DERIVED_FROM per source
+  record (or GENERATED_BY per rule) behind its values and labels, listing
+  exactly which ones: aligned lists `properties`, `values`, and for news
+  `quotes` plus `extractedBy`; for "unknown" values, `whys` (D-090). A record's
+  own text and a rule's own label need no receipt (they are the source).
+  Check: every value and label fact is listed in exactly one receipt.
 
 Every node gets an `id` property: its name in the fact list (e.g.
 "lei:213800KFNMVI8PDZX472"), so both graphs use the same names.
@@ -29,6 +35,8 @@ Run with: uv run python -m seisa_kg.lpg.build
 
 # Turns camelCase fact names into UPPER_SNAKE relationship names.
 import re
+# Writes a fact's details as text, to tell two facts apart.
+import json
 # Groups things into lists and counts them.
 from collections import Counter, defaultdict
 # Turns "2026-06-29" into a real date, and fetch times into real date-times.
@@ -131,6 +139,14 @@ def list_predicates(values: list[dict]) -> set[str]:
     return {p for (_, p), vs in seen.items() if len(vs) > 1}
 
 
+# A :Name node's id, e.g. "ch:01899316#previousName:COUNTY NATWEST … |1997-09-26|1989-12-12" (details in key order).
+def name_node_id(r: dict) -> str:
+    # The details' values, in a fixed order, so the same name in two periods gets two ids.
+    details = "|".join(str(r["details"][k]["value"]) for k in sorted(r["details"]))
+    # Owner, kind, name, details.
+    return f"{r['subject']}#{r['predicate']}:{r['object']['value']}|{details}"
+
+
 # Step 2a: every node as {"labels": (...), "props": {...}}, keyed by its id.
 def build_nodes(rows: list[dict]) -> dict[str, dict]:
     # Each subject's type, from its "type" fact.
@@ -165,8 +181,8 @@ def build_nodes(rows: list[dict]) -> dict[str, dict]:
         props, p, v = nodes[r["subject"]]["props"], r["predicate"], typed(r["object"])
         # Rule 4: names with their own details become :Name nodes.
         if p in NAME_PREDICATES:
-            # The Name node's id: its company, the kind of name, and the name itself (one node per distinct name).
-            name_id = f"{r['subject']}#{p}:{r['object']['value']}"
+            # The Name node's id: its company, the kind of name, the name, and its details (the same name can recur in two periods).
+            name_id = name_node_id(r)
             # Its properties: the name, and each detail (type, language, dates) as a plain value.
             name_props = {"id": name_id, "value": v, "kind": p, **{k: typed(d) for k, d in r["details"].items()}}
             # Kept once (the same name from two fetch dates is one node).
@@ -215,6 +231,12 @@ def write_nodes(driver, nodes: dict[str, dict]) -> None:
             driver.execute_query(f"UNWIND $rows AS row CREATE (n{tag}) SET n = row", rows=props[i:i + BATCH])
 
 
+# Every distinct name fact as (owner, kind, name, details), worked out from the fact list (used by the checks).
+def distinct_names(rows: list[dict]) -> set[tuple]:
+    # The details as sorted text, so two periods of one name differ.
+    return {(r["subject"], r["predicate"], r["object"]["value"], json.dumps(r["details"], sort_keys=True)) for r in rows if r["predicate"] in NAME_PREDICATES}
+
+
 # Step 2c: check each label's count against the fact list. Returns True if every count matches.
 def check_nodes(driver, rows: list[dict], nodes: dict[str, dict]) -> bool:
     # What the fact list says: each type's count of DISTINCT nodes, as the label it becomes. Not the count of
@@ -229,8 +251,8 @@ def check_nodes(driver, rows: list[dict], nodes: dict[str, dict]) -> bool:
     expected["SourceRecord"] = len(records)
     # Sentence records look like src:news/<release>/sNN.
     expected["Sentence"] = sum(1 for rec in records if rec.startswith("src:news/") and rec.count("/") == 2)
-    # One :Name per distinct (owner, kind of name, name).
-    expected["Name"] = len({(r["subject"], r["predicate"], r["object"]["value"]) for r in rows if r["predicate"] in NAME_PREDICATES})
+    # One :Name per distinct (owner, kind of name, name, details): the same name in two periods is two names.
+    expected["Name"] = len(distinct_names(rows))
     # What Neo4j actually holds, per label.
     found = {r["label"]: r["n"] for r in driver.execute_query(
         # Each label and how many nodes carry it.
@@ -351,10 +373,10 @@ def check_relationships(driver, rows: list[dict]) -> bool:
                        if "iri" in r["object"] and r["predicate"] != "type" and not r["subject"].startswith("ex:scope/"))
     # One IN_SCOPE_OF per scope decision.
     expected["IN_SCOPE_OF"] = len({r["subject"] for r in rows if r["subject"].startswith("ex:scope/")})
-    # One name link per distinct (owner, kind, name).
-    names = {(r["subject"], r["predicate"], r["object"]["value"]) for r in rows if r["predicate"] in NAME_PREDICATES}
+    # One name link per distinct name (owner, kind, name, details).
+    names = distinct_names(rows)
     # Counted by kind.
-    for _, p, _ in names:
+    for _, p, _, _ in names:
         # e.g. HAS_PREVIOUS_NAME.
         expected[NAME_PREDICATES[p]] += 1
     # What Neo4j holds, per relationship type.
@@ -371,7 +393,111 @@ def check_relationships(driver, rows: list[dict]) -> bool:
     return dict(expected) == found
 
 
-# Steps 1 to 3: empty, rules, nodes, relationships, checks.
+# The facts a receipt covers: values and types on nodes, each distinct fact once (some sources repeat a row exactly).
+def receipt_facts(rows: list[dict], node_ids: set[str]) -> list[dict]:
+    # Distinct facts seen so far.
+    seen = set()
+    # The facts kept.
+    out = []
+    # Each fact.
+    for r in rows:
+        # Values and types only (a link's source is on the link itself, step 3), on subjects that are nodes.
+        if not ("value" in r["object"] or r["predicate"] == "type") or r["subject"] not in node_ids:
+            # Next fact.
+            continue
+        # The fact's source: a record, or a rule's node.
+        target = r["origin"]["record"] if r["origin"]["kind"] == "source" else "ex:rule/" + r["origin"]["rule"]
+        # A record's own text, or a rule's own label and type: it *is* the source, so it needs no receipt.
+        if target == r["subject"]:
+            # Next fact.
+            continue
+        # The fact's identity: everything about it.
+        key = json.dumps([r["subject"], r["predicate"], r["object"], r["origin"], r["details"]], sort_keys=True)
+        # Kept once.
+        if key not in seen:
+            # Remember it.
+            seen.add(key)
+            # Keep it, with its target.
+            out.append({**r, "target": target})
+    # Hand back the facts.
+    return out
+
+
+# Step 4a: the receipts: one per (node, record or rule), listing the facts it backs in aligned lists (D-110).
+def build_receipts(facts: list[dict], nodes: dict[str, dict]) -> list[dict]:
+    # (from node, kind, target) -> the receipt's lists.
+    receipts = {}
+    # Each fact.
+    for r in facts:
+        # A name's receipt starts at its :Name node; every other fact's at its own node.
+        start = name_node_id(r) if r["predicate"] in NAME_PREDICATES else r["subject"]
+        # A source gives DERIVED_FROM; a rule gives GENERATED_BY.
+        kind = "DERIVED_FROM" if r["origin"]["kind"] == "source" else "GENERATED_BY"
+        # The receipt for this node and source, made on first use.
+        rec = receipts.setdefault((start, kind, r["target"]), {"properties": [], "values": [], "quotes": [], "whys": [], "models": set()})
+        # The property it backs: "_label" for a type, "value" on a :Name, otherwise the fact's own name.
+        rec["properties"].append("_label" if r["predicate"] == "type" else "value" if r["predicate"] in NAME_PREDICATES else r["predicate"])
+        # The value it backs, as text (a type's label name, e.g. "Deal").
+        rec["values"].append(labels_for(r["subject"], r["object"]["iri"])[-1] if r["predicate"] == "type" else str(r["object"]["value"]))
+        # The exact quote, for news values ("" when there's none, so the lists stay aligned).
+        rec["quotes"].append(r["details"].get("quote", {}).get("value", ""))
+        # Why a value is "unknown" (D-090), or "".
+        rec["whys"].append(r["details"].get("why", {}).get("value", ""))
+        # The model that extracted it, if any.
+        if "extractedBy" in r["details"]:
+            # Remember it.
+            rec["models"].add(r["details"]["extractedBy"]["value"])
+    # The relationships, keeping only the lists that say something.
+    out = []
+    # Each receipt.
+    for (start, kind, target), rec in receipts.items():
+        # Always: which properties, which values.
+        props = {"properties": rec["properties"], "values": rec["values"]}
+        # Quotes, only if any.
+        if any(rec["quotes"]):
+            # Aligned with properties.
+            props["quotes"] = rec["quotes"]
+        # Reasons for "unknown", only if any.
+        if any(rec["whys"]):
+            # Aligned with properties.
+            props["whys"] = rec["whys"]
+        # The model, if any (one per receipt; more would need a decision).
+        if rec["models"]:
+            # Exactly one model.
+            if len(rec["models"]) > 1:
+                # Stop loudly.
+                raise ValueError(f"two models behind one receipt: {start} -> {target}")
+            # e.g. "gemini-2.5-pro".
+            props["extractedBy"] = rec["models"].pop()
+        # The relationship.
+        out.append({"type": kind, "from": start, "to": target, "props": props})
+    # Hand back the receipts.
+    return out
+
+
+# Step 4c: every value and label fact must appear in exactly one receipt. Returns True if the counts match.
+def check_receipts(driver, rows: list[dict]) -> bool:
+    # The node ids, worked out from the fact list: typed subjects (not scope decisions) and records.
+    node_ids = {r["subject"] for r in rows if r["predicate"] == "type" and r["object"]["iri"] not in NOT_NODES}
+    # Plus every record.
+    node_ids |= {r["origin"]["record"] for r in rows if r["origin"]["kind"] == "source"}
+    # The facts that need a receipt, split by kind of source.
+    facts = receipt_facts(rows, node_ids)
+    # Expected entries: source-backed facts and rule-made facts.
+    expected = {"DERIVED_FROM": sum(r["origin"]["kind"] == "source" for r in facts), "GENERATED_BY": sum(r["origin"]["kind"] == "rule" for r in facts)}
+    # What Neo4j holds: the number of entries listed across all receipts of each kind.
+    found = {r["t"]: r["n"] for r in driver.execute_query(
+        # Each receipt kind and the total length of its properties lists.
+        "MATCH ()-[r:DERIVED_FROM|GENERATED_BY]->() RETURN type(r) AS t, sum(size(r.properties)) AS n").records}
+    # Each kind.
+    for t in sorted(expected):
+        # e.g. "  DERIVED_FROM   facts 21,000   listed in receipts 21,000  ok".
+        print(f"  {t:<14} facts needing one {expected[t]:>7,}   listed in receipts {found.get(t, 0):>7,}  {'ok' if expected[t] == found.get(t, 0) else 'MISMATCH'}")
+    # True only if both match.
+    return all(expected[t] == found.get(t, 0) for t in expected)
+
+
+# Steps 1 to 4: empty, rules, nodes, relationships, receipts, checks.
 def main() -> None:
     # The fact list.
     rows = read_facts()
@@ -405,6 +531,16 @@ def main() -> None:
         ok = check_relationships(driver, rows)
         # The verdict.
         print("All relationship counts match the fact list." if ok else "Relationship counts DIFFER from the fact list.")
+        # Step 4: the receipts, from the facts on the nodes we built.
+        receipts = build_receipts(receipt_facts(rows, set(nodes)), nodes)
+        # Written like any relationship.
+        write_relationships(driver, receipts, nodes)
+        # Say how many.
+        print(f"Step 4: wrote {len(receipts)} receipts (D-110). Check, every value and label listed exactly once:")
+        # Compare with the fact list.
+        ok = check_receipts(driver, rows)
+        # The verdict.
+        print("Every value and label has its receipt." if ok else "Receipts DIFFER from the fact list.")
 
 
 # Run main() when the file is run directly.

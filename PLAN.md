@@ -306,15 +306,24 @@ This is slower than Claude building alone, so the plan below cuts the extensions
 4. The 12 questions in Cypher, scored against the SPARQL answers (1.25 h).
 5. A Bloom view of fact → source (30 min).
 
-### Wednesday 21 Oct, 10:00–18:00: comparison, measurements, write-up
-1. Text-to-SPARQL and text-to-Cypher (Gemini) plus vector search over the news sentences, on 10 questions, scored (3 h).
-2. The gemini-3.8-flash vs 2.5-pro extraction comparison (D-084) (30 min).
-3. Timings on small and large data (1 h).
-4. README, plus the ~2-page write-up, including the talking points (2 h).
-5. **17:30 freeze:** `make build` from a clean copy, all tests, commit, push.
+### Wednesday 21 Oct (D-115): build in the morning, write, then review
+**10:00–13:00: build** (11:00–11:30 blocked: Bruno's EF interview)
+1. The remaining questions in SPARQL and Cypher: Q4, Q6, Q8–Q12 (Q10 as reworded in D-100).
+2. A small three-way comparison: text-to-SPARQL vs text-to-Cypher vs vector search over the news sentences, on about 10 questions, scored.
+3. Timings on the current data size (large-data timings: describe the method instead).
 
-### Thursday 22 Oct: present
-- Before the presentation: rehearse the explain-back with no code open, using the expected questions in §1.
+**13:00–15:00: write, then freeze**
+4. README (one command builds both graphs) and the ~2-page write-up, including the talking points.
+5. **15:00 freeze:** `make build` from a clean copy, all tests, commit, push. No more code after this.
+
+**15:00–18:00: review and rehearsal, with no code open**
+6. The decisions Bruno *accepted* (rather than originated) first, then the expected questions in §1. Claude quizzes as Seisa.
+
+**Dropped for time (D-115, from the drop list below):** `make refresh` and Q7, and the gemini-3.8-flash comparison. Each is named in the write-up as next work.
+
+### Thursday 22 Oct: review in the morning, present early afternoon
+- Morning: a final review and rehearsal of the explain-back, with no code open, using the expected questions in §1.
+- Early afternoon: present.
 
 ### If we fall behind, drop in this order (proposed; Bruno decides at the time)
 1. Large-data timings: describe the method instead.

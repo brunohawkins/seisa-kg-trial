@@ -1579,3 +1579,23 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   2. A fact kind with several values *and* per-value details would have silently overwritten its companion property. None exists today (`otherName` and `previousName` are `:Name` nodes), but the build now stops with a clear message instead of guessing.
   3. The same link stated by two records would have become **two** relationships, where RDF holds one triple with two notes. None exists today, but `make refresh` (D-094) will create them. The build now stops with a message, so the decision (one relationship with a list of records) is made then, not by accident.
   - 6 new tests in `tests/test_lpg_build.py` pin the builder's rules (no Neo4j needed); 47 tests pass.
+
+### The schedule to Thursday, and step 4 (about 3pm)
+- **D-115 · New schedule (Bruno):**
+  - **Wednesday:**
+    - 10:00–13:00 building (11:00–11:30 is Bruno's EF interview): remaining questions, a small three-way comparison, timings
+    - 13:00–15:00 README and write-up, then freeze at 15:00
+    - 15:00–18:00 review and rehearsal with no code open
+  - **Thursday:** morning review, presenting early afternoon.
+  - Why: the explain-back is scored highest, but the three-way comparison is a brief deliverable, so the morning goes on building and the afternoon on review. Thursday morning adds a final rehearsal.
+  - Dropped for time (Claude's proposal from the plan's drop list; confirm at the freeze): `make refresh` and Q7, and the gemini-3.8-flash comparison. Each is named in the write-up as next work.
+  - PLAN.md §6 is updated to match.
+- **Bruno's use of Claude Code, rated (Bruno asked):** about 7/10. Strengths: he set a working agreement and sticks to it; he asked Pablo for evidence; he originates ideas (NewsOnlyCompany, "notes are metadata only", D-111's principle); he asks for verification. To improve: say one way a recommendation could be wrong before accepting it; run each step himself and read the output; keep a one-page "in my own words" sheet.
+- **A second data-loss bug, found while preparing step 4 (in step 2's `:Name` nodes).** `ch:01899316` had the **same** former name in two periods (1989–1997, then 3 days in 1997). One node per name kept only the first period's dates. The node check didn't catch it, because it made the same assumption.
+  - Fix: a `:Name` node's id now includes its details (dates, type), so the same name in two periods is two nodes. The checks count the same way.
+- **Found in the data:** 198 fact rows are exact repeats (the same person listed twice in one officer list, e.g. two appointments to one company). They're the same fact and get one receipt entry. (RDF also stores them once.)
+- **Step 4 built: receipts (D-110).** 6,545 receipts (`DERIVED_FROM` to source records and sentences, `GENERATED_BY` to rules). Every value and label fact is listed in exactly one receipt. Bruno ran it and inspected the Kayne Anderson deal in Neo4j Desktop:
+  - the valuation's quote sits on the arrow to sentence s01, not on the Deal node
+  - the 7 stated reasons each point to their own sentence
+  - the aligned lists (`properties` / `values` / `quotes`) are read by position
+  - Facts with no receipt on purpose: a sentence's own text and a rule's own label (they *are* the source).
