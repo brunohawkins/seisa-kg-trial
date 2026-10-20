@@ -1624,7 +1624,7 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - Why (Bruno): no headspace for it today; understanding the two query languages is the best value for the rest of the day.
   - It's still required (brief, task 5). PLAN.md Wednesday is updated.
 - **SPARQL practice tool:** `scripts/sparql.py` runs any query (or `.rq` file) against `graph.ttl` and prints a table with the time taken. It adds the usual prefixes for practice queries. (Oxigraph has no query window like Neo4j Desktop.)
-- **SPARQL crash course for Bruno:** https://claude.ai/artifact/AFTER_PUBLISH (9 lessons matching the Cypher course, every query checked on our graph).
+- **SPARQL crash course for Bruno:** https://claude.ai/artifact/4NhJguTLGHQ8C8tmjPt7EG (9 lessons matching the Cypher course, every query checked on our graph).
   - Findings noted in it: SPARQL property paths count start–end *pairs* (77) while Cypher counts *routes* (81).
   - Our IRIs contain "/", so `ex:rule/D-025` must be written `ex:rule\/D-025` or as a full IRI in a query.
   - Bridgepoint's legal name has two notes (fetched 16 and 18 Oct), which duplicates rows when joining through notes.
