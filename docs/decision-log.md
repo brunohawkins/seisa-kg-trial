@@ -1481,10 +1481,10 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 
 #### TODO (Tuesday 20 Oct), updated at 12:20
 - [x] Entity matching: design (D-096 to D-108), candidates, outcomes, Match nodes in the graph, check, tests, schema section 11
-- [ ] **Bruno: fill in `eval/matching-sample.csv` at about 4:30pm** (50 names, blind), then Claude scores precision, weighted recall and agreement
-- [ ] Bruno explains matching back, with no code open (D-067 step 5)
-- [ ] **From 1pm: the property graph (Neo4j)**, step by step
-- [ ] After the property graph: `make refresh` (D-094); Q4, Q6–Q12 in SPARQL (Q10 as reworded in D-100); Q5 names and parents
+- [ ] **Bruno: fill in `eval/matching-sample.csv` at about 4:30pm** (50 names, blind), then Claude scores precision, weighted recall and agreement. *(Moved to Wednesday, D-116.)*
+- [x] Bruno explains matching back, with no code open (D-067 step 5)
+- [x] **From 1pm: the property graph (Neo4j)**, step by step
+- [ ] After the property graph: `make refresh` (D-094); Q4, Q6–Q12 in SPARQL (Q10 as reworded in D-100); Q5 names and parents. *(Questions moved to Wednesday; `make refresh` dropped, D-115.)*
 
 ### Bought companies get a node (about 1pm)
 - **D-109 · Every deal target with no other match gets a `NewsOnlyCompany` node: one per name (after tidying), connected through its Match.** The Match outcome changes from "unresolved" to **"news-only"**, with a link Match → `namedCompany` → `ex:newsonlycompany/<name>`. Targets only, for now.
@@ -1535,11 +1535,11 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - **Drafted during Bruno's lunch: `docs/schema/lpg-schema.md`** (for review; nothing built in Neo4j). It covers labels, relationships, the provenance mapping, the reconciliation checks, a first "what changed" note, and 4 open points.
 
 #### TODO (Tuesday afternoon, after lunch)
-- [ ] Bruno: restate D-110's why in his own words; confirm D-111 (two nodes)
-- [ ] Bruno: review the draft property graph schema and decide its 4 open points (details on names, list properties, scope as a relationship, history)
-- [ ] Then the builder, step by step: constraints → nodes → relationships → receipts → reconciliation checks
-- [ ] Cypher questions; Bloom view
-- [ ] 4:27pm: the hand-check sheet
+- [x] Bruno: restate D-110's why in his own words; confirm D-111 (two nodes)
+- [x] Bruno: review the draft property graph schema and decide its 4 open points (details on names, list properties, scope as a relationship, history)
+- [x] Then the builder, step by step: constraints → nodes → relationships → receipts → reconciliation checks
+- [ ] Cypher questions; Bloom view *(moved to Wednesday)*
+- [ ] 4:27pm: the hand-check sheet *(moved to Wednesday, D-116)*
 
 ### Property graph: decisions confirmed and the build starts (about 2pm)
 - **D-110's why, in Bruno's words:** "Receipt relationships, so the source is obvious on the graph itself. The values are plain properties that can be queried fast and cheaply. These links can be hidden if need be."
@@ -1628,3 +1628,47 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - Findings noted in it: SPARQL property paths count start–end *pairs* (77) while Cypher counts *routes* (81).
   - Our IRIs contain "/", so `ex:rule/D-025` must be written `ex:rule\/D-025` or as a full IRI in a query.
   - Bridgepoint's legal name has two notes (fetched 16 and 18 Oct), which duplicates rows when joining through notes.
+
+### End of day (6pm)
+**What Tuesday built:**
+- **Entity matching (D-096 to D-109).**
+  - Strict rules: link only when exactly one company fits; a sponsor's name links to its group; every name gets exactly one outcome.
+  - Match nodes in the graph; bought companies get `NewsOnlyCompany` nodes.
+  - 8 tests pin the rules.
+  - The stratified 50-name hand-check sheet is ready. Scoring waits for Bruno's answers (Wednesday, D-116).
+- **The property graph (D-110 to D-114), built step by step, with Bruno running each step:**
+  - uniqueness rules → nodes → relationships → receipts → a direct RDF-vs-Neo4j check
+  - `make build` now builds **both graphs in about 24 seconds**, and stops with an error if any check fails.
+- **Three bugs and one wrong number, all caught by checks or by review, and all fixed:**
+  - the "1,152 companies / 839 people" counts were counts of type facts; the true figures are **648 / 466**
+  - a node check that trusted the builder's own output
+  - a `:Name` node that lost a second period of the same former name
+  - Match links leaking into the "pair counts once" lookup
+- **Learning material for Bruno:**
+  - the recap page: https://claude.ai/artifact/CGvQgMeZi2wpGvAYQxNRdR
+  - the extraction page for Anish: https://claude.ai/artifact/2ccEV9MtsnDwL1J2GWZepn
+  - the Cypher crash course: https://claude.ai/artifact/41DXx1yC9Yt6bTFdhyhn71
+  - the SPARQL crash course: https://claude.ai/artifact/4NhJguTLGHQ8C8tmjPt7EG
+  - the SPARQL practice tool: `scripts/sparql.py`
+- **Seisa input:**
+  - Pablo said access control matters most, and a schema is judged on cost, retrieval and exposure.
+  - The primer says "access rules must apply during traversal". Both back D-110.
+
+**Numbers at the end of the day:**
+- Fact list: 34,269 facts. RDF: 112,800 triples; 12 SHACL checks plus 3 code checks pass.
+- Property graph: 6,342 nodes (incl. 7 `:NotFetched`), 4,889 relationships and 6,545 receipts. Every count matches the fact list and the RDF graph.
+- Companies: 648 (489 GLEIF + 159 Companies House, 153 joined). People: 466. Matches: 253 (out of scope 144, `refersToGroup` 59, news-only 29, non-entity 9, `sameEntityAs` 6, ambiguous 5, unresolved 1).
+- 47 tests pass.
+
+#### TODO (Wednesday 21 Oct; D-115, D-116)
+- [ ] **10:00 · the hand-check, first (15 min):** Bruno fills `eval/matching-sample.csv` blind. Claude scores precision, weighted recall and agreement, then goes through each disagreement.
+- [ ] **Cypher questions:** Bruno sketches Q1 first (the crash course's last section). Then Q1–Q3 and Q5 in Cypher, with a runner that saves `docs/answers-lpg.md`, compares each answer with SPARQL, and times both (median of several runs).
+- [ ] **The remaining questions in SPARQL and Cypher:** Q4, Q6, Q8–Q12 (Q10 as reworded in D-100; Bruno has a Q11 SPARQL exercise).
+- [ ] **A small three-way comparison:** text-to-SPARQL vs text-to-Cypher vs vector search over the news sentences, on about 10 questions, scored for correctness and citations.
+- [ ] **Visualisations:** a Bloom view of fact → source, plus one other.
+- [ ] *(11:00–11:30: Bruno's EF interview)*
+- [ ] **13:00–15:00:** README (one command builds both graphs; Neo4j must be running) and the ~2-page write-up, including the talking points.
+- [ ] **15:00 freeze:** `make build` from a clean copy, tests, commit, push.
+- [ ] **15:00–18:00 · review with no code open:** the decisions Bruno *accepted* first (D-102 to D-104, D-112, the label list, the naming renames), then Seisa's expected questions; Claude quizzes.
+- Dropped for time (D-115): `make refresh` and Q7, and the gemini-3.8-flash comparison. Both are named in the write-up as next work.
+

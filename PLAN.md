@@ -309,7 +309,7 @@ This is slower than Claude building alone, so the plan below cuts the extensions
 ### Wednesday 21 Oct (D-115): build in the morning, write, then review
 **10:00–13:00: build** (11:00–11:30 blocked: Bruno's EF interview)
 0. **First (15 min): the 50-name matching hand-check** (`eval/matching-sample.csv`), then Claude scores precision, weighted recall and agreement (moved from Tuesday, D-116).
-1. The remaining questions in SPARQL and Cypher: Q4, Q6, Q8–Q12 (Q10 as reworded in D-100).
+1. The questions in Cypher (Q1–Q3 and Q5 first, compared with SPARQL and timed), then the remaining questions in both: Q4, Q6, Q8–Q12 (Q10 as reworded in D-100). A Bloom view of fact → source.
 2. A small three-way comparison: text-to-SPARQL vs text-to-Cypher vs vector search over the news sentences, on about 10 questions, scored.
 3. Timings on the current data size (large-data timings: describe the method instead).
 
