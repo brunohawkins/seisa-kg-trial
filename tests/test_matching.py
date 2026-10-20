@@ -8,8 +8,8 @@ Run them with:  uv run pytest
 
 # The name tidier and the rule function under test.
 from seisa_kg.matching.candidates import tidy
-# The rules.
-from seisa_kg.matching.outcomes import decide
+# The rules, and the lookup of joined lei:/ch: pairs.
+from seisa_kg.matching.outcomes import company_of, decide
 
 
 # Make a name entry with the given evidence (anything not given is empty).
@@ -58,9 +58,28 @@ def test_adviser_is_out_of_scope():
     assert out["outcome"] == "out-of-scope"
 
 
-# A name with no evidence and no label is unresolved, never guessed (D-096).
+# A deal target with no evidence gets a NewsOnlyCompany node, one per tidied name (D-109).
+def test_target_becomes_news_only_company():
+    # Two spellings of the same name.
+    a, b = decide(entry("Zuto", role="target"), {}, {}), decide(entry("ZUTO.", role="target"), {}, {})
+    # Both news-only, pointing at the same node.
+    assert a["outcome"] == "news-only" and a["to"] == b["to"] == ["ex:newsonlycompany/zuto"]
+
+
+# Any other name with no evidence and no label is unresolved, never guessed (D-096).
 def test_no_evidence_is_unresolved():
-    # Nothing at all.
-    out = decide(entry("Zuto", role="target"), {}, {})
+    # A seller nobody labelled.
+    out = decide(entry("Unknown Seller Co", role="seller"), {}, {})
     # Unresolved.
     assert out["outcome"] == "unresolved"
+
+
+# Only registry pairs (lei: -> ch:, rule D-025) count as joined; a Match's own sameEntityAs link must not.
+def test_pairs_ignore_match_links():
+    # One registry pair and one Match link to the same lei:.
+    rows = [{"subject": "lei:X", "predicate": "sameEntityAs", "object": {"iri": "ch:1"}},
+            # A Match node's link, as written by matching itself.
+            {"subject": "ex:match/d1-buyer-1", "predicate": "sameEntityAs", "object": {"iri": "lei:X"}}]
+    # Only the registry pair is kept.
+    assert company_of(rows) == {"ch:1": "lei:X"}
+

@@ -23,6 +23,7 @@ from seisa_kg.facts.model import fact, iri, literal
 from seisa_kg.matching.outcomes import match_all
 
 # Each rule used by matching, with a plain-English label.
+# (D-109's NewsOnlyCompany nodes are made here too: one per tidied target name.)
 RULES = {"D-096": "Names that point outside our graph (option A) stay unresolved, never forced",
          # The strict rule.
          "D-098": "Link a name to a company only when exactly one company fits; otherwise list the candidates and pick none",
@@ -31,7 +32,9 @@ RULES = {"D-096": "Names that point outside our graph (option A) stay unresolved
          # Sponsor words and families.
          "D-103": "A name with a sponsor's name refers to that sponsor's group; a fund family is listed as possible, none picked",
          # Advisers.
-         "D-104": "Advisers are outside firms: out of scope"}
+         "D-104": "Advisers are outside firms: out of scope",
+         # Bought companies.
+         "D-109": "A deal target with no other match gets a NewsOnlyCompany node, one per name: known only from the news, not verified"}
 
 
 # The rows for one name's Match node.
@@ -60,6 +63,14 @@ def match_rows(m: dict, match: str) -> list[dict]:
     elif m["outcome"] == "ambiguous":
         # One row per candidate.
         rows += [fact(match, "candidate", iri(c), rule) for c in m["to"]]
+    # A bought company known only from the news (D-109): the link, plus the node itself.
+    elif m["outcome"] == "news-only":
+        # The link from the Match.
+        rows.append(fact(match, "namedCompany", iri(m["to"][0]), rule))
+        # "This is a NewsOnlyCompany" (made by our rule).
+        rows.append(fact(m["to"][0], "type", iri("ex:NewsOnlyCompany"), rule))
+        # Its name as written, from the sentence (what the text says).
+        rows.append(fact(m["to"][0], "name", literal(m["name"]), m["origin"]))
     # A non-entity: what sort it is (from the approved label).
     elif m["outcome"] == "non-entity":
         # The kind, e.g. "unnamed group of people".
@@ -84,6 +95,8 @@ def match_facts(rows: list[dict]) -> list[dict]:
         match = f"ex:match/{m['node'].split('/', 1)[1]}-{m['role']}-{seen[(m['node'], m['role'])]}"
         # Its rows.
         out += match_rows(m, match)
+    # The same row can come from two deals naming one company (its type); keep each fact and origin once.
+    out = list({(r["subject"], r["predicate"], str(r["object"]), str(r["origin"])): r for r in out}.values())
     # One Rule node per rule used, so a reader can see what each says.
     for name in sorted({m["rule"] for m in results}):
         # "This is a rule", and its label.

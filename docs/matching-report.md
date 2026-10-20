@@ -2,7 +2,7 @@
 
 One outcome per news name, by the strict rules D-096 to D-104. Nothing is added to the graph yet.
 
-253 names: out-of-scope 144, refersToGroup 59, unresolved 30, non-entity 9, sameEntityAs 6, ambiguous 5
+253 names: out-of-scope 144, refersToGroup 59, news-only 29, non-entity 9, sameEntityAs 6, ambiguous 5, unresolved 1
 
 | Role | As written | Outcome | Linked to / candidates | Rule | Why |
 |---|---|---|---|---|---|
@@ -76,6 +76,35 @@ One outcome per news name, by the strict rules D-096 to D-104. Nothing is added 
 | fund | Saturn Fund | ambiguous | lei:2138002WF6K5XV9QJ309, lei:21380037T5V8668CKN11, lei:2138003889V6JJVYJ680 … +25 | D-103 | 28 entities share its words, and it names no sponsor |
 | fund | Saturn Fund | ambiguous | lei:2138002WF6K5XV9QJ309, lei:21380037T5V8668CKN11, lei:2138003889V6JJVYJ680 … +25 | D-103 | 28 entities share its words, and it names no sponsor |
 | fund | Saturn Fund | ambiguous | lei:2138002WF6K5XV9QJ309, lei:21380037T5V8668CKN11, lei:2138003889V6JJVYJ680 … +25 | D-103 | 28 entities share its words, and it names no sponsor |
+| target | A-LIGN | news-only | ex:newsonlycompany/a-lign | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Eckoh plc | news-only | ex:newsonlycompany/eckoh-plc | D-109 | a company known only from the news; no registry ID, not verified |
+| target | ENTERSOFTONE | news-only | ex:newsonlycompany/entersoftone | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Faculty | news-only | ex:newsonlycompany/faculty | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Flexitallic | news-only | ex:newsonlycompany/flexitallic | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Foods Connected | news-only | ex:newsonlycompany/foods-connected | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Gen II Fund Services, LLC | news-only | ex:newsonlycompany/gen-ii-fund-services-llc | D-109 | a company known only from the news; no registry ID, not verified |
+| target | GTreasury | news-only | ex:newsonlycompany/gtreasury | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Helio Intelligence | news-only | ex:newsonlycompany/helio-intelligence | D-109 | a company known only from the news; no registry ID, not verified |
+| target | ht.digital | news-only | ex:newsonlycompany/htdigital | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Institutional Investor | news-only | ex:newsonlycompany/institutional-investor | D-109 | a company known only from the news; no registry ID, not verified |
+| target | IRIS | news-only | ex:newsonlycompany/iris | D-109 | a company known only from the news; no registry ID, not verified |
+| target | IWSR | news-only | ex:newsonlycompany/iwsr | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Kayne Anderson Real Estate | news-only | ex:newsonlycompany/kayne-anderson-real-estate | D-109 | a company known only from the news; no registry ID, not verified |
+| target | MillTech | news-only | ex:newsonlycompany/milltech | D-109 | a company known only from the news; no registry ID, not verified |
+| target | mydentist | news-only | ex:newsonlycompany/mydentist | D-109 | a company known only from the news; no registry ID, not verified |
+| target | NextGen Security | news-only | ex:newsonlycompany/nextgen-security | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Nourish Care | news-only | ex:newsonlycompany/nourish-care | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Odido | news-only | ex:newsonlycompany/odido | D-109 | a company known only from the news; no registry ID, not verified |
+| target | OneStream, Inc. | news-only | ex:newsonlycompany/onestream-inc | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Quantios | news-only | ex:newsonlycompany/quantios | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Rightsline | news-only | ex:newsonlycompany/rightsline | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Sedex Information Exchange Ltd | news-only | ex:newsonlycompany/sedex-information-exchange-ltd | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Street Group | news-only | ex:newsonlycompany/street-group | D-109 | a company known only from the news; no registry ID, not verified |
+| target | techoraco | news-only | ex:newsonlycompany/techoraco | D-109 | a company known only from the news; no registry ID, not verified |
+| target | The MTM Agency | news-only | ex:newsonlycompany/mtm-agency | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Tosca | news-only | ex:newsonlycompany/tosca | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Visma | news-only | ex:newsonlycompany/visma | D-109 | a company known only from the news; no registry ID, not verified |
+| target | Zuto | news-only | ex:newsonlycompany/zuto | D-109 | a company known only from the news; no registry ID, not verified |
 | buyer | a newly formed continuation vehicle | non-entity | – | D-099 | unnamed vehicle |
 | buyer | the broader management team | non-entity | – | D-099 | unnamed group of people |
 | fund | Core Private Equity strategy | non-entity | – | D-099 | an investment strategy, not a company |
@@ -125,35 +154,6 @@ One outcome per news name, by the strict rules D-096 to D-104. Nothing is added 
 | sponsor | KKR | out-of-scope | – | D-099 | another private equity firm |
 | sponsor | Vista Equity Partners | out-of-scope | – | D-099 | another private equity firm |
 | fund | BDC V | unresolved | – | D-096 | no evidence and no approved label |
-| target | A-LIGN | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Eckoh plc | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | ENTERSOFTONE | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Faculty | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Flexitallic | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Foods Connected | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Gen II Fund Services, LLC | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | GTreasury | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Helio Intelligence | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | ht.digital | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Institutional Investor | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | IRIS | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | IWSR | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Kayne Anderson Real Estate | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | MillTech | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | mydentist | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | NextGen Security | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Nourish Care | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Odido | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | OneStream, Inc. | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Quantios | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Rightsline | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Sedex Information Exchange Ltd | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Street Group | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | techoraco | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | The MTM Agency | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Tosca | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Visma | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
-| target | Zuto | unresolved | – | D-096 | a portfolio company; not in our graph (option A) |
 | adviser | A&M | out-of-scope | – | D-104 | an outside adviser; our graph covers the sponsors' own companies |
 | adviser | Achilles | out-of-scope | – | D-104 | an outside adviser; our graph covers the sponsors' own companies |
 | adviser | Alvarez and Marsal | out-of-scope | – | D-104 | an outside adviser; our graph covers the sponsors' own companies |

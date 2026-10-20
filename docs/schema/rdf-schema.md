@@ -253,7 +253,7 @@ ex:release/apax-01    a ex:Release ; ex:title … ; ex:publishedOn … ; ex:publ
 - Every Deal has one release, a target and a kind (even if "unknown").
 - Every FundClose has one release and a fund name.
 
-## 11. Entity matching: Match nodes (v1, 20 Oct; D-096 to D-108)
+## 11. Entity matching: Match nodes (v1, 20 Oct; D-096 to D-109)
 Every name in the news (a deal's target, buyer, seller, sponsor or fund; an adviser) gets **one Match node**: a judgement with its own evidence (D-108). The name as written comes from its sentence; everything else is labelled with the rule that made it (D-029).
 
 ### Example
@@ -274,14 +274,24 @@ ex:deal/bridgepoint-06-d1 ──buyerMatch──▶ ex:match/bridgepoint-06-d1-b
 | 4 | It contains one sponsor's name | `refersToGroup` | `refersToGroup` → `ex:sponsor/…`; `possibleEntity` → each family member, when the name says more than the sponsor's name | D-103 |
 | 5 | A family shares its words, but it names no sponsor | `ambiguous` | `candidate` → each | D-103 |
 | 6 | An approved label (`config/match_labels.toml`) | `out-of-scope` or `non-entity` | `nonEntityKind` for non-entities | D-099 |
-| 7 | Nothing applies | `unresolved` | – | D-096 |
+| 7 | A deal target with no other match | `news-only` | `namedCompany` → `ex:newsonlycompany/<name>`, one node per tidied name | D-109 |
+| 8 | Nothing applies | `unresolved` | – | D-096 |
+
+### NewsOnlyCompany (D-109)
+A company known **only from the news**: no registry ID, nothing verified. It's a different type from the `lei:`/`ch:` companies, so it's never mistaken for one. One node per tidied name, so two deals naming the same company meet at one node. That is a match by name, which the rule says. What happened to it is the deal's `dealKind`.
+```
+ex:deal/bridgepoint-06-d1 ──targetMatch──▶ Match (outcome "news-only", rule D-109)
+                                              └─ namedCompany ──▶ ex:newsonlycompany/kayne-anderson-real-estate
+                                                                    a ex:NewsOnlyCompany ; ex:name "Kayne Anderson Real Estate" (← sentence s01)
+```
 
 ### Arrows from the news nodes
 `targetMatch`, `buyerMatch`, `sellerMatch`, `sponsorMatch`, `fundMatch` (from a Deal or FundClose); `adviserMatch` (from an Adviser).
 
-### Check (SHACL 11)
+### Checks (SHACL 11–12)
 - Every Match has one name as written, one outcome from the fixed list, one reason, and at most one `sameEntityAs` and one `refersToGroup` link.
+- Every NewsOnlyCompany has a name and at least one Match pointing to it.
 
 ### Numbers (20 Oct)
-253 names: out of scope 144, `refersToGroup` 59, unresolved 30, non-entity 9, `sameEntityAs` 6, ambiguous 5. Quality is measured on a 50-name stratified hand-check (D-107).
+253 names: out of scope 144, `refersToGroup` 59, news-only 29 (D-109), non-entity 9, `sameEntityAs` 6, ambiguous 5, unresolved 1 ("BDC V"). Quality is measured on a 50-name stratified hand-check (D-107).
 

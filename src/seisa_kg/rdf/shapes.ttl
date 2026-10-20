@@ -111,10 +111,20 @@ ex:MatchShape a sh:NodeShape ;
     sh:property [ sh:path ex:nameAsWritten ; sh:minCount 1 ; sh:maxCount 1 ] ;
     # Exactly one outcome, from the fixed list (D-099).
     sh:property [ sh:path ex:outcome ; sh:minCount 1 ; sh:maxCount 1 ;
-                  sh:in ( "sameEntityAs" "refersToGroup" "ambiguous" "out-of-scope" "non-entity" "unresolved" ) ] ;
+                  sh:in ( "sameEntityAs" "refersToGroup" "ambiguous" "news-only" "out-of-scope" "non-entity" "unresolved" ) ] ;
     # Exactly one reason.
     sh:property [ sh:path ex:reason ; sh:minCount 1 ; sh:maxCount 1 ] ;
     # At most one same-entity link (the strict rule, D-098).
     sh:property [ sh:path ex:sameEntityAs ; sh:maxCount 1 ] ;
     # At most one group link.
     sh:property [ sh:path ex:refersToGroup ; sh:maxCount 1 ] .
+
+# Check 12: every NewsOnlyCompany (D-109) has at least one name, and is named by at least one Match.
+ex:NewsOnlyCompanyShape a sh:NodeShape ;
+    # Apply this rule to everything typed ex:NewsOnlyCompany.
+    sh:targetClass ex:NewsOnlyCompany ;
+    # At least one name, as a release wrote it.
+    sh:property [ sh:path ex:name ; sh:minCount 1 ] ;
+    # At least one Match points to it (followed backwards).
+    sh:property [ sh:path [ sh:inversePath ex:namedCompany ] ; sh:minCount 1 ] .
+

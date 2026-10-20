@@ -23,8 +23,8 @@ from seisa_kg.facts.model import PROJECT_ROOT, read_facts
 # Step 2: every name's outcome.
 from seisa_kg.matching.outcomes import match_all
 
-# How many names to take from each outcome group (D-107); 50 in total.
-QUOTAS = {"sameEntityAs": 2, "ambiguous": 2, "refersToGroup": 15, "non-entity": 5, "unresolved": 8, "out-of-scope": 18}
+# How many names to take from each outcome group (D-107; news-only added by D-109); 50 in total.
+QUOTAS = {"sameEntityAs": 2, "ambiguous": 2, "refersToGroup": 15, "news-only": 7, "non-entity": 5, "unresolved": 1, "out-of-scope": 18}
 # The seed: today's date, so the pick can be repeated exactly.
 SEED = 20261020
 # The sheet Bruno fills in (kept in git: it becomes the answer set).

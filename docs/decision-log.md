@@ -1485,3 +1485,16 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - [ ] Bruno explains matching back, with no code open (D-067 step 5)
 - [ ] **From 1pm: the property graph (Neo4j)**, step by step
 - [ ] After the property graph: `make refresh` (D-094); Q4, Q6–Q12 in SPARQL (Q10 as reworded in D-100); Q5 names and parents
+
+### Bought companies get a node (about 1pm)
+- **D-109 · Every deal target with no other match gets a `NewsOnlyCompany` node: one per name (after tidying), connected through its Match.** The Match outcome changes from "unresolved" to **"news-only"**, with a link Match → `namedCompany` → `ex:newsonlycompany/<name>`. Targets only, for now.
+  - **What "NewsOnlyCompany" means (Bruno's wording for the team):** a company known only from the news. It has no registry ID and nothing about it is verified. It's a different type from the `lei:`/`ch:` companies, so it's never mistaken for one.
+  - Why a node (Bruno): the bought company should at least be logged as a company and connected, even without all its information. Q8 and Q9 return companies, and a property graph wants a company node at the end of a deal.
+  - Why one node per name (Bruno): it's tidy, and it lets someone see what other deals involved the same company. It's for illustration only and can't be verified yet.
+  - The risk: two different companies with the same name would share one node. That's a match by name, so the node says so (rule D-109). Today no target name repeats, so nothing is merged yet.
+  - Refines D-096: still no new Companies House records. If we ever look a target up (option B), the link goes on this node.
+  - No separate `acquired`/`sold` arrow: the deal's `dealKind` says what happened (one arrow per concept, D-091). It isn't called "portfolio company" either, because that's only true for some deal kinds (after an exit it no longer is one).
+- **For later:** the other companies named in the news (sellers, trade buyers), and advisers as nodes for Q12.
+- **Built:** 29 NewsOnlyCompany nodes. Outcomes now: out of scope 144, `refersToGroup` 59, news-only 29, non-entity 9, `sameEntityAs` 6, ambiguous 5, unresolved 1 ("BDC V"). 34,269 facts → 112,800 triples; SHACL check 12 added; every check passes; 41 tests pass.
+  - **A bug was caught and fixed:** the standalone report scripts read the fact list, which now holds the Match rows' own `sameEntityAs` links. Those confused the "joined pair counts once" lookup, and the report briefly showed 0 `sameEntityAs`. The graph itself was never affected (`make facts` matches before the Match rows exist). The lookup now only counts `lei:` → `ch:` pairs, and a new test pins it.
+  - The hand-check sheet was regenerated with a news-only group (7 names) and an unresolved group (1 name). Bruno hadn't started filling it.

@@ -1,5 +1,5 @@
 """SUMMARY: Matching, step 2 of 2: one outcome per news name, by the strict
-rules Bruno decided (D-096 to D-104). Still adds nothing to the graph.
+rules Bruno decided (D-096 to D-104, D-109). Still adds nothing to the graph.
 
 The rules, tried in order; the first that applies wins:
 1. An adviser                         -> out of scope (D-104)
@@ -10,7 +10,9 @@ The rules, tried in order; the first that applies wins:
                                          "possible, none picked" (D-103)
 5. A family but no sponsor word       -> ambiguous, with the candidates (D-103)
 6. A label Bruno approved             -> that label (config/match_labels.toml; D-099)
-7. Anything else                      -> unresolved (D-096)
+7. A deal target with no other match  -> news-only: a NewsOnlyCompany node, one per
+                                         name after tidying (D-109)
+8. Anything else                      -> unresolved (D-096)
 
 "Exactly one company": a ch: and lei: pair already joined by sameEntityAs
 counts as one (D-102); the link then points at the lei: node.
@@ -20,6 +22,8 @@ It writes docs/matching-report.md. Run with: uv run python -m seisa_kg.matching.
 
 # Counts the outcomes.
 from collections import Counter
+# Pattern matching, used to make a node name from a company name.
+import re
 # Reads the approved labels.
 import tomllib
 
@@ -36,8 +40,8 @@ REPORT_PATH = PROJECT_ROOT / "docs" / "matching-report.md"
 
 # Company node -> the node that stands for its company (a ch: joined to a lei: is represented by the lei:).
 def company_of(rows: list[dict]) -> dict[str, str]:
-    # Each ch: node joined to a lei: node by rule D-025.
-    return {r["object"]["iri"]: r["subject"] for r in rows if r["predicate"] == "sameEntityAs"}
+    # Each ch: node joined to a lei: node by rule D-025 (not a Match's own sameEntityAs link, which starts at ex:match/).
+    return {r["object"]["iri"]: r["subject"] for r in rows if r["predicate"] == "sameEntityAs" and r["subject"].startswith("lei:")}
 
 
 # The approved labels, keyed by the name in lower case.
@@ -90,10 +94,20 @@ def decide(n: dict, same: dict, labels: dict) -> dict:
     if label:
         # Its outcome, with the note or the kind as the reason.
         return {"outcome": label["outcome"], "to": [], "rule": "D-099", "why": label.get("note") or label.get("kind", "")}
-    # Rule 7: nothing applies.
-    why = "a portfolio company; not in our graph (option A)" if n["role"] == "target" else "no evidence and no approved label"
-    # Unresolved.
-    return {"outcome": "unresolved", "to": [], "rule": "D-096", "why": why}
+    # Rule 7: a deal target with no other match gets a company node known only from the news.
+    if n["role"] == "target":
+        # One node per tidied name, e.g. "ZUTO" -> ex:newsonlycompany/zuto.
+        return {"outcome": "news-only", "to": [news_only_node(n["tidy"])], "rule": "D-109",
+                # Why.
+                "why": "a company known only from the news; no registry ID, not verified"}
+    # Rule 8: nothing applies.
+    return {"outcome": "unresolved", "to": [], "rule": "D-096", "why": "no evidence and no approved label"}
+
+
+# The NewsOnlyCompany node for a tidied name (D-109): lower case, words joined by hyphens.
+def news_only_node(tidied: str) -> str:
+    # e.g. "SEDEX INFORMATION EXCHANGE LTD" -> "ex:newsonlycompany/sedex-information-exchange-ltd".
+    return "ex:newsonlycompany/" + re.sub(r"[^a-z0-9]+", "-", tidied.lower()).strip("-")
 
 
 # Each sponsor's name forms, as words (e.g. "hg" -> ["Hg", "HgCapital"]).
@@ -133,7 +147,7 @@ def write_report(results: list[dict]) -> None:
          # The table header.
          "| Role | As written | Outcome | Linked to / candidates | Rule | Why |", "|---|---|---|---|---|---|"]
     # The interesting outcomes first, then the rest; advisers last (they're all the same).
-    order = {"sameEntityAs": 0, "refersToGroup": 1, "ambiguous": 2, "non-entity": 3, "out-of-scope": 4, "unresolved": 5}
+    order = {"sameEntityAs": 0, "refersToGroup": 1, "ambiguous": 2, "news-only": 3, "non-entity": 4, "out-of-scope": 5, "unresolved": 6}
     # One line per name.
     for r in sorted(results, key=lambda r: (r["role"] == "adviser", order[r["outcome"]], r["role"], r["name"].lower())):
         # The targets, shortened when long.
