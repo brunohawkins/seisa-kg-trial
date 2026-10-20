@@ -1599,3 +1599,9 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - the 7 stated reasons each point to their own sentence
   - the aligned lists (`properties` / `values` / `quotes`) are read by position
   - Facts with no receipt on purpose: a sentence's own text and a rule's own label (they *are* the source).
+- **Step 5 built: one command builds both graphs, and they're proven to agree.**
+  - `make lpg` (after `make rdf`) builds the property graph; `make build` now runs both graphs end to end in about 24 seconds from the cache.
+  - New direct check: the RDF file vs Neo4j. 14 node types (distinct nodes per type) and 22 relationship types (distinct link triples per kind) are all equal.
+  - Any failed check (nodes, relationships, receipts, RDF vs Neo4j) stops the build with an error, so it can't finish with graphs that disagree.
+  - Neo4j must be running first (`make neo4j-start`).
+- **Property graph totals:** 6,342 nodes (incl. 7 `:NotFetched` stubs); 4,888 relationships plus 6,545 receipts.

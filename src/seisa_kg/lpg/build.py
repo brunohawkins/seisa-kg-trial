@@ -26,6 +26,9 @@ Built step by step with Bruno (D-067). So far:
   `quotes` plus `extractedBy`; for "unknown" values, `whys` (D-090). A record's
   own text and a rule's own label need no receipt (they are the source).
   Check: every value and label fact is listed in exactly one receipt.
+- Step 5: the two graphs compared directly (each type's distinct nodes and each
+  kind of link, in the RDF file vs Neo4j), and any failed check stops the build
+  with an error, so `make build` can't finish with graphs that disagree.
 
 Every node gets an `id` property: its name in the fact list (e.g.
 "lei:213800KFNMVI8PDZX472"), so both graphs use the same names.
@@ -46,6 +49,8 @@ import os
 
 # Loads the secret settings from .env without printing them.
 from dotenv import load_dotenv
+# Reads the RDF graph file, for step 5's direct comparison.
+import pyoxigraph as ox
 # The official Neo4j driver for Python.
 from neo4j import GraphDatabase
 
@@ -65,6 +70,8 @@ NAME_PREDICATES = {"otherName": "HAS_OTHER_NAME", "previousName": "HAS_PREVIOUS_
 RECEIPT_DETAILS = {"quote", "extractedBy", "why"}
 # Fact names that read badly as relationship verbs, and their names in the property graph (D-114).
 RENAMES = {"company": "OF_COMPANY", "holder": "HELD_BY", "officer": "HELD_BY", "adviser": "HAS_ADVISER"}
+# The RDF graph file the RDF builder saves (step 5 compares it with Neo4j).
+RDF_PATH = PROJECT_ROOT / "data" / "output" / "graph.ttl"
 # How many nodes to send to Neo4j in one go.
 BATCH = 5000
 
@@ -497,7 +504,58 @@ def check_receipts(driver, rows: list[dict]) -> bool:
     return all(expected[t] == found.get(t, 0) for t in expected)
 
 
-# Steps 1 to 4: empty, rules, nodes, relationships, receipts, checks.
+# Step 5: compare the RDF graph file with Neo4j directly: each type's distinct nodes, and each kind of link.
+# Returns True if every count matches. (Steps 2–4 compare Neo4j with the fact list; this compares the two graphs.)
+def check_against_rdf(driver, rows: list[dict]) -> bool:
+    # Read the RDF graph saved by the RDF builder.
+    store = ox.Store()
+    # Load it from the file.
+    store.bulk_load(path=str(RDF_PATH), format=ox.RdfFormat.TURTLE)
+    # Our vocabulary's address, and where scope decisions live (they're relationships in Neo4j, not nodes).
+    ex, scope = "https://seisa-kg.example/def/", "https://seisa-kg.example/def/scope/"
+    # Pairs to compare: (what, RDF count, Neo4j count).
+    pairs = []
+    # Node types: distinct subjects per RDF type vs nodes per label (LegalEntity is :Company in Neo4j).
+    for rec in store.query(f"SELECT ?t (COUNT(DISTINCT ?s) AS ?n) WHERE {{ ?s a ?t }} GROUP BY ?t"):
+        # The type's short name, e.g. "Deal".
+        t = rec["t"].value.removeprefix(ex)
+        # Scope decisions aren't nodes in Neo4j (D-112c); they're checked as IN_SCOPE_OF below.
+        if t == "ScopeDecision":
+            # Skip.
+            continue
+        # The label it becomes.
+        label = "Company" if t == "LegalEntity" else t
+        # Neo4j's count for that label.
+        n = driver.execute_query(f"MATCH (n:{label}) RETURN count(n) AS n").records[0]["n"]
+        # Remember the pair.
+        pairs.append((f":{label}", int(rec["n"].value), n))
+    # Link kinds: every link predicate in the fact list, counted as distinct RDF triples, grouped by relationship type.
+    rdf_links = Counter()
+    # Each distinct link predicate (not types, not scope parts).
+    for p in sorted({r["predicate"] for r in rows if "iri" in r["object"] and r["predicate"] != "type" and not r["subject"].startswith("ex:scope/")}):
+        # RDF triples with that predicate pointing at a node, outside scope decisions.
+        q = f"SELECT (COUNT(*) AS ?n) WHERE {{ ?s <{ex}{p}> ?o FILTER(isIRI(?o)) FILTER(!STRSTARTS(STR(?s), '{scope}')) }}"
+        # Added to its relationship type (holder and officer both become HELD_BY).
+        rdf_links[rel_type(p)] += int(next(iter(store.query(q)))["n"].value)
+    # Scope decisions: one per scope node in RDF, one IN_SCOPE_OF in Neo4j.
+    rdf_links["IN_SCOPE_OF"] = int(next(iter(store.query(f"SELECT (COUNT(DISTINCT ?s) AS ?n) WHERE {{ ?s a <{ex}ScopeDecision> }}")))["n"].value)
+    # Each relationship type's Neo4j count.
+    for t, n in sorted(rdf_links.items()):
+        # Neo4j's count.
+        found = driver.execute_query(f"MATCH ()-[r:{t}]->() RETURN count(r) AS n").records[0]["n"]
+        # Remember the pair.
+        pairs.append((t, n, found))
+    # Print the table.
+    print(f"  {'node label / relationship':<28}{'RDF':>8}{'Neo4j':>8}")
+    # Each pair.
+    for what, a, b in pairs:
+        # e.g. "  :Deal                            30      30  ok".
+        print(f"  {what:<28}{a:>8}{b:>8}  {'ok' if a == b else 'MISMATCH'}")
+    # True only if every pair matches.
+    return all(a == b for _, a, b in pairs)
+
+
+# Steps 1 to 5: empty, rules, nodes, relationships, receipts, all checks; fail the build if any check fails.
 def main() -> None:
     # The fact list.
     rows = read_facts()
@@ -515,6 +573,8 @@ def main() -> None:
         print(f"Step 2: wrote {len(nodes)} nodes. Check, per label:")
         # Compare with the fact list.
         ok = check_nodes(driver, rows, nodes)
+        # Every check's result, so the build can fail at the end if any failed (step 5).
+        results = {"nodes": ok}
         # The verdict.
         print("All node counts match the fact list." if ok else "Node counts DIFFER from the fact list.")
         # Step 3: the relationships, and the stubs they need.
@@ -529,6 +589,8 @@ def main() -> None:
         print(f"Step 3: wrote {len(rels)} relationships and {len(stubs)} :NotFetched stubs (D-113). Check, per type:")
         # Compare with the fact list.
         ok = check_relationships(driver, rows)
+        # Remember it.
+        results["relationships"] = ok
         # The verdict.
         print("All relationship counts match the fact list." if ok else "Relationship counts DIFFER from the fact list.")
         # Step 4: the receipts, from the facts on the nodes we built.
@@ -539,8 +601,22 @@ def main() -> None:
         print(f"Step 4: wrote {len(receipts)} receipts (D-110). Check, every value and label listed exactly once:")
         # Compare with the fact list.
         ok = check_receipts(driver, rows)
+        # Remember it.
+        results["receipts"] = ok
         # The verdict.
         print("Every value and label has its receipt." if ok else "Receipts DIFFER from the fact list.")
+        # Step 5: compare the two graphs directly, node types and links (RDF file vs Neo4j).
+        print("Step 5: the RDF graph and the property graph, compared directly:")
+        # The result.
+        results["rdf vs neo4j"] = check_against_rdf(driver, rows)
+    # Step 5: any failed check fails the whole build, so `make build` can't finish with graphs that disagree.
+    failed = [name for name, passed in results.items() if not passed]
+    # Something failed.
+    if failed:
+        # Say which, and stop with an error code (make then stops too).
+        raise SystemExit(f"Property graph checks FAILED: {', '.join(failed)}")
+    # All good.
+    print("All property graph checks passed: nodes, relationships, receipts, and RDF vs Neo4j.")
 
 
 # Run main() when the file is run directly.

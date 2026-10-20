@@ -1,13 +1,14 @@
 # SUMMARY: Short, memorable commands for running the project.
 # Type `make <name>` in the project folder, e.g. `make test`.
-# `make build` is the single command that runs the whole pipeline from scratch
-# (the RDF graph for now; the Neo4j graph is to be built with Bruno, step by step).
+# `make build` is the single command that runs the whole pipeline from scratch:
+# both graphs (RDF, then Neo4j), with checks that they hold the same facts.
+# Neo4j must be running first: `make neo4j-start`.
 
 # Where the project's own copy of Neo4j lives (see scripts/install_neo4j.sh).
 NEO4J := tools/neo4j/bin/neo4j
 
 # Tell make these names are commands, not files to be created.
-.PHONY: setup test brief build fetch-gleif facts rdf query score-demo neo4j-install neo4j-start neo4j-stop neo4j-status
+.PHONY: setup test brief build fetch-gleif fetch-ch sentences extract facts rdf query lpg score-demo neo4j-install neo4j-start neo4j-stop neo4j-status
 
 # Install every Python library into the project's private environment.
 setup:
@@ -64,10 +65,15 @@ score-demo: query
 	# Run the scoring demonstration inside the project's environment.
 	uv run python -m seisa_kg.evaluation.demo
 
-# The single command (brief §4): fetch GLEIF, then Companies House, then news sentences + Gemini extraction (all cached) -> facts -> scope -> RDF graph -> checks -> questions.
-build: fetch-gleif fetch-ch extract query
+# Build the property graph in Neo4j from the fact list, then check it against the fact list and the RDF graph (stage 4b; D-110 to D-114).
+lpg: rdf
+	# Run the property graph builder inside the project's environment; it stops with an error if any check fails.
+	uv run python -m seisa_kg.lpg.build
+
+# The single command (brief §4): fetch GLEIF, then Companies House, then news sentences + Gemini extraction (all cached) -> facts -> RDF graph -> checks -> questions -> property graph -> checks.
+build: fetch-gleif fetch-ch extract query lpg
 	# Say the whole pipeline finished.
-	@echo "Build complete: data/output/graph.ttl, docs/answers-rdf.md"
+	@echo "Build complete: data/output/graph.ttl, docs/answers-rdf.md, and the Neo4j property graph"
 
 # Download and set up the project's own Neo4j server (only needed once).
 neo4j-install:

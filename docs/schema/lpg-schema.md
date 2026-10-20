@@ -88,6 +88,8 @@ After every build, compare with `facts.jsonl`:
 4. **Nodes:** each label's count = the RDF type count (table in section 2).
 5. **Answers:** each investor question gives the same answer in SPARQL and Cypher.
 
+**Built (20 Oct):** checks 1–4 run in `python -m seisa_kg.lpg.build` against the fact list, which is worked out independently and never taken from the builder's own output. Step 5 also compares the **RDF file and Neo4j directly**: 14 node types and 22 relationship types, all equal. Any failed check stops `make build` with an error.
+
 ## 7. What changed between the two graphs (the brief's "what changed" note, first draft)
 - **Notes on facts → receipt relationships.** RDF puts a note on every triple (RDF-star). Neo4j properties can't carry notes, so each node points to its source records once, listing which properties each record backs (D-110).
 - **Type triples → labels.** `a ex:Deal` becomes the `:Deal` label.
