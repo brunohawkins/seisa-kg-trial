@@ -1673,3 +1673,11 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - [ ] **15:00–18:00 · review with no code open:** the decisions Bruno *accepted* first (D-102 to D-104, D-112, the label list, the naming renames), then Seisa's expected questions; Claude quizzes.
 - Dropped for time (D-115): `make refresh` and Q7, and the gemini-3.8-flash comparison. Both are named in the write-up as next work.
 
+- **Vector search crash course for Bruno:** https://claude.ai/artifact/A2STSy95grjHFVG6SuZswB
+  - Built from a real demo run: 12 news sentences and 6 questions embedded with `gemini-embedding-001` (3,072 numbers per sentence), at negligible cost; the run is kept in the scratchpad, not the repo.
+  - Findings for the write-up and tomorrow's comparison:
+    - right answers scored 0.76–0.82 and wrong ones 0.61–0.74, so **no score threshold separates them**
+    - "How many deals did Hg do?" can't be counted, and its top hit is a fund close
+    - "Which company manages Apax's funds?" returns a plausible but wrong sentence (0.70); the answer is only in GLEIF
+    - the splitter's "J.P." cut also degrades search
+  - Tomorrow's decisions for Bruno (D-067): embedding model, chunk size, k, where the vectors live (in memory vs Neo4j's vector index), and whether to allow "not found".
