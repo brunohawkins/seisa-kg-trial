@@ -1681,3 +1681,6 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
     - "Which company manages Apax's funds?" returns a plausible but wrong sentence (0.70); the answer is only in GLEIF
     - the splitter's "J.P." cut also degrades search
   - Tomorrow's decisions for Bruno (D-067): embedding model, chunk size, k, where the vectors live (in memory vs Neo4j's vector index), and whether to allow "not found".
+- **Study guide 3 for Wednesday morning:** `~/Work Projects/Seisa study guide 3 - 21 Oct 2026.pdf` (outside the repo; 20 pages, about 2 hours).
+  - Covers the pipeline step by step with "If Seisa asks…" answers, the two graphs side by side, a new kind of fact (stake dates), SPARQL and Cypher, vector search (with the real demo run), measuring, what didn't work, and an explain-back drill.
+  - About 100 quick-fire terminology flashcards, flagged [SE] / [KG] / [PE].
