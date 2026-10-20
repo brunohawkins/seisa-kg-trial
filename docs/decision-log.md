@@ -1604,4 +1604,27 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - New direct check: the RDF file vs Neo4j. 14 node types (distinct nodes per type) and 22 relationship types (distinct link triples per kind) are all equal.
   - Any failed check (nodes, relationships, receipts, RDF vs Neo4j) stops the build with an error, so it can't finish with graphs that disagree.
   - Neo4j must be running first (`make neo4j-start`).
-- **Property graph totals:** 6,342 nodes (incl. 7 `:NotFetched` stubs); 4,888 relationships plus 6,545 receipts.
+- **Property graph totals:** 6,342 nodes (6,335 plus 7 `:NotFetched` stubs); 4,889 relationships (one more `HAS_PREVIOUS_NAME` since the two-period name fix) plus 6,545 receipts.
+- **Finding: why each of the 9 extraction rejections failed** (read one by one for Anish's page):
+  - **The model's (3):**
+    - an inferred name: "Tom Staff" from "Tom and Heather Staff", caught by check 3
+    - a shortened quote with "..." (Klass Capital, Salem Partners), caught by check 2
+  - **Ours (6):**
+    - our sentence splitter cut at initials, "Robert W." | "Baird" and "J.P." | "Morgan" (4 fields)
+    - apax-04's own teaser line on the page stops mid-word ("to acqui"), and Gemini quoted the full words from the next sentence (2 fields)
+  - So the quote check catches errors in our own text preparation, not only the model's.
+- **Page for Anish:** https://claude.ai/artifact/2ccEV9MtsnDwL1J2GWZepn (the extraction and the quote check, with a real example and the 9 rejections).
+- [ ] *(after the project)* Fix the sentence splitter so it doesn't split at initials ("W.", "J.P.").
+- **The hand-check stays (it's required: Trial brief task 5, "around fifty pairs", and the deliverables list). It's timeboxed to 15 minutes at 5:15pm.** Bruno questioned its value ("Anish cares about learning the system, not menial work"). The answer: judging the names *is* learning the matching rules, and Seisa's primer says automated judges "must be calibrated against domain experts", so the 50 are the reference any scaled-up evaluation would need.
+- **Found in Seisa's primer, for D-110:** "Access rules must therefore apply during traversal". That's Seisa's written position on access control, matching Pablo's advice.
+- **Finding (while building the Cypher crash course):** rule 3 (a fact kind with several values on one node becomes a list) applies per fact kind *across all node types*. Some people have two spellings ("GRANT, Hamish Thomas" and "…, Mr."), so `name` is a list on every node, even an adviser's (`["EY"]`). Queries read it with `name[0]`.
+  - [ ] *(after the project)* Consider applying rule 3 per (label, fact kind).
+- **Cypher crash course for Bruno:** https://claude.ai/artifact/41DXx1yC9Yt6bTFdhyhn71 (9 lessons on our own graph, every query and result checked live, a SPARQL phrasebook, 5 exercises, and Q1 left as his task).
+- **D-116 · The hand-check moves to Wednesday morning, first thing (15 min).** The rest of Tuesday goes on understanding SPARQL and Cypher.
+  - Why (Bruno): no headspace for it today; understanding the two query languages is the best value for the rest of the day.
+  - It's still required (brief, task 5). PLAN.md Wednesday is updated.
+- **SPARQL practice tool:** `scripts/sparql.py` runs any query (or `.rq` file) against `graph.ttl` and prints a table with the time taken. It adds the usual prefixes for practice queries. (Oxigraph has no query window like Neo4j Desktop.)
+- **SPARQL crash course for Bruno:** https://claude.ai/artifact/AFTER_PUBLISH (9 lessons matching the Cypher course, every query checked on our graph).
+  - Findings noted in it: SPARQL property paths count start–end *pairs* (77) while Cypher counts *routes* (81).
+  - Our IRIs contain "/", so `ex:rule/D-025` must be written `ex:rule\/D-025` or as a full IRI in a query.
+  - Bridgepoint's legal name has two notes (fetched 16 and 18 Oct), which duplicates rows when joining through notes.
