@@ -1562,3 +1562,20 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - Corrected in the recap page and the property graph schema. The 19 Oct numbers above and the study guide PDF still show the old figures.
   - The first step 2 check made the same mistake. It now counts distinct nodes, and the RDF graph agrees.
   - A talking point: the reconciliation check caught a wrong number in our own reporting on its first run.
+- **D-113 · A link that points to a company we never fetched keeps a stub node labelled `:NotFetched`, holding only its id** (e.g. `ch:04572042`).
+  - Why (Bruno): it's the most honest option. In Neo4j a relationship needs a node at both ends; without a stub, 11 links (corporate officers and holders whose records our climbing rule didn't fetch) would silently disappear.
+  - It mirrors RDF, where those links end at a bare id. It's not labelled `:Company`, so the company count still matches RDF (648).
+- **D-114 · Relationship names follow Neo4j's convention:** the fact name in capitals (`fundManagedBy` → `FUND_MANAGED_BY`), with four renames where a bare noun reads badly as a verb:
+  - `company` → `OF_COMPANY`
+  - `holder` and `officer` → `HELD_BY` (one concept, one name, as in D-091)
+  - `adviser` → `HAS_ADVISER`
+  - the scope decision node → `IN_SCOPE_OF {verdict, reason, rule}`
+  - Every relationship carries its source (`record` or `rule`, D-110) and any details from the fact list (e.g. GLEIF's `startDate`).
+- **Fact:** the 4,263 link facts are all distinct (no link is stated twice), so each becomes exactly one relationship.
+- **Step 3 built: relationships.** 4,888 relationships of 24 types, plus 7 `:NotFetched` stubs. Every type's count matches the fact list.
+  - Traced in Cypher: deal → `BUYER_MATCH` → Match → `SAME_ENTITY_AS {rule: D-098}` → BRIDGEPOINT GROUP PLC → `SAME_ENTITY_AS {rule: D-025}` → `ch:11443992`; `IN_SCOPE_OF {verdict: In}` → Bridgepoint.
+- **Code review before committing (Bruno asked for a double check). Three fixes:**
+  1. The step 2 node check counted source records, sentences and names **from the builder's own output**, so it could never catch a builder bug there. It now works them out from the fact list, as the relationship check already did.
+  2. A fact kind with several values *and* per-value details would have silently overwritten its companion property. None exists today (`otherName` and `previousName` are `:Name` nodes), but the build now stops with a clear message instead of guessing.
+  3. The same link stated by two records would have become **two** relationships, where RDF holds one triple with two notes. None exists today, but `make refresh` (D-094) will create them. The build now stops with a message, so the decision (one relationship with a list of records) is made then, not by accident.
+  - 6 new tests in `tests/test_lpg_build.py` pin the builder's rules (no Neo4j needed); 47 tests pass.
