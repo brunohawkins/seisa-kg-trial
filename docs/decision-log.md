@@ -1669,6 +1669,7 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - [ ] *(11:00–11:30: Bruno's EF interview)*
 - [ ] **13:00–15:00:** README (one command builds both graphs; Neo4j must be running) and the ~2-page write-up, including the talking points.
 - [ ] **15:00 freeze:** `make build` from a clean copy, tests, commit, push.
+- [ ] **15:00 · flashcard deck:** Claude builds an interactive deck from the diary, using the plan agreed on Tuesday evening (14 decks, about 100 cards, written as Seisa's likely questions).
 - [ ] **15:00–18:00 · review with no code open:** the decisions Bruno *accepted* first (D-102 to D-104, D-112, the label list, the naming renames), then Seisa's expected questions; Claude quizzes.
 - Dropped for time (D-115): `make refresh` and Q7, and the gemini-3.8-flash comparison. Both are named in the write-up as next work.
 
