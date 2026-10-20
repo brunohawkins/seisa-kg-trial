@@ -101,3 +101,20 @@ ex:FundCloseShape a sh:NodeShape ;
     sh:property [ sh:path ex:announcedIn ; sh:minCount 1 ; sh:maxCount 1 ] ;
     # At least one fund name.
     sh:property [ sh:path ex:fundName ; sh:minCount 1 ] .
+
+# Check 11: every Match node (entity matching, D-108) has one name as written, one known outcome and one reason,
+# and a sameEntityAs or refersToGroup link only to a single node.
+ex:MatchShape a sh:NodeShape ;
+    # Apply this rule to everything typed ex:Match.
+    sh:targetClass ex:Match ;
+    # Exactly one name, as the release wrote it.
+    sh:property [ sh:path ex:nameAsWritten ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    # Exactly one outcome, from the fixed list (D-099).
+    sh:property [ sh:path ex:outcome ; sh:minCount 1 ; sh:maxCount 1 ;
+                  sh:in ( "sameEntityAs" "refersToGroup" "ambiguous" "out-of-scope" "non-entity" "unresolved" ) ] ;
+    # Exactly one reason.
+    sh:property [ sh:path ex:reason ; sh:minCount 1 ; sh:maxCount 1 ] ;
+    # At most one same-entity link (the strict rule, D-098).
+    sh:property [ sh:path ex:sameEntityAs ; sh:maxCount 1 ] ;
+    # At most one group link.
+    sh:property [ sh:path ex:refersToGroup ; sh:maxCount 1 ] .

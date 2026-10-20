@@ -246,9 +246,42 @@ ex:release/apax-01    a ex:Release ; ex:title … ; ex:publishedOn … ; ex:publ
 - **Every note carries the exact quote and the model** (`ex:quote`, `ex:extractedBy`), so an LLM's reading is never mistaken for the text itself (D-029).
 - **"Unknown" is kept, not dropped (D-090):** a required field that failed its check becomes `"unknown"`. It is labelled as made by rule D-090, with `ex:why` on its note.
 - **Short sentence IDs** ("s01") are expanded by code when they can only mean this release's sentence (D-089).
-- **Names are not yet linked to companies.** `targetName` and the others are text. Entity matching (next) will add links to `lei:` / `ch:` nodes, labelled with the rule and evidence, and leave the rest explicitly unresolved.
+- **Names stay as text** (`targetName` and the others). Entity matching links them through separate Match nodes (section 11), so the text is never overwritten.
 
 ### Checks (SHACL 8–10)
 - Every Release has one title and one sponsor.
 - Every Deal has one release, a target and a kind (even if "unknown").
 - Every FundClose has one release and a fund name.
+
+## 11. Entity matching: Match nodes (v1, 20 Oct; D-096 to D-108)
+Every name in the news (a deal's target, buyer, seller, sponsor or fund; an adviser) gets **one Match node**: a judgement with its own evidence (D-108). The name as written comes from its sentence; everything else is labelled with the rule that made it (D-029).
+
+### Example
+```
+ex:deal/bridgepoint-06-d1 ──buyerMatch──▶ ex:match/bridgepoint-06-d1-buyer-1  a ex:Match
+   ├─ ex:nameAsWritten "Bridgepoint Group plc"   ──note──▶ prov:wasDerivedFrom src:news/bridgepoint-06/s01
+   ├─ ex:outcome       "sameEntityAs"            ──note──▶ prov:wasGeneratedBy ex:rule/D-098
+   ├─ ex:reason        "the only company with this exact name (after tidying)"
+   └─ ex:sameEntityAs  lei:213800KFNMVI8PDZX472  (BRIDGEPOINT GROUP PLC; its ch: twin via D-025)
+```
+
+### Outcomes (exactly one per Match; the rules are tried in this order)
+| # | When | Outcome | Arrows | Rule |
+|---|---|---|---|---|
+| 1 | The name is an adviser's | `out-of-scope` | – | D-104 |
+| 2 | Exactly one company has the name (a `ch:` + `lei:` pair counts once, D-102) | `sameEntityAs` | `sameEntityAs` → the `lei:` | D-098 |
+| 3 | Two or more companies have the name | `ambiguous` | `candidate` → each (none picked) | D-098 |
+| 4 | It contains one sponsor's name | `refersToGroup` | `refersToGroup` → `ex:sponsor/…`; `possibleEntity` → each family member, when the name says more than the sponsor's name | D-103 |
+| 5 | A family shares its words, but it names no sponsor | `ambiguous` | `candidate` → each | D-103 |
+| 6 | An approved label (`config/match_labels.toml`) | `out-of-scope` or `non-entity` | `nonEntityKind` for non-entities | D-099 |
+| 7 | Nothing applies | `unresolved` | – | D-096 |
+
+### Arrows from the news nodes
+`targetMatch`, `buyerMatch`, `sellerMatch`, `sponsorMatch`, `fundMatch` (from a Deal or FundClose); `adviserMatch` (from an Adviser).
+
+### Check (SHACL 11)
+- Every Match has one name as written, one outcome from the fixed list, one reason, and at most one `sameEntityAs` and one `refersToGroup` link.
+
+### Numbers (20 Oct)
+253 names: out of scope 144, `refersToGroup` 59, unresolved 30, non-entity 9, `sameEntityAs` 6, ambiguous 5. Quality is measured on a 50-name stratified hand-check (D-107).
+

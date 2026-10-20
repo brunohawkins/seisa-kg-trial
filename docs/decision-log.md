@@ -1414,3 +1414,74 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - **Numbers at the end of the day:**
   - 32,538 facts → 107,615 lines of `graph.ttl` (107,607 triples); 10 SHACL checks plus 3 code checks pass; 33 tests pass.
   - Nodes: 1,152 company nodes (GLEIF and Companies House), 51 stakes, 880 appointments, 839 people, 30 releases, 968 sentences, 30 deals, 105 advisers, 5 fund closes, 438 mentions.
+
+## 20 Oct 2026 (Tuesday)
+
+### Entity matching: design (morning)
+- **Evidence first:** the news holds 206 names (30 targets, 33 buyers, 38 sellers, 105 advisers). An exact match on legal name links only **1** ("Bridgepoint Group plc").
+  - The news mostly names **families**, not single legal entities: "Saturn Fund" fits **28** of our entities, "Apax Digital Funds" 13, "Bridgepoint Direct Lending II" 11, "Bridgepoint Advisers" 6. "Apax Partners LLP" fits exactly 1.
+  - Most bought or sold companies (Zuto, mydentist, IRIS…) have **no node** in our graph: it holds the sponsors' own structure, not their portfolio companies.
+- **D-096 · Matching links news names only to nodes we already have (option A). No new Companies House records for portfolio companies (option B).**
+  - Why (Bruno): a trial project should stay contained and explainable to the team; too many moving parts would make it confusing.
+  - The cost: the bought companies stay unlinked ("unresolved"). Adding them (B) is named in the write-up as the next step, e.g. Companies House search checked by a rule plus Gemini.
+- **D-097 · Two kinds of link.**
+  - `sameEntityAs`: the name is exactly one of our legal entities.
+  - `refersToGroup`: the name points at a sponsor or a fund family (e.g. "Funds advised by Apax", "Saturn Fund"), not at one company. True, but vaguer, and the arrow says so.
+  - Why: "funds advised by Apax" and Apax's legal entities are different legal things (GP vs sponsor), so `sameEntityAs` would be a wrong link.
+- **D-098 · Strict rule: link only when exactly one candidate fits.** Two or more candidates: record "ambiguous" with the candidates, and pick none.
+  - Why (Bruno): a wrong link is worse than a missing one; private equity and finance demand that strictness. The Seisa primer also calls a wrong merge "the most damaging" error.
+- **D-099 · Every name gets exactly one outcome:** linked (`sameEntityAs` or `refersToGroup`), ambiguous (with candidates), out of scope, non-entity (with its kind), or unresolved.
+  - **Out of scope:** a real company that our graph doesn't cover (e.g. "KKR"); recorded with that reason.
+  - **Non-entity kinds:** unnamed group of people ("angel investors"), unnamed holders ("OneStream shareholders"), unnamed vehicle ("a newly formed continuation vehicle"), named person ("Gordon Hawes").
+  - Why (Bruno): negative information is still information; the kind says what sort of non-entity it is. A code rule can't tell "KKR" from "Zuto", so Claude lists the labels and Bruno approves them.
+- **D-100 · Q10 reworded to fit D-096:** "For a deal in the news, trace the buyer named in the release to our legal entities and up to the sponsor, with a source (sentence or registry record) for each link."
+  - Why: the old wording ended at the bought company, which isn't in the graph under option A.
+- **Open:** whether an LLM may help with ambiguous names (Bruno asked which verification methods exist).
+- **D-101 · No LLM for ambiguous names in the MVP: they stay "ambiguous" with their candidates.**
+  - Why (Bruno): easy to explain, and the time goes on finishing the whole system rather than going deep here. The system should report well when it knows the answer and when it doesn't. The main thing is to avoid hallucinated links and keep everything verifiable from a source.
+  - Methods named for the write-up as the next step: closed choice from the candidate list, the quote check we already use, a clue check in code (e.g. "Saturn 3"), agreement between runs or models, a date sanity rule, human sign-off.
+  - Fact behind it: in our data the ambiguity comes from the text not containing the deciding clue ("Saturn Fund": 28 candidates), and no method can recover what isn't there.
+- **Step 1 built: `src/seisa_kg/matching/candidates.py`** writes `docs/matching-candidates.md` (253 names: 206 deal and adviser names, plus 47 sponsor and fund names). It decides nothing.
+  - Findings: the only exact matches ("Apax Partners LLP", "Bridgepoint Group plc") each hit a `ch:` and a `lei:` node that are already the same company (D-025). A sponsor word fits 91–252 entities. The family search alone gave a false match ("Rothschild & Co" → two "Edmond de Rothschild" funds).
+- **D-102 · A `ch:` and `lei:` pair joined by `sameEntityAs` counts as one company when counting candidates.** Both nodes stay; nothing is merged.
+  - Why: D-025 already says they are the same company; counting them as two would make the strict rule refuse every link.
+- **D-103 · Sponsor word alone → `refersToGroup` that sponsor. Sponsor word plus a fund family (e.g. "Apax Digital Funds", 13 entities) → `refersToGroup` the sponsor, with the family listed as "possible, none picked".** A family with no sponsor word ("Saturn Fund") stays ambiguous.
+  - Why (Bruno): we're sure of the sponsor and keep what we found, but only link to one entity when the match is very clear.
+- **D-104 · Every adviser is out of scope by one rule** ("an outside adviser; our graph covers the sponsors' own companies").
+  - Why: all 105 are banks, law firms or consultants, and none contains a sponsor word. One rule is explainable and saves labelling 105 names by hand. Risk: a sponsor company that advised would be mislabelled.
+- **Step 2 built: `src/seisa_kg/matching/outcomes.py`** writes `docs/matching-report.md`. 253 names: out of scope 144, `refersToGroup` 59, unresolved 30, non-entity 9, `sameEntityAs` 6, ambiguous 5. Nothing added to the graph yet.
+- **D-105 · The label list (`config/match_labels.toml`, 39 names) is approved** as drafted. Bruno read the matching report and found nothing wrong (still learning, so the hand-check is the real test).
+- **For the write-up:** "BDC V" (Bridgepoint Development Capital V) is unresolved because it contains no sponsor word. It's a real miss, and the cost of choosing precision over recall.
+- **D-106 · The 50-pair hand-check uses a random sample** of distinct names, with a fixed seed so it can be repeated.
+
+#### TODO (after the project is finished): improve performance
+- [ ] Extraction: "commitments from Bridgepoint Direct Lending II" came out as a deal *target*; it's a fund commitment.
+- [ ] Matching: "Hg Saturn 1 Fund" and "Apax Digital Fund I" get no "possible" list, because "1" and "I" appear in no legal name (roman and arabic numerals aren't treated as the same).
+- [ ] Matching: abbreviations such as "BDC V" are missed.
+- [ ] Matching: the LLM methods named in D-101.
+- **D-107 · The hand-check sample is stratified, not plain random (replaces D-106).** 50 distinct names: every `sameEntityAs` (2) and ambiguous (2) name, then 15 `refersToGroup`, 5 non-entity, 8 unresolved and 18 out of scope, picked at random within each group with a fixed seed.
+  - Why: only 31 of the 184 distinct names are links, so a plain random 50 would hold about 8 links, which is too few to measure precision. Stratifying keeps the randomness but guarantees each outcome is tested.
+  - The cost: recall must be **weighted** by each group's real size, because the sample over-represents links. The group sizes are saved with the sample.
+  - Bruno judges each name **blind**, seeing the sentence but not the code's answer, to avoid anchoring.
+- **Bruno's concern:** checking by hand doesn't scale to hundreds or thousands of names. It's fine for this trial, but evaluation needs an automated method. That work comes after the whole pipeline is finished.
+
+#### TODO (after the pipeline is finished): evaluation at scale
+- [ ] Find ways to check matching without a person checking every name. Ideas to study:
+  - names that carry an identifier (a company number or LEI in the text) as free answer keys
+  - agreement between sources
+  - an LLM as judge, with a small human audit of the judge
+  - the hand-checked 50 kept as a regression test
+- **D-108 · Matches go into the graph as Match nodes (option 1).** Each name in the news gets one `ex:Match` node, holding the name as written, the outcome, the reason and the rule. A link (`sameEntityAs`, `refersToGroup`) or candidates hang off it. The news node points to it with `<role>Match`, e.g. `buyerMatch`.
+  - Why (Bruno): notes (RDF-star) are for metadata about a fact only. A match is a judgement in its own right, so it's a node.
+  - Also: every outcome, including the non-links, gets the same explicit home. It carries straight over to the property graph this afternoon.
+- **Reminder:** fill in the hand-check sheet at about 4:30pm (it's on the TODO list).
+- **Matching is in the graph.** `src/seisa_kg/matching/facts.py` adds the Match nodes in `make facts`, with SHACL check 11 and schema section 11.
+  - 34,180 facts → 112,533 triples; every check passes; 39 tests pass (6 new ones, in `tests/test_matching.py`, pin the strict rules).
+  - Tested end to end in SPARQL: deal → `buyerMatch` → Match → `sameEntityAs` → `lei:213800KFNMVI8PDZX472` (BRIDGEPOINT GROUP PLC), with the sentence returned through the note.
+
+#### TODO (Tuesday 20 Oct), updated at 12:20
+- [x] Entity matching: design (D-096 to D-108), candidates, outcomes, Match nodes in the graph, check, tests, schema section 11
+- [ ] **Bruno: fill in `eval/matching-sample.csv` at about 4:30pm** (50 names, blind), then Claude scores precision, weighted recall and agreement
+- [ ] Bruno explains matching back, with no code open (D-067 step 5)
+- [ ] **From 1pm: the property graph (Neo4j)**, step by step
+- [ ] After the property graph: `make refresh` (D-094); Q4, Q6–Q12 in SPARQL (Q10 as reworded in D-100); Q5 names and parents

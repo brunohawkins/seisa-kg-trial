@@ -2,7 +2,7 @@
 fact list, data/interim/facts.jsonl, from the cached sources, the sponsor
 settings, the scope step (with its review lists in docs/scope-review.md) and
 the Companies House cache (with its tidying report in docs/ch-tidy-report.md),
-then prints how many facts of each kind it wrote.
+the news extractions and the Match nodes from entity matching, then prints how many facts of each kind it wrote.
 
 Run it with:  make facts   (or: uv run python -m seisa_kg.facts)
 """
@@ -16,6 +16,8 @@ from seisa_kg.facts import ch_parse
 from seisa_kg.facts import news_parse
 # The comparison keys for Q5 (D-092, D-093).
 from seisa_kg.facts.compare_tidy import compare_facts
+# Entity matching: one Match node per name in the news (D-096 to D-108).
+from seisa_kg.matching.facts import match_facts
 # The GLEIF parser: cached replies -> rows.
 from seisa_kg.facts.gleif_parse import parse_all
 # Saving the rows, and where they are saved.
@@ -40,6 +42,8 @@ def main() -> None:
     rows += news_parse.parse_all()
     # Add the tidy comparison keys for status and address (as-given values stay as they are).
     rows += compare_facts(rows)
+    # Add the Match nodes: each news name linked, listed as ambiguous, or labelled (needs every row above).
+    rows += match_facts(rows)
     # Save every row to data/interim/facts.jsonl.
     write_facts(rows)
     # Say where the file is and how big it is.

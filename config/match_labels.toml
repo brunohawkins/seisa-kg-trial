@@ -1,0 +1,389 @@
+# SUMMARY: Hand-approved labels for news names that can't be linked (D-099).
+# Claude drafts each label; Bruno approves it. Matching (step 2) uses a label only
+# when no stronger rule applies (an adviser, an exact match, a sponsor word, a family).
+# A name not listed here, with no other evidence, becomes "unresolved".
+#
+# outcome: "out-of-scope" = a real company or firm our graph doesn't cover;
+#          "non-entity"   = nothing to link to, ever; "kind" says what sort.
+# The name must be written exactly as in the release (matching ignores capitals).
+
+# --- Other investment firms and their funds (real, but not our three sponsors) ---
+# A label for one name.
+[[label]]
+# The name as written.
+name = "ECI Partners"
+# A real firm our graph doesn't cover.
+outcome = "out-of-scope"
+# Why.
+note = "another private equity firm"
+
+# Another firm.
+[[label]]
+# The name as written.
+name = "KKR"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another private equity firm"
+
+# Another firm's funds.
+[[label]]
+# The name as written.
+name = "investment funds managed by KKR"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another private equity firm's funds"
+
+# Another firm.
+[[label]]
+# The name as written.
+name = "Vista Equity Partners"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another private equity firm"
+
+# Another firm.
+[[label]]
+# The name as written.
+name = "General Atlantic"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another private equity firm"
+
+# Another firm.
+[[label]]
+# The name as written.
+name = "Warburg Pincus"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another private equity firm"
+
+# Another firm's funds.
+[[label]]
+# The name as written.
+name = "funds advised by Warburg Pincus"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another private equity firm's funds"
+
+# Another firm.
+[[label]]
+# The name as written.
+name = "EQT"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another private equity firm"
+
+# Another firm.
+[[label]]
+# The name as written.
+name = "Bowmark Capital"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another private equity firm"
+
+# Another firm.
+[[label]]
+# The name as written.
+name = "Dunes Point Capital, LP"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another private equity firm"
+
+# Another firm.
+[[label]]
+# The name as written.
+name = "LDC"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another private equity firm (Lloyds Development Capital)"
+
+# Another firm.
+[[label]]
+# The name as written.
+name = "Livingbridge"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another private equity firm"
+
+# Another firm.
+[[label]]
+# The name as written.
+name = "LocalGlobe"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a venture capital firm"
+
+# Another firm.
+[[label]]
+# The name as written.
+name = "Mainsail Partners"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another private equity firm"
+
+# Another firm.
+[[label]]
+# The name as written.
+name = "Palamon Capital Partners"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another private equity firm"
+
+# Another firm.
+[[label]]
+# The name as written.
+name = "Scottish Equity Partners (SEP)"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a venture and growth firm"
+
+# Another firm.
+[[label]]
+# The name as written.
+name = "Infrastructure at Goldman Sachs Alternatives"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another investment firm"
+
+# Another firm's fund.
+[[label]]
+# The name as written.
+name = "KAREP VII"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "another firm's fund (Kayne Anderson Real Estate)"
+
+# --- Other companies (buyers or sellers that aren't investment firms) ---
+# A company.
+[[label]]
+# The name as written.
+name = "Accenture"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a trade buyer, not a sponsor company"
+
+# A company.
+[[label]]
+# The name as written.
+name = "Compagnie Générale des Établissements Michelin (“Michelin”)"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a trade buyer, not a sponsor company"
+
+# A company.
+[[label]]
+# The name as written.
+name = "IDHL"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a company outside our graph"
+
+# A company.
+[[label]]
+# The name as written.
+name = "Ripple"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a trade buyer, not a sponsor company"
+
+# A company.
+[[label]]
+# The name as written.
+name = "Tidemark"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a company outside our graph"
+
+# A company.
+[[label]]
+# The name as written.
+name = "WGSN"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a company outside our graph"
+
+# A company.
+[[label]]
+# The name as written.
+name = "Delinian"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a company outside our graph"
+
+# A company.
+[[label]]
+# The name as written.
+name = "Hilton Food Group plc"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a company outside our graph"
+
+# A company.
+[[label]]
+# The name as written.
+name = "Imker Group"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a company outside our graph"
+
+# A company.
+[[label]]
+# The name as written.
+name = "Mercuri"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a company outside our graph"
+
+# A company.
+[[label]]
+# The name as written.
+name = "Metaplanet"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a company outside our graph"
+
+# A company.
+[[label]]
+# The name as written.
+name = "Olympia Group"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a company outside our graph"
+
+# A company.
+[[label]]
+# The name as written.
+name = "PXN Group"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a company outside our graph"
+
+# A company.
+[[label]]
+# The name as written.
+name = "RockSpring"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "a company outside our graph"
+
+# A company.
+[[label]]
+# The name as written.
+name = "Sedex Holdings Ltd"
+# Out of scope.
+outcome = "out-of-scope"
+# Why.
+note = "the seller's own holding company, outside our graph"
+
+# --- Not entities: nothing to link to, ever ---
+# A group of people.
+[[label]]
+# The name as written.
+name = "angel investors"
+# Nothing to link to.
+outcome = "non-entity"
+# What sort.
+kind = "unnamed group of people"
+
+# A group of people.
+[[label]]
+# The name as written.
+name = "the broader management team"
+# Nothing to link to.
+outcome = "non-entity"
+# What sort.
+kind = "unnamed group of people"
+
+# Unnamed holders.
+[[label]]
+# The name as written.
+name = "OneStream shareholders"
+# Nothing to link to.
+outcome = "non-entity"
+# What sort.
+kind = "unnamed holders"
+
+# Unnamed holders.
+[[label]]
+# The name as written.
+name = "other minority investors"
+# Nothing to link to.
+outcome = "non-entity"
+# What sort.
+kind = "unnamed holders"
+
+# Unnamed holders.
+[[label]]
+# The name as written.
+name = "BDL II investors"
+# Nothing to link to.
+outcome = "non-entity"
+# What sort.
+kind = "unnamed holders"
+
+# An unnamed vehicle.
+[[label]]
+# The name as written.
+name = "a newly formed continuation vehicle"
+# Nothing to link to.
+outcome = "non-entity"
+# What sort.
+kind = "unnamed vehicle"
+
+# Not a company at all.
+[[label]]
+# The name as written.
+name = "Core Private Equity strategy"
+# Nothing to link to.
+outcome = "non-entity"
+# What sort.
+kind = "an investment strategy, not a company"
+
+# A person.
+[[label]]
+# The name as written.
+name = "Gordon Hawes"
+# Nothing to link to (people aren't matched; D-096).
+outcome = "non-entity"
+# What sort.
+kind = "named person"
+
+# A person.
+[[label]]
+# The name as written.
+name = "Paul Jones"
+# Nothing to link to (people aren't matched; D-096).
+outcome = "non-entity"
+# What sort.
+kind = "named person"
