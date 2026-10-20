@@ -1498,3 +1498,67 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - **Built:** 29 NewsOnlyCompany nodes. Outcomes now: out of scope 144, `refersToGroup` 59, news-only 29, non-entity 9, `sameEntityAs` 6, ambiguous 5, unresolved 1 ("BDC V"). 34,269 facts → 112,800 triples; SHACL check 12 added; every check passes; 41 tests pass.
   - **A bug was caught and fixed:** the standalone report scripts read the fact list, which now holds the Match rows' own `sameEntityAs` links. Those confused the "joined pair counts once" lookup, and the report briefly showed 0 `sameEntityAs`. The graph itself was never affected (`make facts` matches before the Match rows exist). The lookup now only counts `lei:` → `ch:` pairs, and a new test pins it.
   - The hand-check sheet was regenerated with a news-only group (7 names) and an unresolved group (1 name). Bruno hadn't started filling it.
+
+### Property graph: provenance input from Seisa (about 1:30pm)
+- **Pablo (founding engineer), on how Seisa thinks about it:**
+  - **Access control (ACL) is the most important thing.** Whether it lives in metadata (properties) or as explicit nodes depends on the design, and it varies.
+  - **The schema is judged on:** cost, retrieval (latency and accuracy), and what you want to expose (ACL).
+  - **More metadata as properties makes a property graph faster and smaller,** but it's a trade-off.
+- **Facts checked (Claude):**
+  - Our Neo4j is the **Community** distribution (2026.09.0), which has no role-based security, so every user sees everything.
+  - Fine-grained access control (by label, relationship type or property name) is documented as an **Enterprise** feature.
+  - So for the trial, ACL is a **design consideration** (shape the graph so it *could* be locked down), not something we enforce.
+- **Sizing on our data (34,269 facts):**
+  - 23,757 value facts, 6,199 link facts and 4,313 type facts
+  - 3,241 source records and 14 rules
+  - 7,758 distinct (node, record-or-rule) pairs behind the value facts
+  - 2,607 facts with extra details (quotes, dates)
+- **D-110 · Provenance in the property graph: option C, receipt relationships.**
+  - Values are plain properties on their node. Each node has one `DERIVED_FROM` relationship per source record (or `GENERATED_BY` per rule), saying which of its properties that record backs, plus any quotes or details as flat lists.
+  - A link (relationship) is one fact, so its source sits on the link itself as properties.
+  - Records, sentences, rules and people are their own labelled nodes.
+  - Why, in Pablo's terms:
+    - **Cost:** about 7,800 extra relationships, against about 100,000 extra elements for a node per fact (option B).
+    - **Retrieval:** a value is read straight off its node (fast), and its source is exactly one hop away (accurate).
+    - **Exposure (ACL):** anything that might need hiding (people, raw text, our judgements) sits behind its own label, which is what Neo4j's access rules grip onto.
+    - It keeps the RDF promise that every fact traces to its source, with the same facts in both graphs.
+  - Evidence:
+    - The Neo4j modelling guide: relationship properties are for per-connection data, and a value repeated across many relationships belongs in its own node (one source record backs about 10 facts).
+    - Neo4j properties can't hold nested maps, so the receipts use flat lists.
+  - Weakness, for the write-up: a value that changes between fetches keeps only its latest value as a property. History needs a decision with `make refresh` (Q7).
+  - (Bruno to restate the why in his own words after lunch.)
+- **D-111 · GLEIF and Companies House companies: Bruno's rule is "one node only if every value on it is linked to a clear source; otherwise separate them."**
+  - Applying the rule (Claude, for Bruno to confirm):
+    - Where the two registers **agree**, a merged node could back one value with two receipts.
+    - Where they **disagree** (Q5: 15 cases, on status, address and name), one property can't hold both values with their sources, so a merged node would have to pick one. That would silently correct a source (D-029).
+    - So the rule gives **two nodes**, joined by `SAME_ENTITY_AS {rule: "D-025"}`, as in RDF.
+- **Drafted during Bruno's lunch: `docs/schema/lpg-schema.md`** (for review; nothing built in Neo4j). It covers labels, relationships, the provenance mapping, the reconciliation checks, a first "what changed" note, and 4 open points.
+
+#### TODO (Tuesday afternoon, after lunch)
+- [ ] Bruno: restate D-110's why in his own words; confirm D-111 (two nodes)
+- [ ] Bruno: review the draft property graph schema and decide its 4 open points (details on names, list properties, scope as a relationship, history)
+- [ ] Then the builder, step by step: constraints → nodes → relationships → receipts → reconciliation checks
+- [ ] Cypher questions; Bloom view
+- [ ] 4:27pm: the hand-check sheet
+
+### Property graph: decisions confirmed and the build starts (about 2pm)
+- **D-110's why, in Bruno's words:** "Receipt relationships, so the source is obvious on the graph itself. The values are plain properties that can be queried fast and cheaply. These links can be hidden if need be."
+  - Claude's precision note: Neo4j's access rules hide **relationships by their type** (e.g. all `DERIVED_FROM`) and **nodes by their label** (e.g. all `SourceRecord`). Both are possible, in Enterprise.
+- **D-111 confirmed:** GLEIF and Companies House companies stay two nodes, joined by `SAME_ENTITY_AS {rule: "D-025"}`.
+- **D-112 · The four open points in the schema draft (Claude's recommendations, accepted by Bruno):**
+  - a. Names with their own details (`otherName`, `previousName`; 224) become small `:Name` nodes. Why: each name is a thing with its own details, and a list property can't hold details per item.
+  - b. Several values of one kind (`statedReason`, `sicCode`) are list properties for now. Why: Q8 only reads them out; nodes would help only if reasons were shared or grouped.
+  - c. The scope decision becomes a relationship, `IN_SCOPE_OF {verdict, reason, rule}`. Why: it links exactly two things and has its own details.
+  - d. History (a value changing between fetches) is parked until `make refresh`, and named in the write-up.
+- **Neo4j checked before building:** the project's own server is running, version 2026.09.0 **Community**; the database was empty (0 nodes, no constraints).
+- **Property graph step 1 built** (`src/seisa_kg/lpg/build.py`): connect, empty the database, and 15 uniqueness rules on `id` (one per label).
+- **Step 2 built: nodes and their values, by the five rules** (type → label; real dates and booleans; list properties where a fact kind ever has several values; `:Name` nodes; companion properties such as `legalNameLanguage`). 6,334 nodes; every label's count matches the fact list.
+- **Correction (found by step 2's own check): the node counts we quoted since Monday were counts of *type facts*, not of distinct nodes.**
+  - One node can be typed by several records: GLEIF states each entity on two fetch dates, and one officer appears in the officer lists of up to 24 companies, so they're typed 24 times.
+  - **The true counts, confirmed in RDF with `COUNT(DISTINCT ?s)`:**
+    - **648 companies (489 GLEIF + 159 Companies House)**, not 1,152 (993 + 159)
+    - **466 people**, not 839
+  - The other counts were right: 880 appointments, 51 stakes, 30 deals, 105 advisers, 438 mentions, 153 GLEIF ⇄ Companies House pairs.
+  - Corrected in the recap page and the property graph schema. The 19 Oct numbers above and the study guide PDF still show the old figures.
+  - The first step 2 check made the same mistake. It now counts distinct nodes, and the RDF graph agrees.
+  - A talking point: the reconciliation check caught a wrong number in our own reporting on its first run.
