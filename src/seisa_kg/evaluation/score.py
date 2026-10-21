@@ -28,7 +28,7 @@ import re
 from dataclasses import dataclass, field
 
 # The start of our own entity addresses, removed so "lei:X" and the full address compare equal.
-OUR_BASES = ("https://seisa-kg.example/lei/", "https://seisa-kg.example/def/", "lei:", "ex:")
+OUR_BASES = ("https://seisa-kg.example/lei/", "https://seisa-kg.example/def/", "https://seisa-kg.example/ch/", "lei:", "ex:", "ch:")
 # A web address: "http" or "https", then anything up to a space.
 URL = re.compile(r"https?://\S+")
 # Our own entity and vocabulary addresses are names, not sources, so they never count as citations.

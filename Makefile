@@ -8,7 +8,7 @@
 NEO4J := tools/neo4j/bin/neo4j
 
 # Tell make these names are commands, not files to be created.
-.PHONY: setup test brief build fetch-gleif fetch-ch sentences extract facts rdf query lpg query-lpg score-demo neo4j-install neo4j-start neo4j-stop neo4j-status
+.PHONY: setup test brief build fetch-gleif fetch-ch sentences extract facts rdf query lpg query-lpg compare score-demo neo4j-install neo4j-start neo4j-stop neo4j-status
 
 # Install every Python library into the project's private environment.
 setup:
@@ -75,10 +75,17 @@ query-lpg: lpg query
 	# Run the Cypher question runner inside the project's environment.
 	uv run python -m seisa_kg.lpg.ask
 
+# The three-way comparison: phrasebooks from both graphs, then text-to-SPARQL, text-to-Cypher and vector search, scored (D-124).
+compare: query-lpg
+	# Write the two phrasebooks from the graphs themselves.
+	uv run python -m seisa_kg.comparison.phrasebook
+	# Run all three methods on every answered question (Gemini answers are cached) and write docs/comparison.md.
+	uv run python -m seisa_kg.comparison.compare
+
 # The single command (brief §4): fetch GLEIF, then Companies House, then news sentences + Gemini extraction (all cached) -> facts -> RDF graph -> checks -> questions -> property graph -> checks -> the same questions in Cypher.
-build: fetch-gleif fetch-ch extract query lpg query-lpg
+build: fetch-gleif fetch-ch extract query lpg query-lpg compare
 	# Say the whole pipeline finished.
-	@echo "Build complete: data/output/graph.ttl, docs/answers-rdf.md, the Neo4j property graph and docs/answers-lpg.md"
+	@echo "Build complete: data/output/graph.ttl, docs/answers-rdf.md, the Neo4j property graph, docs/answers-lpg.md and docs/comparison.md"
 
 # Download and set up the project's own Neo4j server (only needed once).
 neo4j-install:

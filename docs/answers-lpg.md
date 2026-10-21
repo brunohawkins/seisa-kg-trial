@@ -4,14 +4,16 @@ Each Cypher question is the twin of a SPARQL question. **Same answer** compares 
 
 | Question | Rows (SPARQL / Cypher) | Same answer? | SPARQL ms | Cypher ms |
 |---|---|---|---|---|
-| q01_apax_fund_managers | 9 / 9 | yes | 1.07 | 3.93 |
-| q02_no_parent_reasons | 15 / 15 | yes | 4.7 | 7.09 |
-| q03_lapsed_leis | 72 / 72 | yes | 3.39 | 6.58 |
-| q05_source_disagreements | 15 / 15 | yes | 2.11 | 2.58 |
-| q08_deals_and_reasons | 28 / 28 | yes | 35.68 | 3.95 |
-| q10_trace_the_buyer | 33 / 33 | yes | 3.49 | 3.15 |
-| q11_fund_closes | 5 / 5 | yes | 99.03 | 1.81 |
-| q12_shared_advisers | 10 / 10 | yes | 0.95 | 2.63 |
+| q01_apax_fund_managers | 9 / 9 | yes | 1.05 | 2.26 |
+| q02_no_parent_reasons | 15 / 15 | yes | 4.81 | 5.48 |
+| q03_lapsed_leis | 72 / 72 | yes | 2.73 | 5.99 |
+| q04_every_fact_about_a_company | 30 / 30 | yes | 0.39 | 2.45 |
+| q05_source_disagreements | 15 / 15 | yes | 1.94 | 3.21 |
+| q08_deals_and_reasons | 28 / 28 | yes | 33.34 | 3.07 |
+| q09_add_ons | 2 / 2 | yes | 1.16 | 1.44 |
+| q10_trace_the_buyer | 33 / 33 | yes | 1.79 | 2.57 |
+| q11_fund_closes | 5 / 5 | yes | 94.05 | 1.05 |
+| q12_shared_advisers | 10 / 10 | yes | 0.92 | 1.82 |
 
 Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j is a separate server reached over the network, so each Cypher time includes a round trip. Side by side, not a fair race.
 
@@ -25,7 +27,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** GLEIF's "fund manager" can be a GP company or a management company (F4, D-027), so the answer says "manager per GLEIF", not "GP".
 
-**Answer:** 9 rows, 3.93 ms.
+**Answer:** 9 rows, 2.26 ms.
 
 | manager | managerName | funds | sources | latestFetch |
 |---|---|---|---|---|
@@ -49,7 +51,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** companies that do report a parent, or give no Level 2 information at all (F13), are counted too, so every In company appears exactly once.
 
-**Answer:** 15 rows, 7.09 ms.
+**Answer:** 15 rows, 5.48 ms.
 
 | sponsorName | reason | companies | sources | latestFetch |
 |---|---|---|---|---|
@@ -77,7 +79,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Type:** time and data quality; the answer reads each fact's own source and fetch date (D-046, D-042).
 
-**Answer:** 72 rows, 6.58 ms.
+**Answer:** 72 rows, 5.99 ms.
 
 | sponsorName | entity | name | status | lastToldUs | sources |
 |---|---|---|---|---|---|
@@ -104,6 +106,43 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 *…and 52 more rows in the JSON file.*
 
+## q04_every_fact_about_a_company.cypher
+
+**Question:** For Bridgepoint Group plc, what is every fact we hold, and which record or rule did each one come from?
+
+**Why it matters:** It is the audit view: nothing in the graph is unsourced, and an investor can check any fact against the exact record (or see that it is our own judgement, and which rule made it).
+
+**Type:** provenance; one company's two records (GLEIF and Companies House, joined by D-025), every fact with its source.
+
+**Note:** facts made by our own rules (status groups, address keys, the GLEIF-Companies House link) cite the rule, not a record. Types are left out.
+
+**Answer:** 30 rows, 2.45 ms.
+
+| node | fact | value | sources |
+|---|---|---|---|
+| lei:213800KFNMVI8PDZX472 | statusGroup | ACTIVE | ex:rule/D-092 |
+| lei:213800KFNMVI8PDZX472 | addressKey | W1H7EJ\|5 | ex:rule/D-093 |
+| lei:213800KFNMVI8PDZX472 | legalName | BRIDGEPOINT GROUP PLC | src:gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261018 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | registeredAs | 11443992 | src:gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261018 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | headquartersAddress | 5 MARBLE ARCH, LONDON, GB-LND, W1H 7EJ, GB | src:gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261018 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | legalAddress | 5 MARBLE ARCH, LONDON, GB-LND, W1H 7EJ, GB | src:gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261018 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | entityStatus | ACTIVE | src:gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261018 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | legalForm | B6ES | src:gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261018 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | jurisdiction | GB | src:gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261018 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | gleifCategory | GENERAL | src:gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261018 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | registrationStatus | ISSUED | src:gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261018 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | registeredAt | RA000585 | src:gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261018 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | ultimateParentException | NO_KNOWN_PERSON | src:gleif/213800KFNMVI8PDZX472/ultimate-parent-exception/20261018 |
+| lei:213800KFNMVI8PDZX472 | directParentException | NO_KNOWN_PERSON | src:gleif/213800KFNMVI8PDZX472/direct-parent-exception/20261018 |
+| ch:11443992 | addressKey | W1H7EJ\|5 | ex:rule/D-093 |
+| ch:11443992 | statusGroup | ACTIVE | ex:rule/D-092 |
+| ch:11443992 | pscStatement | no-individual-or-entity-with-signficant-control | src:ch/11443992/psc_statements/20261019 |
+| ch:11443992 | incorporatedOn | 2018-07-02 | src:ch/11443992/profile/20261019 |
+| ch:11443992 | legalAddress | 5 Marble Arch, London, W1H 7EJ, United Kingdom | src:ch/11443992/profile/20261019 |
+| ch:11443992 | sicCode | 64205 | src:ch/11443992/profile/20261019 |
+
+*…and 10 more rows in the JSON file.*
+
 ## q05_source_disagreements.cypher
 
 **Question:** Where do GLEIF and Companies House disagree about the same company's status or address, and what does each say?
@@ -112,7 +151,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Type:** cross-source conflict; compares tidy keys (D-092, D-093) but shows each source's own words and record.
 
-**Answer:** 15 rows, 2.58 ms.
+**Answer:** 15 rows, 3.21 ms.
 
 | company | name | field | gleifSays | chSays | gleifSources | chSources |
 |---|---|---|---|---|---|---|
@@ -142,7 +181,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** the sponsor is the release's publisher. "sold" means the sponsor is on the seller side (a seller name linked to its group, or to one of its In companies); everything else counts as "bought" (including add-ons). The "commitments from Bridgepoint Direct Lending II" row is an extraction flaw (a non-company read as a target), kept visible on purpose.
 
-**Answer:** 28 rows, 3.95 ms.
+**Answer:** 28 rows, 3.07 ms.
 
 | sponsorName | target | side | kind | published | reasons | sources |
 |---|---|---|---|---|---|---|
@@ -169,6 +208,23 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 *…and 8 more rows in the JSON file.*
 
+## q09_add_ons.cypher
+
+**Question:** Which buys were add-ons (merged into an existing portfolio company), and what reason was given?
+
+**Why it matters:** Add-ons show a sponsor's buy-and-build strategy: which portfolio companies it is growing by acquisition, and the reasons it gives.
+
+**Type:** news extraction, filtered by deal kind; the existing portfolio company is the buyer named in the release.
+
+**Note:** the deal kind "add-on" is Gemini's reading of the release, checked against its quote (D-085). The buyer is the portfolio company as named (e.g. WGSN), not linked to a registry entity.
+
+**Answer:** 2 rows, 1.44 ms.
+
+| sponsorName | target | buyer | published | reasons | sources |
+|---|---|---|---|---|---|
+| Apax | IWSR | WGSN | 2025-06-05 | enhancing its AI, data analytics and business intelligence capabilities for the alcoholic beverage industry \| expand its market-leading trend forecasting capabilities, AI, data analytics and insights across a broad range of consumer industries \| further enhance the products and services WGSN provides and create significant value for customers of both companies \| provides IWSR with additional expertise in consumer behaviour tracking and trend forecasting as part of their product-led growth strategy \| providing a holistic solution in this space | src:news/apax-05/s07 (+4 more) |
+| Bridgepoint | The MTM Agency | IDHL | 2025-02-27 | accelerates IDHL’s ability to deliver strategic advice across the entire communications landscape \| brings sophisticated complementary capabilities in creative, strategy and insight, as well as influencer marketing and PR \| creating fresh opportunities to forge new client relationships \| enhance IDHL’s offer to its existing national roster of clients \| strengthens IDHL’s capabilities and further enhances its highly attractive suite of integrated, insight-led marketing solutions | src:news/bridgepoint-05/s05 (+4 more) |
+
 ## q10_trace_the_buyer.cypher
 
 **Question:** For a deal in the news, trace the buyer named in the release to our legal entities and up to the sponsor, with a source (sentence or registry record) for each link.
@@ -179,7 +235,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** names that can't be linked (ambiguous, out of scope, ...) are shown too, with an empty trail, so the answer says where tracing stops.
 
-**Answer:** 33 rows, 3.15 ms.
+**Answer:** 33 rows, 2.57 ms.
 
 | deal | buyerAsWritten | buyerSentence | outcome | matchRule | linkedTo | legalName | registryRecords | sponsorName | scopeRule |
 |---|---|---|---|---|---|---|---|---|---|
@@ -216,7 +272,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** only 5 fund closes were published in our releases (F40). The fund's name is linked to the sponsor's group, not to one legal entity (D-103: a fund is many vehicles).
 
-**Answer:** 5 rows, 1.81 ms.
+**Answer:** 5 rows, 1.05 ms.
 
 | sponsorName | fund | closeType | size | closeDate | published | sources |
 |---|---|---|---|---|---|---|
@@ -236,7 +292,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** advisers are matched by their name as written, in capitals (e.g. "Kirkland & Ellis LLP" and "Kirkland & Ellis" would count as two); advisers are not linked to registry entities (D-104). The sponsor is the release's publisher.
 
-**Answer:** 10 rows, 2.63 ms.
+**Answer:** 10 rows, 1.82 ms.
 
 | adviser | sponsors | sponsorNames | deals | sources |
 |---|---|---|---|---|

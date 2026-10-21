@@ -1,0 +1,38 @@
+# SUMMARY: Investor question 4 (D-071), for one company: Bridgepoint Group plc.
+# QUESTION: For Bridgepoint Group plc, what is every fact we hold, and which record or rule did each one come from?
+# WHY: It is the audit view: nothing in the graph is unsourced, and an investor can check any fact against the exact record (or see that it is our own judgement, and which rule made it).
+# TYPE: provenance; one company's two records (GLEIF and Companies House, joined by D-025), every fact with its source.
+# KEY: node, fact, value
+# NOTE: facts made by our own rules (status groups, address keys, the GLEIF-Companies House link) cite the rule, not a record. Types are left out.
+
+# The core RDF vocabulary (rdf:reifies links a note to its fact).
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# The W3C provenance vocabulary.
+PREFIX prov: <http://www.w3.org/ns/prov#>
+# Our own vocabulary.
+PREFIX ex:   <https://seisa-kg.example/def/>
+# GLEIF entities.
+PREFIX lei:  <https://seisa-kg.example/lei/>
+
+# One row per fact: which record of the company, which fact, its value, and every record or rule it came from.
+SELECT ?node ?fact ?value (GROUP_CONCAT(DISTINCT STR(?from); SEPARATOR=" ") AS ?sources)
+WHERE {
+  # The company's GLEIF record...
+  { BIND (lei:213800KFNMVI8PDZX472 AS ?node) }
+  # ...and the Companies House record our rule D-025 links it to.
+  UNION { lei:213800KFNMVI8PDZX472 ex:sameEntityAs ?node . }
+  # Every fact about that record, except its type.
+  ?node ?p ?o . FILTER (?p != rdf:type)
+  # The note on each fact...
+  ?note rdf:reifies <<( ?node ?p ?o )>> .
+  # ...and where it came from: a source record, or one of our rules.
+  { ?note prov:wasDerivedFrom ?from } UNION { ?note prov:wasGeneratedBy ?from }
+  # The fact's short name, e.g. "legalName".
+  BIND (STRAFTER(STR(?p), STR(ex:)) AS ?fact)
+  # The value as text (a web address for a link to another node).
+  BIND (STR(?o) AS ?value)
+}
+# One row per fact.
+GROUP BY ?node ?fact ?value
+# By record, then by fact.
+ORDER BY ?node ?fact ?value

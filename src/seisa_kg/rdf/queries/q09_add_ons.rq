@@ -1,0 +1,48 @@
+# SUMMARY: Investor question 9 (D-071), from the news releases.
+# QUESTION: Which buys were add-ons (merged into an existing portfolio company), and what reason was given?
+# WHY: Add-ons show a sponsor's buy-and-build strategy: which portfolio companies it is growing by acquisition, and the reasons it gives.
+# TYPE: news extraction, filtered by deal kind; the existing portfolio company is the buyer named in the release.
+# KEY: sponsorName, target
+# NOTE: the deal kind "add-on" is Gemini's reading of the release, checked against its quote (D-085). The buyer is the portfolio company as named (e.g. WGSN), not linked to a registry entity.
+
+# The core RDF vocabulary (rdf:reifies links a note to its fact).
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# RDF Schema (rdfs:label).
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+# The W3C provenance vocabulary.
+PREFIX prov: <http://www.w3.org/ns/prov#>
+# Our own vocabulary.
+PREFIX ex:   <https://seisa-kg.example/def/>
+
+# One row per add-on: sponsor, the company bought, the portfolio company that bought it, when, the reasons, and the sentences behind them.
+SELECT ?sponsorName ?target ?buyer ?published ?reasons ?sources
+WHERE {
+  # A deal Gemini read as an add-on, the release that announced it, and the target's name as written.
+  ?deal a ex:Deal ; ex:dealKind "add-on" ; ex:announcedIn ?release ; ex:targetName ?target .
+  # The release's publisher (a sponsor) and publication date.
+  ?release ex:publishedBy ?sponsor ; ex:publishedOn ?published .
+  # The sponsor's display name.
+  ?sponsor rdfs:label ?sponsorName .
+  # Each deal's buyer names (the existing portfolio company), joined.
+  { SELECT ?deal (GROUP_CONCAT(DISTINCT ?b; SEPARATOR=" | ") AS ?buyer)
+    # Every deal, and its buyer names if any.
+    WHERE { ?deal a ex:Deal . OPTIONAL { ?deal ex:buyerName ?b . } }
+    # One row per deal.
+    GROUP BY ?deal }
+  # Each deal's reasons, joined.
+  { SELECT ?deal (GROUP_CONCAT(DISTINCT ?reason; SEPARATOR=" | ") AS ?reasons)
+    # Every deal, and its reasons if any.
+    WHERE { ?deal a ex:Deal . OPTIONAL { ?deal ex:statedReason ?reason . } }
+    # One row per deal.
+    GROUP BY ?deal }
+  # Each deal's sources: the sentences behind its target, buyer and reasons.
+  { SELECT ?deal (GROUP_CONCAT(DISTINCT STR(?sentence); SEPARATOR=" ") AS ?sources)
+    # Those facts...
+    WHERE { ?deal a ex:Deal ; ?p ?o . FILTER (?p IN (ex:targetName, ex:buyerName, ex:statedReason))
+            # ...and the sentence each came from.
+            ?n rdf:reifies <<( ?deal ?p ?o )>> ; prov:wasDerivedFrom ?sentence . }
+    # One row per deal.
+    GROUP BY ?deal }
+}
+# Sponsors alphabetically, then by date.
+ORDER BY ?sponsorName ?published

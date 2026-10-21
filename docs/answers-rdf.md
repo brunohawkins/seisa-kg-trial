@@ -13,7 +13,7 @@ Questions are placeholder drafts (D-058). Full answers, with every source: `data
 
 **Note:** GLEIF's "fund manager" can be a GP company or a management company (F4, D-027), so the answer says "manager per GLEIF", not "GP".
 
-**Answer:** 9 rows, 1.07 ms.
+**Answer:** 9 rows, 1.05 ms.
 
 | manager | managerName | funds | sources | latestFetch |
 |---|---|---|---|---|
@@ -37,7 +37,7 @@ Questions are placeholder drafts (D-058). Full answers, with every source: `data
 
 **Note:** companies that do report a parent, or give no Level 2 information at all (F13), are counted too, so every In company appears exactly once.
 
-**Answer:** 15 rows, 4.7 ms.
+**Answer:** 15 rows, 4.81 ms.
 
 | sponsorName | reason | companies | sources | latestFetch |
 |---|---|---|---|---|
@@ -65,7 +65,7 @@ Questions are placeholder drafts (D-058). Full answers, with every source: `data
 
 **Type:** time and data quality; the answer reads each fact's own source and fetch date (D-046, D-042).
 
-**Answer:** 72 rows, 3.39 ms.
+**Answer:** 72 rows, 2.73 ms.
 
 | sponsorName | entity | name | status | lastToldUs | sources |
 |---|---|---|---|---|---|
@@ -92,6 +92,43 @@ Questions are placeholder drafts (D-058). Full answers, with every source: `data
 
 *…and 52 more rows in the JSON file.*
 
+## q04_every_fact_about_a_company.rq
+
+**Question:** For Bridgepoint Group plc, what is every fact we hold, and which record or rule did each one come from?
+
+**Why it matters:** It is the audit view: nothing in the graph is unsourced, and an investor can check any fact against the exact record (or see that it is our own judgement, and which rule made it).
+
+**Type:** provenance; one company's two records (GLEIF and Companies House, joined by D-025), every fact with its source.
+
+**Note:** facts made by our own rules (status groups, address keys, the GLEIF-Companies House link) cite the rule, not a record. Types are left out.
+
+**Answer:** 30 rows, 0.39 ms.
+
+| node | fact | value | sources |
+|---|---|---|---|
+| ch:11443992 | addressKey | W1H7EJ\|5 | ex:rule/D-093 |
+| ch:11443992 | companyType | plc | src:ch/11443992/profile/20261019 |
+| ch:11443992 | entityStatus | active | src:ch/11443992/profile/20261019 |
+| ch:11443992 | incorporatedOn | 2018-07-02 | src:ch/11443992/profile/20261019 |
+| ch:11443992 | legalAddress | 5 Marble Arch, London, W1H 7EJ, United Kingdom | src:ch/11443992/profile/20261019 |
+| ch:11443992 | legalName | BRIDGEPOINT GROUP PLC | src:ch/11443992/profile/20261019 |
+| ch:11443992 | previousName | ATLANTIC INVESTMENT HOLDINGS LIMITED | src:ch/11443992/profile/20261019 |
+| ch:11443992 | previousName | ATLANTIC INVESTMENTS HOLDINGS LIMITED | src:ch/11443992/profile/20261019 |
+| ch:11443992 | previousName | BRIDGEPOINT GROUP LIMITED | src:ch/11443992/profile/20261019 |
+| ch:11443992 | pscStatement | no-individual-or-entity-with-signficant-control | src:ch/11443992/psc_statements/20261019 |
+| ch:11443992 | sicCode | 64205 | src:ch/11443992/profile/20261019 |
+| ch:11443992 | statusGroup | ACTIVE | ex:rule/D-092 |
+| lei:213800KFNMVI8PDZX472 | addressKey | W1H7EJ\|5 | ex:rule/D-093 |
+| lei:213800KFNMVI8PDZX472 | directParentException | NO_KNOWN_PERSON | src:gleif/213800KFNMVI8PDZX472/direct-parent-exception/20261018 |
+| lei:213800KFNMVI8PDZX472 | entityStatus | ACTIVE | https://seisa-kg.example/source/gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261016 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | gleifCategory | GENERAL | https://seisa-kg.example/source/gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261016 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | headquartersAddress | 5 MARBLE ARCH, LONDON, GB-LND, W1H 7EJ, GB | https://seisa-kg.example/source/gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261016 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | jurisdiction | GB | https://seisa-kg.example/source/gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261016 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | legalAddress | 5 MARBLE ARCH, LONDON, GB-LND, W1H 7EJ, GB | https://seisa-kg.example/source/gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261016 (+1 more) |
+| lei:213800KFNMVI8PDZX472 | legalForm | B6ES | https://seisa-kg.example/source/gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261016 (+1 more) |
+
+*…and 10 more rows in the JSON file.*
+
 ## q05_source_disagreements.rq
 
 **Question:** Where do GLEIF and Companies House disagree about the same company's status or address, and what does each say?
@@ -100,7 +137,7 @@ Questions are placeholder drafts (D-058). Full answers, with every source: `data
 
 **Type:** cross-source conflict; compares tidy keys (D-092, D-093) but shows each source's own words and record.
 
-**Answer:** 15 rows, 2.11 ms.
+**Answer:** 15 rows, 1.94 ms.
 
 | company | name | field | gleifSays | chSays | gleifSources | chSources |
 |---|---|---|---|---|---|---|
@@ -130,7 +167,7 @@ Questions are placeholder drafts (D-058). Full answers, with every source: `data
 
 **Note:** the sponsor is the release's publisher. "sold" means the sponsor is on the seller side (a seller name linked to its group, or to one of its In companies); everything else counts as "bought" (including add-ons). The "commitments from Bridgepoint Direct Lending II" row is an extraction flaw (a non-company read as a target), kept visible on purpose.
 
-**Answer:** 28 rows, 35.68 ms.
+**Answer:** 28 rows, 33.34 ms.
 
 | sponsorName | target | side | kind | published | reasons | sources |
 |---|---|---|---|---|---|---|
@@ -157,6 +194,23 @@ Questions are placeholder drafts (D-058). Full answers, with every source: `data
 
 *…and 8 more rows in the JSON file.*
 
+## q09_add_ons.rq
+
+**Question:** Which buys were add-ons (merged into an existing portfolio company), and what reason was given?
+
+**Why it matters:** Add-ons show a sponsor's buy-and-build strategy: which portfolio companies it is growing by acquisition, and the reasons it gives.
+
+**Type:** news extraction, filtered by deal kind; the existing portfolio company is the buyer named in the release.
+
+**Note:** the deal kind "add-on" is Gemini's reading of the release, checked against its quote (D-085). The buyer is the portfolio company as named (e.g. WGSN), not linked to a registry entity.
+
+**Answer:** 2 rows, 1.16 ms.
+
+| sponsorName | target | buyer | published | reasons | sources |
+|---|---|---|---|---|---|
+| Apax | IWSR | WGSN | 2025-06-05 | enhancing its AI, data analytics and business intelligence capabilities for the alcoholic beverage industry \| expand its market-leading trend forecasting capabilities, AI, data analytics and insights across a broad range of consumer industries \| further enhance the products and services WGSN provides and create significant value for customers of both companies \| provides IWSR with additional expertise in consumer behaviour tracking and trend forecasting as part of their product-led growth strategy \| providing a holistic solution in this space | https://seisa-kg.example/source/news/apax-05/s01 (+4 more) |
+| Bridgepoint | The MTM Agency | IDHL | 2025-02-27 | accelerates IDHL’s ability to deliver strategic advice across the entire communications landscape \| brings sophisticated complementary capabilities in creative, strategy and insight, as well as influencer marketing and PR \| creating fresh opportunities to forge new client relationships \| enhance IDHL’s offer to its existing national roster of clients \| strengthens IDHL’s capabilities and further enhances its highly attractive suite of integrated, insight-led marketing solutions | https://seisa-kg.example/source/news/bridgepoint-05/s01 (+4 more) |
+
 ## q10_trace_the_buyer.rq
 
 **Question:** For a deal in the news, trace the buyer named in the release to our legal entities and up to the sponsor, with a source (sentence or registry record) for each link.
@@ -167,7 +221,7 @@ Questions are placeholder drafts (D-058). Full answers, with every source: `data
 
 **Note:** names that can't be linked (ambiguous, out of scope, ...) are shown too, with an empty trail, so the answer says where tracing stops.
 
-**Answer:** 33 rows, 3.49 ms.
+**Answer:** 33 rows, 1.79 ms.
 
 | deal | buyerAsWritten | buyerSentence | outcome | matchRule | linkedTo | legalName | registryRecords | sponsorName | scopeRule |
 |---|---|---|---|---|---|---|---|---|---|
@@ -204,7 +258,7 @@ Questions are placeholder drafts (D-058). Full answers, with every source: `data
 
 **Note:** only 5 fund closes were published in our releases (F40). The fund's name is linked to the sponsor's group, not to one legal entity (D-103: a fund is many vehicles).
 
-**Answer:** 5 rows, 99.03 ms.
+**Answer:** 5 rows, 94.05 ms.
 
 | sponsorName | fund | closeType | size | closeDate | published | sources |
 |---|---|---|---|---|---|---|
@@ -224,7 +278,7 @@ Questions are placeholder drafts (D-058). Full answers, with every source: `data
 
 **Note:** advisers are matched by their name as written, in capitals (e.g. "Kirkland & Ellis LLP" and "Kirkland & Ellis" would count as two); advisers are not linked to registry entities (D-104). The sponsor is the release's publisher.
 
-**Answer:** 10 rows, 0.95 ms.
+**Answer:** 10 rows, 0.92 ms.
 
 | adviser | sponsors | sponsorNames | deals | sources |
 |---|---|---|---|---|

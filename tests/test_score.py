@@ -129,3 +129,13 @@ def test_empty_key_value_is_skipped():
                                               {"buyer": "Tidemark", "linkedTo": "", "sources": "src:news/hg-06/s06"}]}
     # The identical answer.
     assert score(ref, {"rows": ref["rows"]})["overall"] == 1.0
+
+
+# A Companies House node written in full (SPARQL) and short (Cypher) is the same item (found on Q4, D-122).
+def test_companies_house_ids_compare_equal():
+    # The answer key writes the full address.
+    ref = {"KEY": "node, value", "rows": [{"node": "https://seisa-kg.example/ch/11443992", "value": "plc", "sources": "src:ch/11443992/profile/20261019"}]}
+    # The candidate writes the short id.
+    s = score(ref, {"rows": [{"node": "ch:11443992", "value": "plc", "sources": "src:ch/11443992/profile/20261019"}]})
+    # Full marks.
+    assert s["overall"] == 1.0

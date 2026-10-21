@@ -1776,3 +1776,10 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - [ ] **09:35–10:10 · solo demo:** Bruno opens each output and explains it aloud, following the demo script.
 - [ ] **10:10–10:45 · rehearsal:** explain the pipeline from the notes; Claude asks Seisa-style questions.
 - [ ] **12:00 · explain-back** in the office.
+
+### Q4 and Q9, and the comparison code (16:40)
+- **Q4 (every fact about Bridgepoint Group plc, from both its records, with the record or rule behind each) and Q9 (add-ons with reasons), in both languages. All 10 questions now match between SPARQL and Cypher**, and every Cypher answer scores 1.0 against its SPARQL answer key (correctness and citation).
+  - Q4 is the provenance showcase: 30 facts; the rule-made ones (status group, address key, the GLEIF–Companies House link) cite their rule; Companies House's own typo ("signficant") is kept as given (D-029). In Neo4j the answer has three parts (values via receipts, links via their own `record`, names via `:Name` nodes), joined by UNION; in RDF it's one pattern, because every fact has a note.
+  - Q9: IWSR (bought by WGSN, an Apax company) and The MTM Agency (bought by IDHL, a Bridgepoint company).
+- **Scorer (D-122, continued):** `ch:` ids and their full addresses now compare equal (Q4 is the first answer key with Companies House nodes). Q4's key includes the fact's name, because two facts can share a value ("ACTIVE" for both `entityStatus` and `statusGroup`). 62 tests pass.
+- **The comparison code:** `src/seisa_kg/comparison/phrasebook.py` (the two phrasebooks, generated from the graphs) and `compare.py` (three lanes, the checks, scoring, `docs/comparison.md`); `make compare`, now part of `make build`. Safety checked before any API call: blocked words and made-up names are rejected, and Neo4j itself refuses a write in read-only mode.
