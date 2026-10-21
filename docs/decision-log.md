@@ -1804,3 +1804,13 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - Why Mermaid: it is text, so the picture is generated from the graph on every build and lives in the repo; GitHub renders it.
   - Found while building: a blank node's label can't be put back into a SPARQL query (SPARQL reads `_:x` as a wildcard), so each note's details are fetched in the same query as its fact.
   - A nice detail for the demo: Bridgepoint Group plc's name history comes straight from the dates on the notes (Atlantic Investment Holdings Ltd 2018 → Atlantic Investments Holdings Ltd → Bridgepoint Group Limited 2021 → plc from 5 July 2021, the IPO).
+
+### README and write-up drafts (17:00)
+- **README rewritten:** setup, the one command, what each stage produces, where every deliverable is (mapped to the brief's list), how to see a fact's path to its source in both graphs, code layout, known limits.
+- **Write-up drafted** (`docs/write-up.md`, about 1,300 words: trim to two pages when editing): when to choose RDF, a property graph or vector search, argued from what we built and measured; the stake-dates section; results stated candidly; what a real deployment would add. **For Bruno tomorrow at 08:30:** edit it into his own voice; confirm or change "my choice"; write the "what changed in my thinking" bullets.
+- **Found for the stake-dates section:** Companies House gives `notified_on` (51 stakes) and `ceased_on` (14), never a start date; 17 of the 51 show 6 April 2016, the day the register began, which means "already in control then". So a "began" date would be our own labelled judgement (D-029), not a source fact.
+
+#### TODO (Thursday, D-124)
+- [ ] 08:30 Bruno edits the write-up (own voice, two pages, his "what changed" bullets) and checks the README.
+- [ ] 09:00 freeze: Bruno runs `make build` from a clean copy, plus `make test`; commit, push.
+- [ ] 09:15 solo demo with the demo script; 10:00 rehearsal with Seisa-style questions.
