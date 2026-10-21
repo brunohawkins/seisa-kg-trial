@@ -1684,3 +1684,10 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - **Study guide 3 for Wednesday morning:** `~/Work Projects/Seisa study guide 3 - 21 Oct 2026.pdf` (outside the repo; 20 pages, about 2 hours).
   - Covers the pipeline step by step with "If Seisa asks…" answers, the two graphs side by side, a new kind of fact (stake dates), SPARQL and Cypher, vector search (with the real demo run), measuring, what didn't work, and an explain-back drill.
   - About 100 quick-fire terminology flashcards, flagged [SE] / [KG] / [PE].
+
+## 21 Oct 2026 (Wednesday)
+
+### Schedule change (morning)
+- **D-117 · Wednesday morning is for learning; the pipeline work restarts at about 14:00, with the matching hand-check first.**
+  - Why (Bruno): fully understanding what's built so far comes first. The explain-back carries the most weight.
+  - The cost: about 3 hours of building move out of the morning, so the afternoon and Thursday morning need re-planning (Claude's proposal below, for Bruno to decide).

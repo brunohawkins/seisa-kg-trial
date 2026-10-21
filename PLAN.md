@@ -306,7 +306,11 @@ This is slower than Claude building alone, so the plan below cuts the extensions
 4. The 12 questions in Cypher, scored against the SPARQL answers (1.25 h).
 5. A Bloom view of fact → source (30 min).
 
-### Wednesday 21 Oct (D-115): build in the morning, write, then review
+### Wednesday 21 Oct, revised (D-117): learn in the morning, build from 14:00
+**Morning: learning only** (study guide 3, the Cypher, SPARQL and vector search courses, flashcards). No new pipeline work.
+**From 14:00: the pipeline again, starting with the matching hand-check.** The rest of the day and Thursday morning are being re-planned (see the diary, D-117); the D-115 plan below is kept for reference.
+
+#### Superseded plan (D-115)
 **10:00–13:00: build** (11:00–11:30 blocked: Bruno's EF interview)
 0. **First (15 min): the 50-name matching hand-check** (`eval/matching-sample.csv`), then Claude scores precision, weighted recall and agreement (moved from Tuesday, D-116).
 1. The questions in Cypher (Q1–Q3 and Q5 first, compared with SPARQL and timed), then the remaining questions in both: Q4, Q6, Q8–Q12 (Q10 as reworded in D-100). A Bloom view of fact → source.
