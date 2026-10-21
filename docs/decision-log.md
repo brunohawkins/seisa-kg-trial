@@ -1711,3 +1711,17 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - [ ] Bloom view (fact → source) plus one other visualisation; timings.
 - [ ] README and the ~2-page write-up; **freeze and push by about 12:00**.
 - [ ] Afternoon: explain-back in the office (everything pushed before leaving; Neo4j and Bloom ready to show).
+
+### Matching hand-check: results (15:35)
+- **Done:** Bruno judged all 50 names in `eval/matching-sample.csv`; scored by `src/seisa_kg/matching/score.py` → `docs/matching-eval.md`.
+- **D-119 · Rows are reported by who judged them, because the check was not fully blind or solo.** 12 rows Bruno alone, 21 after Claude explained or corrected, 17 Claude's suggestion accepted (from the session record). Claude did not open the key until the end, but Claude wrote the matching rules, so its guidance is not independent of them.
+  - Why: an honest number beats a clean-looking one; the write-up says how the check was done.
+- **Results (weighted / plain):** agreement 89% / 80%; precision of links 38% / 41% (of the code's 17 links); recall of links 86% / 88% (of Bruno's 8 links).
+  - Agreement by group: Bruno alone 75%, guided 71%, Claude's suggestion 94% (expected to be inflated).
+  - **Every disagreement is in the code's `refersToGroup` group (10 of 15).** All other outcomes agree 100%.
+  - **8 of the 10 are one pattern:** a named fund with a sponsor word ("Bridgepoint Direct Lending IV", "The Apax Global Impact Fund", "Apax Digital Fund I"). The code follows D-103 (sponsor word → `refersToGroup` the sponsor, vehicles listed as possible); Bruno chose `ambiguous`. Both refuse to pick one vehicle; they differ on whether the sure part (the sponsor) is kept as a link. Claude's three-question path for the check sent named funds to "look up → several → ambiguous", which differs from D-103, so this gap is partly Claude's doing.
+  - **Row 18 ("Apax"):** the sentence defines Apax Partners LLP ("Apax"); the code's name-only rule can't see that and says `refersToGroup`. A context miss (recall).
+  - **Row 48 ("commitments from Bridgepoint Direct Lending II"):** the only link on a non-entity, caused upstream by extraction (already on the after-project list).
+  - No code link points at the wrong sponsor or the wrong company.
+- **Also found:** Gemini's role labels are loose (row 17 "growth investment" labelled buyer; the same sentence labelled Bridgepoint buyer in row 30 and sponsor in row 40).
+- **For Bruno to decide:** keep D-103 (the code's answer) or switch named funds to `ambiguous`; and which precision to report (exact outcome match, or "is the code's link true").
