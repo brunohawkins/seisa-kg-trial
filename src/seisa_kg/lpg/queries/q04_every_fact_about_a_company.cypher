@@ -1,5 +1,5 @@
 // SUMMARY: Investor question 4 in Cypher (the twin of rdf/queries/q04_every_fact_about_a_company.rq).
-// QUESTION: For Bridgepoint Group plc, what is every fact we hold, and which record or rule did each one come from?
+// QUESTION: For Bridgepoint Group plc, what is every fact we hold (other than its type), and which record or rule did each one come from?
 // WHY: It is the audit view: nothing in the graph is unsourced, and an investor can check any fact against the exact record (or see that it is our own judgement, and which rule made it).
 // TYPE: provenance; one company's two records (GLEIF and Companies House, joined by D-025), every fact with its source.
 // KEY: node, fact, value

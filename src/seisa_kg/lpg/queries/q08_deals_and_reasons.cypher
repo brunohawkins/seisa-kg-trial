@@ -2,7 +2,7 @@
 // QUESTION: Which companies did each sponsor buy or sell in 2025–26, and what reason did the announcement give?
 // WHY: It is the sponsor's recent dealmaking in one table, each deal with the reasons the sponsor itself gave and the sentences that say so.
 // TYPE: news extraction, read out with sources; "why" answered only as "what reason the announcement gave" (D-071).
-// KEY: sponsorName, target, side
+// KEY: sponsorName, target
 // NOTE: the sponsor is the release's publisher. "sold" means the sponsor is on the seller side (a seller name linked to its group, or to one of its In companies); everything else counts as "bought" (including add-ons). The "commitments from Bridgepoint Direct Lending II" row is an extraction flaw (a non-company read as a target), kept visible on purpose.
 
 // A deal, the release that announced it, and the sponsor that published the release.

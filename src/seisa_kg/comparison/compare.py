@@ -235,8 +235,11 @@ def cypher_unknown(labels_and_types: set[str], properties: set[str]):
     def unknown(query: str, words: str) -> set[str]:
         # Labels and relationship types: a capitalised name after a colon, e.g. (:Company) or [:FUND_MANAGED_BY].
         used = {f":{n}" for n in re.findall(r":\s*`?([A-Z][A-Za-z0-9_]*)", words) if n not in labels_and_types}
+        # Keys of maps the query builds itself, e.g. {field: "status", side: "buyer"}: reading d.field back is not a made-up name
+        # (found on the first run, where it wrongly rejected three valid Cypher queries).
+        own_keys = set(re.findall(r"[{,]\s*([A-Za-z_][A-Za-z0-9_]*)\s*:", words))
         # Properties: a name after "variable.", e.g. c.legalName.
-        used |= {f".{p}" for p in re.findall(r"\b[a-z_][A-Za-z0-9_]*\.([A-Za-z_][A-Za-z0-9_]*)", words) if p not in properties}
+        used |= {f".{p}" for p in re.findall(r"\b[a-z_][A-Za-z0-9_]*\.([A-Za-z_][A-Za-z0-9_]*)", words) if p not in properties | own_keys}
         # Those our graph doesn't have.
         return used
     # Hand back the check.
@@ -432,40 +435,30 @@ def as_text(value) -> str:
     return "" if value is None else str(value)
 
 
-# Registry records' ids and web addresses, both ways, so a citation by either form counts (not news sentences).
-def record_addresses(store: ox.Store) -> dict[str, set[str]]:
+# Each registry record's web address, by its short id (news sentences are left out: a sentence is its own source).
+def record_urls(store: ox.Store) -> dict[str, str]:
     # Each record's id and web address.
     q = f"SELECT ?r ?u WHERE {{ ?r a <{EX}SourceRecord> ; <{EX}url> ?u }}"
-    # Id -> addresses and address -> ids.
-    pairs = {}
-    # Each record.
-    for r in store.query(q):
-        # Its short id, e.g. "src:gleif/.../20261018".
-        rid = "src:" + r["r"].value[len(PREFIXES["src"]):]
-        # News sentences cite themselves, not the release's address.
-        if rid.startswith("src:news/"):
-            # Skip.
-            continue
-        # Both directions.
-        pairs.setdefault(rid, set()).add(r["u"].value)
-        # The address maps back to every record fetched from it.
-        pairs.setdefault(r["u"].value, set()).add(rid)
-    # Hand them back.
-    return pairs
+    # Short id -> web address, skipping news sentences.
+    return {rid: r["u"].value for r in store.query(q)
+            # The short id, e.g. "src:gleif/.../20261018".
+            for rid in ["src:" + r["r"].value[len(PREFIXES["src"]):]] if not rid.startswith("src:news/")}
 
 
-# Add the other form of every cited registry record to a row, so "src:gleif/..." and its web address count alike.
-def with_both_forms(row: dict, addresses: dict[str, set[str]]) -> dict:
-    # All the row's text.
-    text = " ".join(row.values())
-    # Record ids cited (short, or written in full) and web addresses cited.
-    cited = set(re.findall(r"\bsrc:\S+", text)) | {"src:" + s for s in re.findall(r"https://seisa-kg\.example/source/(\S+)", text)}
-    # Plus web addresses.
-    cited |= set(URL.findall(text))
-    # Their other forms.
-    extra = {x for c in cited for x in addresses.get(c, ()) if x not in cited}
-    # The row, with the other forms in one extra cell.
-    return {**row, "_otherForms": " ".join(sorted(extra))} if extra else row
+# Write every cited registry record as its web address, so citing a record by id or by address counts the same.
+# Applied to the answer key and to every answer alike. Many records share one address (a GLEIF search page lists hundreds
+# of entities), so the comparison is at the level of the address, never of every record behind it (found on the first run).
+def cite_by_address(row: dict, urls: dict[str, str]) -> dict:
+    # Each cell.
+    out = {}
+    # Its column and text.
+    for column, text in row.items():
+        # A record written in full becomes its short id...
+        text = re.sub(r"https://seisa-kg\.example/source/(\S+)", lambda m: "src:" + m.group(1), text)
+        # ...and a registry record's short id becomes its web address (news sentence ids stay as they are).
+        out[column] = re.sub(r"\bsrc:\S+", lambda m: urls.get(m.group(0), m.group(0)), text)
+    # The row.
+    return out
 
 
 # Answer one question by text-to-query (SPARQL or Cypher): ask, check, run. Returns the attempt.
@@ -632,14 +625,14 @@ def main() -> None:
         print(f"{ref['file']}: " + "; ".join(f"{a['method']}: {a['status']}" for a in attempts[-3:]))
     # Close the connection.
     driver.close()
-    # Registry records' two forms (id and web address).
-    addresses = record_addresses(store)
-    # The answer keys by question id.
-    keys = {r["file"].removesuffix(".rq"): r for r in refs}
+    # Registry records' web addresses, by id.
+    urls = record_urls(store)
+    # The answer keys by question id, with registry citations written as web addresses.
+    keys = {r["file"].removesuffix(".rq"): {**r, "rows": [cite_by_address(x, urls) for x in r["rows"]]} for r in refs}
     # Score every attempt against its answer key.
     for a in attempts:
-        # The candidate: its rows (with both forms of each cited record), or "not available".
-        candidate = {"rows": [with_both_forms(r, addresses) for r in a["rows"]], "not_available": a.get("not_found", False)}
+        # The candidate: its rows (registry citations as web addresses), or "not available".
+        candidate = {"rows": [cite_by_address(r, urls) for r in a["rows"]], "not_available": a.get("not_found", False)}
         # The scores and what went wrong.
         a["score"] = score(keys[a["question"]], candidate)
         # Save the attempt in full.

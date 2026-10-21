@@ -1783,3 +1783,17 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - Q9: IWSR (bought by WGSN, an Apax company) and The MTM Agency (bought by IDHL, a Bridgepoint company).
 - **Scorer (D-122, continued):** `ch:` ids and their full addresses now compare equal (Q4 is the first answer key with Companies House nodes). Q4's key includes the fact's name, because two facts can share a value ("ACTIVE" for both `entityStatus` and `statusGroup`). 62 tests pass.
 - **The comparison code:** `src/seisa_kg/comparison/phrasebook.py` (the two phrasebooks, generated from the graphs) and `compare.py` (three lanes, the checks, scoring, `docs/comparison.md`); `make compare`, now part of `make build`. Safety checked before any API call: blocked words and made-up names are rejected, and Neo4j itself refuses a write in read-only mode.
+
+### The three-way comparison: first results (16:20)
+- **Ran** (`make compare`): 10 questions × 3 methods, `docs/comparison.md`. Overall (correctness / citation): **text-to-SPARQL 0.44 (0.41 / 0.47)**, **text-to-Cypher 0.30 (0.33 / 0.28)**, **vector search 0.00**.
+- **D-125 · Four fixes on our side, made after the first run and disclosed here, because each one would have scored a right answer as wrong:**
+  1. The Cypher name check rejected keys of maps the query builds itself (`{field: "status"}` then `d.field`): valid Cypher, wrongly called "made-up names" (3 queries). Map keys defined in the query now count as known.
+  2. Citations by web address were expanded to every record behind that address (one GLEIF search page lists hundreds of entities): 10,498 "unsupported citations" on Q3. Registry citations are now compared by web address on both sides (answer key and answer), so id and address count alike.
+  3. Q4's wording said "every fact", but its answer key leaves out types; it now says "(other than its type)". This changed the prompt, so Q4 was asked again (and did worse: a syntax error, and a blocked `CALL`).
+  4. Q8's key included our own wording for the side ("bought"/"sold"); Gemini wrote "buy"/"sell". The key is now sponsor and company; the side is shown but not compared.
+  - Check after the fixes: the hand-written Cypher answers, scored through the comparison's own path, get 1.0 on all 10.
+- **Findings (real Gemini errors, kept as they are):**
+  - **Text-to-SPARQL:** 3 of 10 didn't run (syntax errors), including **Q1, where it wrote `ex:sponsor/apax` without escaping the "/"**, the same RDF naming trap the phrasebook warns about; otherwise its Q1 matches ours almost exactly. Perfect on Q3 and Q11, 0.95 on Q8.
+  - **Text-to-Cypher:** perfect on Q1 and Q11; 3 failures (two syntax/type errors, one blocked `CALL`); Q9 and Q12 ran but returned no rows (the silent failure). Q5 and Q10 return far too many rows (145 and 165 invented).
+  - **Vector search:** said "not found" on 8 of 10, and its 2 answers scored 0. Expected for registry questions (the answers aren't in any sentence), but it also failed every news question: 5 sentences can't hold a list of 28 deals, a count, or a trail across sources. Its one honest strength: it never invented an answer when it had nothing.
+  - Common pattern: the generated queries fail on **our graph's specifics** (escaping, list properties, receipts, how sources are cited), not on the question's logic.
