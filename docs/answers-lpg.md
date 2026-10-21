@@ -4,10 +4,14 @@ Each Cypher question is the twin of a SPARQL question. **Same answer** compares 
 
 | Question | Rows (SPARQL / Cypher) | Same answer? | SPARQL ms | Cypher ms |
 |---|---|---|---|---|
-| q01_apax_fund_managers | 9 / 9 | yes | 1.24 | 11.27 |
-| q02_no_parent_reasons | 15 / 15 | yes | 5.07 | 13.42 |
-| q03_lapsed_leis | 72 / 72 | yes | 3.35 | 8.25 |
-| q05_source_disagreements | 15 / 15 | yes | 2.46 | 4.59 |
+| q01_apax_fund_managers | 9 / 9 | yes | 1.07 | 3.93 |
+| q02_no_parent_reasons | 15 / 15 | yes | 4.7 | 7.09 |
+| q03_lapsed_leis | 72 / 72 | yes | 3.39 | 6.58 |
+| q05_source_disagreements | 15 / 15 | yes | 2.11 | 2.58 |
+| q08_deals_and_reasons | 28 / 28 | yes | 35.68 | 3.95 |
+| q10_trace_the_buyer | 33 / 33 | yes | 3.49 | 3.15 |
+| q11_fund_closes | 5 / 5 | yes | 99.03 | 1.81 |
+| q12_shared_advisers | 10 / 10 | yes | 0.95 | 2.63 |
 
 Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j is a separate server reached over the network, so each Cypher time includes a round trip. Side by side, not a fair race.
 
@@ -21,7 +25,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** GLEIF's "fund manager" can be a GP company or a management company (F4, D-027), so the answer says "manager per GLEIF", not "GP".
 
-**Answer:** 9 rows, 11.27 ms.
+**Answer:** 9 rows, 3.93 ms.
 
 | manager | managerName | funds | sources | latestFetch |
 |---|---|---|---|---|
@@ -45,7 +49,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** companies that do report a parent, or give no Level 2 information at all (F13), are counted too, so every In company appears exactly once.
 
-**Answer:** 15 rows, 13.42 ms.
+**Answer:** 15 rows, 7.09 ms.
 
 | sponsorName | reason | companies | sources | latestFetch |
 |---|---|---|---|---|
@@ -73,7 +77,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Type:** time and data quality; the answer reads each fact's own source and fetch date (D-046, D-042).
 
-**Answer:** 72 rows, 8.25 ms.
+**Answer:** 72 rows, 6.58 ms.
 
 | sponsorName | entity | name | status | lastToldUs | sources |
 |---|---|---|---|---|---|
@@ -108,7 +112,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Type:** cross-source conflict; compares tidy keys (D-092, D-093) but shows each source's own words and record.
 
-**Answer:** 15 rows, 4.59 ms.
+**Answer:** 15 rows, 2.58 ms.
 
 | company | name | field | gleifSays | chSays | gleifSources | chSources |
 |---|---|---|---|---|---|---|
@@ -127,3 +131,122 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 | lei:213800T9DFP3FI754U55 | APAX EUROPE V - E, L.P. | status | INACTIVE | active | https://api.gleif.org/api/v1/lei-records?filter%5Bfulltext%5D=Apax&page%5Bsize%5D=200&page%5Bnumber%5D=1 https://api.gleif.org/api/v1/lei-records?filter%5Bfulltext%5D=Apax&page%5Bnumber%5D=1&page%5Bsize%5D=200 | https://api.company-information.service.gov.uk/company/LP007359 |
 | lei:213800ADURUHLBU1ZI69 | BRIDGEPOINT CREDIT II "D" LP | status | INACTIVE | active | https://api.gleif.org/api/v1/lei-records?filter%5Bfulltext%5D=Bridgepoint&page%5Bsize%5D=200&page%5Bnumber%5D=1 https://api.gleif.org/api/v1/lei-records?filter%5Bfulltext%5D=Bridgepoint&page%5Bnumber%5D=1&page%5Bsize%5D=200 | https://api.company-information.service.gov.uk/company/LP018992 |
 | lei:21380019ZXBTZFYAAD21 | HGCAPITAL 6 D L.P. | status | INACTIVE | active | https://api.gleif.org/api/v1/lei-records?filter%5Bfulltext%5D=HgCapital&page%5Bnumber%5D=1&page%5Bsize%5D=200 https://api.gleif.org/api/v1/lei-records?filter%5Bfulltext%5D=HgCapital&page%5Bsize%5D=200&page%5Bnumber%5D=1 | https://api.company-information.service.gov.uk/company/LP013221 |
+
+## q08_deals_and_reasons.cypher
+
+**Question:** Which companies did each sponsor buy or sell in 2025–26, and what reason did the announcement give?
+
+**Why it matters:** It is the sponsor's recent dealmaking in one table, each deal with the reasons the sponsor itself gave and the sentences that say so.
+
+**Type:** news extraction, read out with sources; "why" answered only as "what reason the announcement gave" (D-071).
+
+**Note:** the sponsor is the release's publisher. "sold" means the sponsor is on the seller side (a seller name linked to its group, or to one of its In companies); everything else counts as "bought" (including add-ons). The "commitments from Bridgepoint Direct Lending II" row is an extraction flaw (a non-company read as a target), kept visible on purpose.
+
+**Answer:** 28 rows, 3.95 ms.
+
+| sponsorName | target | side | kind | published | reasons | sources |
+|---|---|---|---|---|---|---|
+| Apax | IWSR | bought | add-on | 2025-06-05 | enhancing its AI, data analytics and business intelligence capabilities for the alcoholic beverage industry \| expand its market-leading trend forecasting capabilities, AI, data analytics and insights across a broad range of consumer industries \| further enhance the products and services WGSN provides and create significant value for customers of both companies \| provides IWSR with additional expertise in consumer behaviour tracking and trend forecasting as part of their product-led growth strategy \| providing a holistic solution in this space | src:news/apax-05/s07 (+4 more) |
+| Apax | Foods Connected | bought | investment | 2025-07-15 | accelerating future growth \| bringing in additional capital and Apax’s technology expertise to accelerate its next phase of growth \| invest in new markets, strengthen sales and marketing, pursue strategic acquisitions, and increase value for existing customers through expanded capabilities and resources \| partnering with an experienced technology investor will accelerate growth in Foods Connected \| realise, at pace, the full scale of the opportunities ahead for Foods Connected \| scale globally while advancing safer, more transparent, and sustainable food supply chains \| strengthens our ability to meet clients' evolving needs | src:news/apax-01/s07 (+6 more) |
+| Apax | Faculty | sold | exit | 2026-01-06 | expand Accenture’s capabilities to help its clients reinvent core and critical business processes with safe and secure AI solutions that result in tangible outcomes \| gives Faculty a global platform to industrialise applied AI for the world’s largest organisations | src:news/apax-06/s01 (+2 more) |
+| Apax | MillTech | bought | investment | 2026-04-08 | accelerating its expansion across North America \| further enhancing its advanced treasury management capabilities \| support MillTech’s next phase of growth | src:news/apax-03/s01 (+1 more) |
+| Apax | Sedex Information Exchange Ltd | bought | acquisition | 2026-05-08 | growing importance of robust, data-driven supply chain risk management for businesses globally \| enable Sedex to further scale its Platform and assessment capabilities to enable deeper visibility and more effective risk management \| support Sedex’s expansion across markets, sectors and product capability \| to accelerate impact, visibility and risk management across global supply chains | src:news/apax-02/s19 (+4 more) |
+| Apax | Institutional Investor | bought | acquisition | 2026-07-20 | adding further complementary brands over time \| build a leading events portfolio made up of strong, distinct brands, each retaining their own identity and distinct communities \| invest behind each of them to accelerate their growth \| serve attractive and structurally growing end-markets | src:news/apax-04/s09 (+2 more) |
+| Apax | techoraco | bought | acquisition | 2026-07-20 | adding further complementary brands over time \| build a leading events portfolio made up of strong, distinct brands, each retaining their own identity and distinct communities \| invest behind each of them to accelerate their growth \| serve attractive and structurally growing end-markets | src:news/apax-04/s11 (+2 more) |
+| Apax | Tosca | sold | exit | 2026-08-10 | Their long-term investment approach and experience scaling asset-based businesses makes them an excellent partner for the next phase of our growth \| Tosca sits at the intersection of several powerful trends, including increased automation in food supply chains, growing demand for circular economy solutions, and the broader adoption of reusable asset pooling \| support Tosca's continued growth through investment in its asset base, operational platform, technology capabilities and customer offering \| support the Company's next phase of expansion | src:news/apax-07/s13 (+4 more) |
+| Apax | NextGen Security | bought | acquisition | 2026-09-09 | It is an established market leader with a clear runway to build on its platform \| The market for security system integration services is resilient and growing, underpinned by the need to protect people, property, and assets \| accelerate its growth by continuing to invest in its salesforce, expanding its presence in high-growth end markets such as data centers, and building out its national accounts program to deepen touchpoints with multi-site customers \| pursue selective acquisitions to expand its geographic footprint | src:news/apax-08/s12 (+4 more) |
+| Apax | Odido | bought | acquisition | 2026-10-16 | backing its next phase of growth \| continue to back Odido as a committed, long-term owner, supporting ongoing investment in its network, customer experience, and digital inclusion work | src:news/apax-09/s16 (+1 more) |
+| Bridgepoint | Eckoh plc | bought | acquisition | 2025-01-20 | accelerate growth, drive global initiatives and continue innovating our roadmap and cloud solutions for our existing and new customers \| expand its customer base and drive long-term profitability \| invest in the development of our business to enable a more aggressive acquisition strategy \| support Eckoh's growth through geographic expansion, product innovation, and targeted acquisitions \| unlock Eckoh’s latent growth potential both in their core market and adjacencies | src:news/bridgepoint-01/s14 (+4 more) |
+| Bridgepoint | The MTM Agency | bought | add-on | 2025-02-27 | accelerates IDHL’s ability to deliver strategic advice across the entire communications landscape \| brings sophisticated complementary capabilities in creative, strategy and insight, as well as influencer marketing and PR \| creating fresh opportunities to forge new client relationships \| enhance IDHL’s offer to its existing national roster of clients \| strengthens IDHL’s capabilities and further enhances its highly attractive suite of integrated, insight-led marketing solutions | src:news/bridgepoint-05/s05 (+4 more) |
+| Bridgepoint | mydentist | bought | acquisition | 2025-07-21 | accelerate the next stage of our growth, ensuring we can provide high-quality, affordable oral care to more patients than ever before \| clear opportunities for expansion, from clinician recruitment to digitisation and M&A \| further invest in NHS dentistry and cement our position as the undisputed market champion of affordable dentistry across the UK \| support mydentist in growing its clinical team and expanding access to high-quality affordable dental care \| support the next chapter of their growth | src:news/bridgepoint-02/s01 (+5 more) |
+| Bridgepoint | Zuto | bought | acquisition | 2025-11-19 | accelerate the development of Zuto’s technology platform \| broaden the company’s product range \| confidence in Zuto’s market leadership and long-term growth potential | src:news/bridgepoint-03/s09 (+2 more) |
+| Bridgepoint | ht.digital | bought | acquisition | 2025-11-25 | support ht.digital as it scales internationally and further professionalises its platform, building on its recent expansion into Europe \| enable continued investment in the firm’s product and data innovation, alongside recruitment of specialist talent to add to its existing high-calibre team | src:news/bridgepoint-04/s09 (+2 more) |
+| Bridgepoint | Flexitallic | sold | exit | 2026-02-04 |  | src:news/bridgepoint-07/s01 |
+| Bridgepoint | Helio Intelligence | sold | exit | 2026-05-26 | capitalise on its unique position in a dynamic market \| capitalise on the growing political and public policy information market \| scale further into the growing global political intelligence market \| further its M&A roadmap within the fragmented political intelligence marketplace \| standout AI-powered platform as having fantastic momentum | src:news/bridgepoint-08/s09 (+5 more) |
+| Bridgepoint | commitments from Bridgepoint Direct Lending II | bought | other | 2026-06-25 | allowing those wishing to retain exposure to reinvest in a seasoned portfolio \| provide BDL II investors with an attractive near-term liquidity option | src:news/bridgepoint-10/s01 (+1 more) |
+| Bridgepoint | Kayne Anderson Real Estate | bought | acquisition | 2026-06-29 | adds real estate as a fifth investment vertical \| expected to be earnings per share (EPS) accretive \| creates significant opportunities to broaden relationships with existing investors and introduce clients to a wider range of investment strategies \| creates a scaled real assets platform \| a significant step forward in Bridgepoint’s strategy to build a globally scaled and diversified middle-market private markets platform \| expands the firm's presence in the United States \| further diversifies its sources of recurring fee income | src:news/bridgepoint-06/s12 (+5 more) |
+| Hg | A-LIGN | bought | acquisition | 2025-07-08 | accelerate A-LIGN's growth trajectory \| organizations face a surge in cyber-attacks, with AI-powered threats making compliance and security more critical and complex than ever before \| support its mission to become the global cyber compliance services champion \| to accelerate its global expansion | src:news/hg-09/s01 (+2 more) |
+
+*…and 8 more rows in the JSON file.*
+
+## q10_trace_the_buyer.cypher
+
+**Question:** For a deal in the news, trace the buyer named in the release to our legal entities and up to the sponsor, with a source (sentence or registry record) for each link.
+
+**Why it matters:** It joins the two worlds: what a press release says, and what the registers say. Each hop has its own evidence, so an investor can see exactly where the trail is solid and where it stops.
+
+**Type:** several links across sources (sentence -> match -> legal entity -> scope decision -> sponsor), every hop with its source or rule.
+
+**Note:** names that can't be linked (ambiguous, out of scope, ...) are shown too, with an empty trail, so the answer says where tracing stops.
+
+**Answer:** 33 rows, 3.15 ms.
+
+| deal | buyerAsWritten | buyerSentence | outcome | matchRule | linkedTo | legalName | registryRecords | sponsorName | scopeRule |
+|---|---|---|---|---|---|---|---|---|---|
+| ex:deal/apax-01-d1 | The Apax Global Impact Fund | src:news/apax-01/s04 | refersToGroup | ex:rule/D-103 | ex:sponsor/apax |  |  | Apax |  |
+| ex:deal/apax-02-d1 | Funds advised by Apax Partners LLP | src:news/apax-02/s09 | refersToGroup | ex:rule/D-103 | ex:sponsor/apax |  |  | Apax |  |
+| ex:deal/apax-03-d1 | Apax Digital Funds | src:news/apax-03/s01 | refersToGroup | ex:rule/D-103 | ex:sponsor/apax |  |  | Apax |  |
+| ex:deal/apax-04-d1 | Funds advised by Apax | src:news/apax-04/s01 | refersToGroup | ex:rule/D-103 | ex:sponsor/apax |  |  | Apax |  |
+| ex:deal/apax-04-d2 | Funds advised by Apax | src:news/apax-04/s01 | refersToGroup | ex:rule/D-103 | ex:sponsor/apax |  |  | Apax |  |
+| ex:deal/apax-05-d1 | WGSN | src:news/apax-05/s01 | out-of-scope | ex:rule/D-099 |  |  |  |  |  |
+| ex:deal/apax-06-d1 | Accenture | src:news/apax-06/s01 | out-of-scope | ex:rule/D-099 |  |  |  |  |  |
+| ex:deal/apax-07-d1 | Infrastructure at Goldman Sachs Alternatives | src:news/apax-07/s04 | out-of-scope | ex:rule/D-099 |  |  |  |  |  |
+| ex:deal/apax-08-d1 | Funds advised by Apax Partners LLP | src:news/apax-08/s04 | refersToGroup | ex:rule/D-103 | ex:sponsor/apax |  |  | Apax |  |
+| ex:deal/apax-09-d1 | Funds advised by Apax | src:news/apax-09/s01 | refersToGroup | ex:rule/D-103 | ex:sponsor/apax |  |  | Apax |  |
+| ex:deal/bridgepoint-01-d1 | Bridgepoint | src:news/bridgepoint-01/s01 | refersToGroup | ex:rule/D-103 | ex:sponsor/bridgepoint |  |  | Bridgepoint |  |
+| ex:deal/bridgepoint-02-d1 | funds advised by Bridgepoint | src:news/bridgepoint-02/s01 | refersToGroup | ex:rule/D-103 | ex:sponsor/bridgepoint |  |  | Bridgepoint |  |
+| ex:deal/bridgepoint-03-d1 | Bridgepoint’s small cap Growth fund | src:news/bridgepoint-03/s02 | refersToGroup | ex:rule/D-103 | ex:sponsor/bridgepoint |  |  | Bridgepoint |  |
+| ex:deal/bridgepoint-04-d1 | Bridgepoint | src:news/bridgepoint-04/s01 | refersToGroup | ex:rule/D-103 | ex:sponsor/bridgepoint |  |  | Bridgepoint |  |
+| ex:deal/bridgepoint-05-d1 | IDHL | src:news/bridgepoint-05/s01 | out-of-scope | ex:rule/D-099 |  |  |  |  |  |
+| ex:deal/bridgepoint-06-d1 | Bridgepoint Group plc | src:news/bridgepoint-06/s01 | sameEntityAs | ex:rule/D-098 | lei:213800KFNMVI8PDZX472 | BRIDGEPOINT GROUP PLC | src:gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261018 src:gleif/213800KFNMVI8PDZX472/search-bridgepoint_p1/20261016 | Bridgepoint | D-028 |
+| ex:deal/bridgepoint-07-d1 | Compagnie Générale des Établissements Michelin (“Michelin”) | src:news/bridgepoint-07/s01 | out-of-scope | ex:rule/D-099 |  |  |  |  |  |
+| ex:deal/bridgepoint-08-d1 | ECI Partners | src:news/bridgepoint-08/s01 | out-of-scope | ex:rule/D-099 |  |  |  |  |  |
+| ex:deal/bridgepoint-10-d1 | a newly formed continuation vehicle | src:news/bridgepoint-10/s01 | non-entity | ex:rule/D-099 |  |  |  |  |  |
+| ex:deal/hg-01-d1 | Hg | src:news/hg-01/s01 | refersToGroup | ex:rule/D-103 | ex:sponsor/hg |  |  | Hg |  |
+
+*…and 13 more rows in the JSON file.*
+
+## q11_fund_closes.cypher
+
+**Question:** Which funds did each sponsor close, how big were they, and when?
+
+**Why it matters:** Fund size and timing show how much capital a sponsor has to deploy, and how recently investors backed it.
+
+**Type:** news extraction, read out with sources; sizes and dates exactly as written (never converted, F41).
+
+**Note:** only 5 fund closes were published in our releases (F40). The fund's name is linked to the sponsor's group, not to one legal entity (D-103: a fund is many vehicles).
+
+**Answer:** 5 rows, 1.81 ms.
+
+| sponsorName | fund | closeType | size | closeDate | published | sources |
+|---|---|---|---|---|---|---|
+| Apax | Apax XI fund | final | over $12 billion | 31st March 2024 | 2024-03-31 | src:news/apax-10/s04 (+1 more) |
+| Bridgepoint | Bridgepoint Direct Lending IV (BDL IV) | final | €5.1 billion | H2 2026 | 2026-06-25 | src:news/bridgepoint-09/s01 (+1 more) |
+| Bridgepoint | Bridgepoint Direct Lending IV | final | €5.1 billion | August 2026 | 2026-06-25 | src:news/bridgepoint-10/s09 |
+| Bridgepoint | KAREP VII | final | $5.12 billion | May 2026 | 2026-06-29 | src:news/bridgepoint-06/s06 |
+| Hg | Hg Saturn 1 Fund | final | £1.5bn | 22 October 2018 | 2023-04-03 | src:news/hg-10/s01 (+1 more) |
+
+## q12_shared_advisers.cypher
+
+**Question:** Which banks or law firms advised on deals for more than one of our sponsors?
+
+**Why it matters:** Shared advisers show who sits at the centre of the sponsors' dealmaking, and where information or conflicts could cross between sponsors.
+
+**Type:** counting across sponsors (a "more than one" question: count, then filter on the count).
+
+**Note:** advisers are matched by their name as written, in capitals (e.g. "Kirkland & Ellis LLP" and "Kirkland & Ellis" would count as two); advisers are not linked to registry entities (D-104). The sponsor is the release's publisher.
+
+**Answer:** 10 rows, 2.63 ms.
+
+| adviser | sponsors | sponsorNames | deals | sources |
+|---|---|---|---|---|
+| EY | 2 | Apax Bridgepoint | 4 | src:news/apax-04/s25 (+3 more) |
+| LATHAM & WATKINS | 2 | Hg Bridgepoint | 4 | src:news/hg-09/s24 (+3 more) |
+| RAYMOND JAMES | 2 | Apax Bridgepoint | 4 | src:news/apax-04/s24 (+2 more) |
+| OLIVER WYMAN | 2 | Apax Bridgepoint | 3 | src:news/apax-04/s25 (+1 more) |
+| SIMPSON THACHER & BARTLETT LLP | 2 | Hg Apax | 3 | src:news/hg-04/s29 (+2 more) |
+| EY-PARTHENON | 2 | Hg Bridgepoint | 2 | src:news/hg-05/s20 (+1 more) |
+| GOLDMAN SACHS | 2 | Apax Bridgepoint | 2 | src:news/apax-07/s21 (+1 more) |
+| KIRKLAND & ELLIS LLP | 2 | Hg Apax | 2 | src:news/hg-04/s31 (+1 more) |
+| PWC | 2 | Hg Bridgepoint | 2 | src:news/hg-08/s32 (+1 more) |
+| SLAUGHTER AND MAY | 2 | Apax Bridgepoint | 2 | src:news/apax-06/s29 (+2 more) |

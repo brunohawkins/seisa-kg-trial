@@ -1,0 +1,42 @@
+# SUMMARY: Investor question 11 (D-071), from the news releases.
+# QUESTION: Which funds did each sponsor close, how big were they, and when?
+# WHY: Fund size and timing show how much capital a sponsor has to deploy, and how recently investors backed it.
+# TYPE: news extraction, read out with sources; sizes and dates exactly as written (never converted, F41).
+# KEY: sponsorName, fund, closeType
+# NOTE: only 5 fund closes were published in our releases (F40). The fund's name is linked to the sponsor's group, not to one legal entity (D-103: a fund is many vehicles).
+
+# The core RDF vocabulary (rdf:reifies links a note to its fact).
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# RDF Schema (rdfs:label).
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+# The W3C provenance vocabulary.
+PREFIX prov: <http://www.w3.org/ns/prov#>
+# Our own vocabulary.
+PREFIX ex:   <https://seisa-kg.example/def/>
+
+# One row per fund close: sponsor, fund, kind of close, size and date as written, when announced, and the sentences behind it.
+SELECT ?sponsorName ?fund ?closeType ?size ?closeDate ?published
+       # Every sentence the facts came from.
+       (GROUP_CONCAT(DISTINCT STR(?sentence); SEPARATOR=" ") AS ?sources)
+WHERE {
+  # A fund close, its fund name, and the release that announced it.
+  ?close a ex:FundClose ; ex:fundName ?fund ; ex:announcedIn ?release .
+  # The release's publisher (a sponsor) and publication date.
+  ?release ex:publishedBy ?sponsor ; ex:publishedOn ?published .
+  # The sponsor's display name.
+  ?sponsor rdfs:label ?sponsorName .
+  # The kind of close (first, final, ...), the size and the date, where the release gives them.
+  OPTIONAL { ?close ex:closeType ?closeType . }
+  # The size, as written.
+  OPTIONAL { ?close ex:fundSize ?size . }
+  # The date, as written.
+  OPTIONAL { ?close ex:closeDate ?closeDate . }
+  # Every sentence behind any of the close's facts (the ones extracted from the release).
+  ?close ?p ?o . ?n rdf:reifies <<( ?close ?p ?o )>> ; prov:wasDerivedFrom ?sentence .
+  # Only sentences (not the release itself or a rule).
+  FILTER (CONTAINS(STR(?sentence), "/source/news/") && CONTAINS(STRAFTER(STR(?sentence), "/source/news/"), "/"))
+}
+# One row per fund close.
+GROUP BY ?sponsorName ?fund ?closeType ?size ?closeDate ?published
+# Sponsors alphabetically, then by publication date.
+ORDER BY ?sponsorName ?published

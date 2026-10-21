@@ -1,0 +1,43 @@
+# SUMMARY: Investor question 12 (D-071), from the news releases.
+# QUESTION: Which banks or law firms advised on deals for more than one of our sponsors?
+# WHY: Shared advisers show who sits at the centre of the sponsors' dealmaking, and where information or conflicts could cross between sponsors.
+# TYPE: counting across sponsors (a "more than one" question: count, then filter on the count).
+# KEY: adviser
+# VALUE: sponsors
+# NOTE: advisers are matched by their name as written, in capitals (e.g. "Kirkland & Ellis LLP" and "Kirkland & Ellis" would count as two); advisers are not linked to registry entities (D-104). The sponsor is the release's publisher.
+
+# The core RDF vocabulary (rdf:reifies links a note to its fact).
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# RDF Schema (rdfs:label).
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+# The W3C provenance vocabulary.
+PREFIX prov: <http://www.w3.org/ns/prov#>
+# Our own vocabulary.
+PREFIX ex:   <https://seisa-kg.example/def/>
+
+# One row per adviser: how many of our sponsors' deals it worked on, which sponsors, and the sentences that say so.
+SELECT ?adviser (COUNT(DISTINCT ?sponsor) AS ?sponsors)
+       # The sponsors' names, alphabetically.
+       (GROUP_CONCAT(DISTINCT ?sponsorName; SEPARATOR=", ") AS ?sponsorNames)
+       # How many deals.
+       (COUNT(DISTINCT ?deal) AS ?deals)
+       # Every sentence naming the adviser.
+       (GROUP_CONCAT(DISTINCT STR(?sentence); SEPARATOR=" ") AS ?sources)
+WHERE {
+  # A deal and one of its advisers, with the adviser's name as written.
+  ?deal a ex:Deal ; ex:adviser ?a ; ex:announcedIn ?release .
+  # The adviser's name.
+  ?a ex:name ?name .
+  # The sentence the name came from.
+  ?n rdf:reifies <<( ?a ex:name ?name )>> ; prov:wasDerivedFrom ?sentence .
+  # The release's publisher (a sponsor) and its display name.
+  ?release ex:publishedBy ?sponsor . ?sponsor rdfs:label ?sponsorName .
+  # Group by the name in capitals.
+  BIND (UCASE(?name) AS ?adviser)
+}
+# One group per adviser.
+GROUP BY ?adviser
+# Only advisers that worked for more than one sponsor.
+HAVING (COUNT(DISTINCT ?sponsor) > 1)
+# Most deals first, then by name.
+ORDER BY DESC(?deals) ?adviser

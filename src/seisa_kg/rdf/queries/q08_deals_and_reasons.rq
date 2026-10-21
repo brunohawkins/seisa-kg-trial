@@ -1,0 +1,54 @@
+# SUMMARY: Investor question 8 (D-071), from the news releases.
+# QUESTION: Which companies did each sponsor buy or sell in 2025–26, and what reason did the announcement give?
+# WHY: It is the sponsor's recent dealmaking in one table, each deal with the reasons the sponsor itself gave and the sentences that say so.
+# TYPE: news extraction, read out with sources; "why" answered only as "what reason the announcement gave" (D-071).
+# KEY: sponsorName, target, side
+# NOTE: the sponsor is the release's publisher. "sold" means the sponsor is on the seller side (a seller name linked to its group, or to one of its In companies); everything else counts as "bought" (including add-ons). The "commitments from Bridgepoint Direct Lending II" row is an extraction flaw (a non-company read as a target), kept visible on purpose.
+
+# The core RDF vocabulary (rdf:reifies links a note to its fact).
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# RDF Schema (rdfs:label).
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+# Data types (xsd:date).
+PREFIX xsd:  <http://www.w3.org/2001/XMLSchema#>
+# The W3C provenance vocabulary.
+PREFIX prov: <http://www.w3.org/ns/prov#>
+# Our own vocabulary.
+PREFIX ex:   <https://seisa-kg.example/def/>
+
+# One row per deal: sponsor, target, bought or sold, the kind of deal, when it was announced, the reasons, and the sentences behind them.
+SELECT DISTINCT ?sponsorName ?target ?side ?kind ?published ?reasons ?sources
+WHERE {
+  # A deal, the release that announced it, the target's name as written, and the kind of deal.
+  ?deal a ex:Deal ; ex:announcedIn ?release ; ex:targetName ?target ; ex:dealKind ?kind .
+  # The release's publisher (a sponsor) and publication date.
+  ?release ex:publishedBy ?sponsor ; ex:publishedOn ?published .
+  # Only 2025 and 2026.
+  FILTER (?published >= "2025-01-01"^^xsd:date)
+  # The sponsor's display name.
+  ?sponsor rdfs:label ?sponsorName .
+  # A seller name linked to the sponsor's group, or to one company the scope rule says is the sponsor's, if there is one.
+  OPTIONAL { ?deal ex:sellerMatch ?sold .
+             # Linked to the sponsor's group...
+             { ?sold ex:refersToGroup ?sponsor }
+             # ...or to one of the sponsor's In companies.
+             UNION { ?sold ex:sameEntityAs ?c . ?d a ex:ScopeDecision ; ex:entity ?c ; ex:sponsor ?sponsor ; ex:verdict ex:In } }
+  # "sold" if such a seller exists, otherwise "bought".
+  BIND (IF(BOUND(?sold), "sold", "bought") AS ?side)
+  # Each deal's reasons, joined (worked out once per deal in a subquery).
+  { SELECT ?deal (GROUP_CONCAT(DISTINCT ?reason; SEPARATOR=" | ") AS ?reasons)
+    # Every deal, and its reasons if any.
+    WHERE { ?deal a ex:Deal . OPTIONAL { ?deal ex:statedReason ?reason . } }
+    # One row per deal.
+    GROUP BY ?deal }
+  # Each deal's sources: the sentences behind its target name and its reasons (once per deal, in a subquery).
+  { SELECT ?deal (GROUP_CONCAT(DISTINCT STR(?sentence); SEPARATOR=" ") AS ?sources)
+    # The deal's target-name and reason facts...
+    WHERE { ?deal a ex:Deal ; ?p ?o . FILTER (?p IN (ex:targetName, ex:statedReason))
+            # ...and the sentence each one came from.
+            ?n rdf:reifies <<( ?deal ?p ?o )>> ; prov:wasDerivedFrom ?sentence . }
+    # One row per deal.
+    GROUP BY ?deal }
+}
+# Sponsors alphabetically, then by date.
+ORDER BY ?sponsorName ?published ?target

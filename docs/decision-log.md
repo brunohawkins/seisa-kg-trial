@@ -1739,3 +1739,13 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 #### TODO
 - [ ] Bruno checks Q1, Q2, Q3, Q5 side by side (SPARQL vs Cypher).
 - [ ] News questions Q8, Q10, Q11, Q12 in both languages, then the three-way comparison.
+
+### News questions in both languages (15:34)
+- **Built (D-121):** Q8 (deals and stated reasons, 2025–26), Q10 (trace the buyer, as D-100), Q11 (fund closes), Q12 (advisers shared across sponsors), each as a `.rq` and a `.cypher` twin. **All 8 questions now match between SPARQL and Cypher**, and so do all their sources.
+- Choices made in the queries (for Bruno to check):
+  - **Q8:** the sponsor is the release's publisher; "sold" = the sponsor is on the seller side (a seller name linked to its group or to one of its In companies), else "bought". This gets Gen II right (Gemini called it an "acquisition", but Hg was the seller). The "commitments from BDL II" row stays visible as a known extraction flaw.
+  - **Q10:** every buyer name is shown, so the answer says where tracing stops. Of 33 buyer names, **only 1 traces all the way to a legal entity** (Bridgepoint Group plc: sentence → match D-098 → `lei:` → GLEIF records → scope D-028 → Bridgepoint); 17 stop at the sponsor's group, 11 are outsiders, 2 non-entities, 2 ambiguous.
+  - **Q12:** advisers are grouped by name as written, in capitals: 10 advisers worked for two sponsors (none for all three).
+- **Findings for the write-up:**
+  - A list property bit again: `Adviser.name` is a list (one adviser has two names), so Cypher needs `UNWIND` plus an index match on the receipt, where SPARQL just has one triple per name.
+  - Timing contrast: where the source has to be found through RDF-star notes over many facts, SPARQL is slower (Q11 99 ms, Q8 36 ms) than Cypher's one-hop receipts (1.8 ms, 4 ms); elsewhere SPARQL is faster (no network). Q8's first SPARQL draft (EXISTS inside BIND, plus a UNION) took over 2 minutes; rewritten with subqueries, 36 ms.

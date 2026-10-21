@@ -1,0 +1,56 @@
+# SUMMARY: Investor question 10, as reworded in D-100.
+# QUESTION: For a deal in the news, trace the buyer named in the release to our legal entities and up to the sponsor, with a source (sentence or registry record) for each link.
+# WHY: It joins the two worlds: what a press release says, and what the registers say. Each hop has its own evidence, so an investor can see exactly where the trail is solid and where it stops.
+# TYPE: several links across sources (sentence -> match -> legal entity -> scope decision -> sponsor), every hop with its source or rule.
+# KEY: deal, buyerAsWritten, outcome, linkedTo
+# NOTE: names that can't be linked (ambiguous, out of scope, ...) are shown too, with an empty trail, so the answer says where tracing stops.
+
+# The core RDF vocabulary (rdf:reifies links a note to its fact).
+PREFIX rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+# RDF Schema (rdfs:label).
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+# The W3C provenance vocabulary.
+PREFIX prov: <http://www.w3.org/ns/prov#>
+# Our own vocabulary.
+PREFIX ex:   <https://seisa-kg.example/def/>
+
+# One row per deal and buyer name: the name as written and its sentence, the match and its rule, where it links, the registry records, and the sponsor.
+SELECT ?deal ?buyerAsWritten (GROUP_CONCAT(DISTINCT STR(?sentence); SEPARATOR=" ") AS ?buyerSentence)
+       # The match's outcome and the rule that decided it.
+       ?outcome ?matchRule
+       # Where it links (one company, or the sponsor's group), and that company's legal name.
+       ?linkedTo ?legalName
+       # The registry records behind the company's legal name (one per fetch).
+       (GROUP_CONCAT(DISTINCT STR(?registry); SEPARATOR=" ") AS ?registryRecords)
+       # The sponsor at the end of the trail, and the rule that put the company in its scope.
+       ?sponsorName ?scopeRule
+WHERE {
+  # A deal and one of its buyer names (each name has its own Match node, D-108).
+  ?deal a ex:Deal ; ex:buyerMatch ?m .
+  # The buyer's name as written in the release, and the match's outcome.
+  ?m ex:nameAsWritten ?buyerAsWritten ; ex:outcome ?outcome .
+  # Hop 1's evidence: the sentence the name came from.
+  ?n1 rdf:reifies <<( ?m ex:nameAsWritten ?buyerAsWritten )>> ; prov:wasDerivedFrom ?sentence .
+  # Hop 2's evidence: the rule that decided the outcome.
+  ?n2 rdf:reifies <<( ?m ex:outcome ?outcome )>> ; prov:wasGeneratedBy ?matchRule .
+  # Linked to a sponsor's group, if so, with its display name.
+  OPTIONAL { ?m ex:refersToGroup ?group . ?group rdfs:label ?groupName . }
+  # Linked to one legal entity, if so: its legal name and the registry record(s) behind it...
+  OPTIONAL { ?m ex:sameEntityAs ?company . ?company ex:legalName ?legalName .
+             # (the registry record of each fetch that stated the name)
+             ?n3 rdf:reifies <<( ?company ex:legalName ?legalName )>> ; prov:wasDerivedFrom ?registry .
+             # ...and, up one more hop, the sponsor whose scope it's In, with the rule that decided it.
+             OPTIONAL { ?dec a ex:ScopeDecision ; ex:entity ?company ; ex:sponsor ?owner ; ex:verdict ex:In ; prov:wasGeneratedBy ?scopeRuleIri .
+                        # The sponsor's display name.
+                        ?owner rdfs:label ?ownerName . } }
+  # Where the name links: the company if there is one, otherwise the group.
+  BIND (COALESCE(?company, ?group) AS ?linkedTo)
+  # The sponsor at the end of the trail.
+  BIND (COALESCE(?groupName, ?ownerName) AS ?sponsorName)
+  # The scope rule's short id, e.g. "D-028".
+  BIND (STRAFTER(STR(?scopeRuleIri), "rule/") AS ?scopeRule)
+}
+# One row per deal and buyer name.
+GROUP BY ?deal ?buyerAsWritten ?outcome ?matchRule ?linkedTo ?legalName ?sponsorName ?scopeRule
+# In deal order.
+ORDER BY ?deal ?buyerAsWritten
