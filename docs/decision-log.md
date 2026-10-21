@@ -1691,3 +1691,23 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - **D-117 · Wednesday morning is for learning; the pipeline work restarts at about 14:00, with the matching hand-check first.**
   - Why (Bruno): fully understanding what's built so far comes first. The explain-back carries the most weight.
   - The cost: about 3 hours of building move out of the morning, so the afternoon and Thursday morning need re-planning (Claude's proposal below, for Bruno to decide).
+
+### Afternoon plan (14:00)
+- **D-118 · The afternoon runs 14:15–18:30 and ends with flashcards; the three-way comparison is built today; the write-up moves to Thursday morning.**
+  - Why (Bruno): the comparison is an important deliverable and must exist today; the write-up can wait for Thursday morning; the explain-back is in the office on Thursday afternoon, so flashcards are needed today.
+  - Correction to Claude's first re-plan: cutting both Q6 and Q9 would leave 9 questions (Q7 is already dropped), below the brief's 10–12. At most one of them can go.
+  - Order: the news questions (Q8, Q10–Q12) come before the comparison, because they are its trusted answers and vector search only searches the news.
+  - If late: at 15:30 Q5 (Cypher) moves to Thursday; at 16:30 any unfinished news question moves to Thursday and the comparison runs on what exists (at least 6 questions). The comparison and the flashcards don't move.
+
+#### TODO (Wednesday afternoon, D-118)
+- [ ] **14:15–14:45 · matching hand-check:** Bruno fills `eval/matching-sample.csv` blind (15 min); Claude scores precision, weighted recall and agreement; walk through the disagreements.
+- [ ] **14:45–15:30 · Cypher for Q1–Q3 and Q5:** Bruno sketches Q1 first; a runner compares each answer with SPARQL, times both (median) and saves `docs/answers-lpg.md`.
+- [ ] **15:30–16:30 · news questions in both languages:** Q8, Q10 (as D-100), Q11 (Bruno's exercise), Q12.
+- [ ] **16:30–17:50 · three-way comparison:** Bruno's 5 decisions first (translator LLM and phrasebook, retry or not, citations, vector settings, "not found"); then text-to-SPARQL, text-to-Cypher and vector search on the 8 questions, scored with the existing scorer; `docs/comparison.md`; commit and push.
+- [ ] **17:50–18:30 · flashcards:** Claude drafts the deck during the comparison; Bruno reviews and cuts.
+
+#### TODO (Thursday morning, D-118)
+- [ ] Q4 plus one of Q6 or Q9 (to reach 10 questions), in both languages.
+- [ ] Bloom view (fact → source) plus one other visualisation; timings.
+- [ ] README and the ~2-page write-up; **freeze and push by about 12:00**.
+- [ ] Afternoon: explain-back in the office (everything pushed before leaving; Neo4j and Bloom ready to show).

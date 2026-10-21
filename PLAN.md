@@ -308,7 +308,15 @@ This is slower than Claude building alone, so the plan below cuts the extensions
 
 ### Wednesday 21 Oct, revised (D-117): learn in the morning, build from 14:00
 **Morning: learning only** (study guide 3, the Cypher, SPARQL and vector search courses, flashcards). No new pipeline work.
-**From 14:00: the pipeline again, starting with the matching hand-check.** The rest of the day and Thursday morning are being re-planned (see the diary, D-117); the D-115 plan below is kept for reference.
+**From 14:15: the pipeline again (D-118), ending at 18:30.**
+- 14:15–14:45 · matching hand-check, then scoring.
+- 14:45–15:30 · Cypher for Q1–Q3 and Q5, compared with SPARQL and timed (`docs/answers-lpg.md`).
+- 15:30–16:30 · news questions in both languages: Q8, Q10, Q11, Q12.
+- 16:30–17:50 · three-way comparison (text-to-SPARQL, text-to-Cypher, vector search) on the 8 questions, scored; commit and push.
+- 17:50–18:30 · flashcards.
+- Thursday morning: Q4 plus one of Q6/Q9, Bloom, timings, README and write-up, freeze by about 12:00. Thursday afternoon: explain-back in the office.
+
+The D-115 plan below is kept for reference.
 
 #### Superseded plan (D-115)
 **10:00–13:00: build** (11:00–11:30 blocked: Bruno's EF interview)
