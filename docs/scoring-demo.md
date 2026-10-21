@@ -43,3 +43,69 @@ Correctness = F1 of precision and recall; citation = F1 of support and coverage;
 | No sources cited | 1.0 | 1.0 | 1.0 | 0.0 | 0.0 | 0.0 | **0.5** | uncited items: 72 |
 | Sources swapped between items | 1.0 | 1.0 | 1.0 | 0.931 | 0.931 | 0.931 | **0.965** | unsupported citations: 10 |
 | Says 'not available' | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | **0.0** | missed items: 72 |
+
+## q05_source_disagreements
+
+*Where do GLEIF and Companies House disagree about the same company's status or address, and what does each say?* (15 reference items)
+
+| Candidate | Correctness | Precision | Recall | Citation | Support | Coverage | **Overall** | What went wrong |
+|---|---|---|---|---|---|---|---|---|
+| Perfect copy | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | **1.0** | nothing |
+| Two items missed | 0.929 | 1.0 | 0.867 | 1.0 | 1.0 | 1.0 | **0.964** | missed items: 2 |
+| One item invented | 0.968 | 0.938 | 1.0 | 0.958 | 0.98 | 0.938 | **0.963** | invented items: 1, unsupported citations: 1 |
+| No sources cited | 1.0 | 1.0 | 1.0 | 0.0 | 0.0 | 0.0 | **0.5** | uncited items: 15 |
+| Sources swapped between items | 1.0 | 1.0 | 1.0 | 0.537 | 0.449 | 0.667 | **0.768** | unsupported citations: 27 |
+| Says 'not available' | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | **0.0** | missed items: 15 |
+
+## q08_deals_and_reasons
+
+*Which companies did each sponsor buy or sell in 2025–26, and what reason did the announcement give?* (28 reference items)
+
+| Candidate | Correctness | Precision | Recall | Citation | Support | Coverage | **Overall** | What went wrong |
+|---|---|---|---|---|---|---|---|---|
+| Perfect copy | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | **1.0** | nothing |
+| Two items missed | 0.963 | 1.0 | 0.929 | 1.0 | 1.0 | 1.0 | **0.981** | missed items: 2 |
+| One item invented | 0.982 | 0.966 | 1.0 | 0.978 | 0.991 | 0.966 | **0.98** | invented items: 1, unsupported citations: 1 |
+| No sources cited | 1.0 | 1.0 | 1.0 | 0.0 | 0.0 | 0.0 | **0.5** | uncited items: 28 |
+| Sources swapped between items | 1.0 | 1.0 | 1.0 | 0.031 | 0.027 | 0.036 | **0.515** | unsupported citations: 108 |
+| Says 'not available' | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | **0.0** | missed items: 28 |
+
+## q10_trace_the_buyer
+
+*For a deal in the news, trace the buyer named in the release to our legal entities and up to the sponsor, with a source (sentence or registry record) for each link.* (33 reference items)
+
+| Candidate | Correctness | Precision | Recall | Citation | Support | Coverage | **Overall** | What went wrong |
+|---|---|---|---|---|---|---|---|---|
+| Perfect copy | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | **1.0** | nothing |
+| Two items missed | 0.969 | 1.0 | 0.939 | 1.0 | 1.0 | 1.0 | **0.984** | missed items: 2 |
+| One item invented | 0.985 | 0.971 | 1.0 | 0.971 | 0.972 | 0.971 | **0.978** | invented items: 1, unsupported citations: 1 |
+| No sources cited | 1.0 | 1.0 | 1.0 | 0.0 | 0.0 | 0.0 | **0.5** | uncited items: 33 |
+| Sources swapped between items | 1.0 | 1.0 | 1.0 | 0.059 | 0.057 | 0.061 | **0.529** | unsupported citations: 33 |
+| Says 'not available' | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | **0.0** | missed items: 33 |
+
+## q11_fund_closes
+
+*Which funds did each sponsor close, how big were they, and when?* (5 reference items)
+
+| Candidate | Correctness | Precision | Recall | Citation | Support | Coverage | **Overall** | What went wrong |
+|---|---|---|---|---|---|---|---|---|
+| Perfect copy | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | **1.0** | nothing |
+| Two items missed | 0.75 | 1.0 | 0.6 | 1.0 | 1.0 | 1.0 | **0.875** | missed items: 2 |
+| One item invented | 0.909 | 0.833 | 1.0 | 0.86 | 0.889 | 0.833 | **0.885** | invented items: 1, unsupported citations: 1 |
+| No sources cited | 1.0 | 1.0 | 1.0 | 0.0 | 0.0 | 0.0 | **0.5** | uncited items: 5 |
+| Sources swapped between items | 1.0 | 1.0 | 1.0 | 0.0 | 0.0 | 0.0 | **0.5** | unsupported citations: 8 |
+| Says 'not available' | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | **0.0** | missed items: 5 |
+
+## q12_shared_advisers
+
+*Which banks or law firms advised on deals for more than one of our sponsors?* (10 reference items)
+
+| Candidate | Correctness | Precision | Recall | Citation | Support | Coverage | **Overall** | What went wrong |
+|---|---|---|---|---|---|---|---|---|
+| Perfect copy | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | **1.0** | nothing |
+| Two items missed | 0.889 | 1.0 | 0.8 | 1.0 | 1.0 | 1.0 | **0.944** | missed items: 2 |
+| One item invented | 0.952 | 0.909 | 1.0 | 0.936 | 0.964 | 0.909 | **0.944** | invented items: 1, unsupported citations: 1 |
+| Every count 10% low | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | **1.0** | nothing |
+| No sources cited | 1.0 | 1.0 | 1.0 | 0.0 | 0.0 | 0.0 | **0.5** | uncited items: 10 |
+| Sources swapped between items | 1.0 | 1.0 | 1.0 | 0.054 | 0.037 | 0.1 | **0.527** | unsupported citations: 26 |
+| Says 'not available' | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | **0.0** | missed items: 10 |

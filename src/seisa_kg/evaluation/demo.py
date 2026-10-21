@@ -17,8 +17,8 @@ import json
 # A tidy way of working with file and folder paths.
 from pathlib import Path
 
-# The scorer.
-from seisa_kg.evaluation.score import score
+# The scorer, and how it recognises a source (a web address, or one of our source-record ids).
+from seisa_kg.evaluation.score import OUR_DOMAIN, SOURCE_ID, SOURCE_IRI, URL, score
 
 # The project's top folder: this file's folder, then up three levels (evaluation → seisa_kg → src → project).
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -34,6 +34,10 @@ def variants(ref: dict) -> list[tuple[str, dict]]:
     rows = ref["rows"]
     # The column holding a count, if the question has one.
     value = ref.get("VALUE")
+    # The columns that hold sources: any column where some cell cites a record (Q5 and Q10 have two, with other names).
+    cited = lambda text: SOURCE_ID.search(text) or SOURCE_IRI.search(text) or any(not u.startswith(OUR_DOMAIN) for u in URL.findall(text))
+    # Those columns, in order.
+    src_cols = [c for c in ref["columns"] if any(cited(r[c]) for r in rows)]
     # A made-up row that matches nothing, citing a made-up source.
     fake = {"name": "Invented Holdings Ltd", "sources": "https://api.gleif.org/api/v1/lei-records/INVENTED"}
     # The list of copies, each with a plain-English name.
@@ -47,9 +51,9 @@ def variants(ref: dict) -> list[tuple[str, dict]]:
         # Copy each row with its count lowered.
         out.append(("Every count 10% low", {"rows": [dict(r, **{value: str(round(float(r[value]) * 0.9))}) for r in rows]}))
     # The right items with the sources column removed.
-    out.append(("No sources cited", {"rows": [{k: v for k, v in r.items() if k != "sources"} for r in rows]}))
+    out.append(("No sources cited", {"rows": [{k: v for k, v in r.items() if k not in src_cols} for r in rows]}))
     # Each item cites the next item's sources (the last cites the first's).
-    out.append(("Sources swapped between items", {"rows": [dict(r, sources=rows[(i + 1) % len(rows)]["sources"]) for i, r in enumerate(rows)]}))
+    out.append(("Sources swapped between items", {"rows": [dict(r, **{c: rows[(i + 1) % len(rows)][c] for c in src_cols}) for i, r in enumerate(rows)]}))
     # Giving up.
     out.append(("Says 'not available'", {"not_available": True}))
     # Hand back the copies.
