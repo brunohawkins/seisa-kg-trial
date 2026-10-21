@@ -1757,6 +1757,22 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - Check: every Cypher answer, scored against its SPARQL answer key, now gets 1.0 on correctness and citation (all 8). Two new tests; 57 pass.
 - **Build map for Bruno:** https://claude.ai/artifact/JVA5qGz77NqKozV3CiL4nS (what's built, where it lives, and the proposed comparison design with 10 decisions).
 
-### Schedule change (16:05)
+### Schedule change (15:57)
 - **D-123 · The explain-back moves to Thursday 22 Oct at 12:00, in the office (Anish's request).** Bruno works 08:30–10:45 on Thursday beforehand, and may use his reMarkable 2 notes during the explain-back.
   - Consequence: about 4 h 45 min of work left (today to 18:30, Thursday 08:30–10:45). The comparison is still built today; Thursday morning becomes write-up, Bloom, freeze and rehearsal. Claude's proposed plan is on the build map (https://claude.ai/artifact/JVA5qGz77NqKozV3CiL4nS); Bruno decides the open choices.
+- **D-124 · Bruno accepted the plan to the explain-back, with a solo demo added.**
+  - The comparison's 10 settings: all as recommended (gemini-2.5-pro at temperature 0; generated phrasebook plus one non-test example; allowed-word list, known-name check, read-only run; the same answer shape for all three; no retry; sources required; gemini-embedding-001, one vector per sentence, k = 5, in memory; "not found" allowed and scored as a miss; 10 s limit; the 8 answered questions).
+  - Q4 and Q9 are added today, to reach the brief's 10 questions.
+  - reMarkable notes replace the flashcard deck; they include a demo-script page.
+  - **Solo demo on Thursday (Bruno):** run the build himself and explain every output aloud before going in. Why: being able to demo it alone, and explain each output, is part of owning it.
+
+#### TODO (to the explain-back, D-123, D-124)
+- [ ] **Today 16:10–17:30 · the three-way comparison** → `docs/comparison.md`.
+- [ ] **17:30–17:50 · Q4 and Q9** in both languages.
+- [ ] **17:50–18:30 · Claude drafts** the README, the write-up and the reMarkable notes (with the demo script); Bruno writes his "what changed in my thinking" bullets.
+- [ ] **Thu 08:30–09:00 ·** Bruno edits the write-up into his own voice; checks the README.
+- [ ] **09:00–09:20 ·** Bloom view of fact → source, plus the second view.
+- [ ] **09:20–09:35 · freeze:** Bruno runs `make build` from a clean copy, plus all tests; commit, push. No code after this.
+- [ ] **09:35–10:10 · solo demo:** Bruno opens each output and explains it aloud, following the demo script.
+- [ ] **10:10–10:45 · rehearsal:** explain the pipeline from the notes; Claude asks Seisa-style questions.
+- [ ] **12:00 · explain-back** in the office.
