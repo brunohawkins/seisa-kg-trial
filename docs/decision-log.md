@@ -1749,3 +1749,10 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - **Findings for the write-up:**
   - A list property bit again: `Adviser.name` is a list (one adviser has two names), so Cypher needs `UNWIND` plus an index match on the receipt, where SPARQL just has one triple per name.
   - Timing contrast: where the source has to be found through RDF-star notes over many facts, SPARQL is slower (Q11 99 ms, Q8 36 ms) than Cypher's one-hop receipts (1.8 ms, 4 ms); elsewhere SPARQL is faster (no network). Q8's first SPARQL draft (EXISTS inside BIND, plus a UNION) took over 2 minutes; rewritten with subqueries, 36 ms.
+
+### Scorer fixes before the comparison (15:55)
+- **D-122 · The scorer counts our own source records as sources, and skips key columns that are empty in the answer key.** Decision 6 on the build map (Bruno: do this first).
+  - **Sources:** it counted only web addresses, so news answers (which cite sentence ids like `src:news/hg-06/s03`) would have scored 0 on citation. Now `src:` ids count, and the full address SPARQL writes (`https://seisa-kg.example/source/…`) is turned into the same short id. Our entity names (`ex:`, `lei:`) still never count.
+  - **Empty key values:** found by scoring each Cypher answer against its SPARQL twin. Q10's identical answer scored 0.55, because `linkedTo` is empty for names that can't be linked and an empty value can never be "found". Empty key columns are now skipped.
+  - Check: every Cypher answer, scored against its SPARQL answer key, now gets 1.0 on correctness and citation (all 8). Two new tests; 57 pass.
+- **Build map for Bruno:** https://claude.ai/artifact/JVA5qGz77NqKozV3CiL4nS (what's built, where it lives, and the proposed comparison design with 10 decisions).

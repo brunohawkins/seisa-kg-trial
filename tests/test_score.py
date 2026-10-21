@@ -102,3 +102,30 @@ def test_item_with_no_true_source_needs_no_citation():
     s = score(ref, {"rows": ref["rows"]})
     # Full marks.
     assert s["overall"] == 1.0
+
+
+# Our own source records count as sources, and the full and short forms of one record are the same source (D-122).
+def test_source_record_ids_count_as_sources():
+    # A news reference, written the way SPARQL writes it: the sentence's full address.
+    ref = {"KEY": "target", "rows": [{"target": "Zuto", "sources": "https://seisa-kg.example/source/news/bridgepoint-03/s01"}]}
+    # A candidate citing the same sentence by its short id, as Cypher (or an LLM) writes it.
+    right = score(ref, {"rows": [{"target": "Zuto", "sources": "src:news/bridgepoint-03/s01"}]})
+    # Fully supported and covered.
+    assert right["citation"] == 1.0
+    # A candidate citing a different sentence.
+    wrong = score(ref, {"rows": [{"target": "Zuto", "sources": "src:news/bridgepoint-03/s09"}]})
+    # Right item, unsupported citation.
+    assert (wrong["correctness"], wrong["citation"]) == (1.0, 0.0)
+    # Our entity names (ex:, lei:) are still never sources.
+    named = score(ref, {"rows": [{"target": "Zuto", "sources": "ex:sponsor/bridgepoint lei:213800KFNMVI8PDZX472"}]})
+    # No citation at all.
+    assert named["citation"] == 0.0
+
+
+# A key column that is empty in the reference is skipped, so an identical answer still scores 1 (found on Q10, D-122).
+def test_empty_key_value_is_skipped():
+    # Q10-like rows: the second buyer can't be linked, so its linkedTo is empty.
+    ref = {"KEY": "buyer, linkedTo", "rows": [{"buyer": "Hg", "linkedTo": "ex:sponsor/hg", "sources": "src:news/hg-06/s03"},
+                                              {"buyer": "Tidemark", "linkedTo": "", "sources": "src:news/hg-06/s06"}]}
+    # The identical answer.
+    assert score(ref, {"rows": ref["rows"]})["overall"] == 1.0

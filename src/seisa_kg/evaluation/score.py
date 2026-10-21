@@ -33,6 +33,10 @@ OUR_BASES = ("https://seisa-kg.example/lei/", "https://seisa-kg.example/def/", "
 URL = re.compile(r"https?://\S+")
 # Our own entity and vocabulary addresses are names, not sources, so they never count as citations.
 OUR_DOMAIN = "https://seisa-kg.example/"
+# Our own source records ARE sources (D-122): a short id like "src:news/hg-06/s03" (a news sentence) or "src:gleif/…".
+SOURCE_ID = re.compile(r"\bsrc:\S+")
+# The same record written in full, as SPARQL answers write it; turned into the short id so both forms compare equal.
+SOURCE_IRI = re.compile(r"https://seisa-kg\.example/source/(\S+)")
 
 
 
@@ -87,6 +91,8 @@ def candidate_item(row: dict) -> Item:
     numbers = [n for n in (number(t) for t in texts) if n is not None]
     # Every web address anywhere in the row, except our own names (found by a failing test).
     sources = {u for t in texts for u in URL.findall(t) if not u.startswith(OUR_DOMAIN)}
+    # Plus our own source-record ids (e.g. news sentences), short or written in full (D-122).
+    sources |= {s for t in texts for s in SOURCE_ID.findall(t)} | {"src:" + s for t in texts for s in SOURCE_IRI.findall(t)}
     # The item.
     return Item(cells, numbers, sources)
 
@@ -96,7 +102,9 @@ def reference_item(row: dict, key_spec: str, value_col: str | None) -> Item:
     # Start from the same view a candidate gets.
     item = candidate_item(row)
     # Each comma-separated part of KEY is one group; "|" separates alternatives within a group.
-    item.key = [{norm(row[c.strip()]) for c in part.split("|") if row.get(c.strip())} for part in key_spec.split(",")]
+    groups = [{norm(row[c.strip()]) for c in part.split("|") if row.get(c.strip())} for part in key_spec.split(",")]
+    # A key column that is empty in the reference (e.g. "linkedTo" for a name that can't be linked) has nothing to find, so it is skipped (D-122).
+    item.key = [g for g in groups if g]
     # The expected number, if the question has a VALUE column.
     item.value = number(row[value_col]) if value_col else None
     # The item.
