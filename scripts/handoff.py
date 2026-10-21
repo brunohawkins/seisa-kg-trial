@@ -104,8 +104,8 @@ def main() -> None:
         for name in z.namelist():
             # Its path inside the project.
             inner = name.removeprefix("seisa-kg-trial/")
-            # A path that must stay out.
-            if any(inner == f.rstrip("/") or inner.startswith(f) for f in FORBIDDEN):
+            # A path that must stay out: a folder by its start, a file by its exact name (so .env.example, the safe template, stays in).
+            if any(inner.startswith(f) if f.endswith("/") else inner == f for f in FORBIDDEN):
                 # Note it.
                 problems.append(f"forbidden path: {inner}")
             # Its contents.
