@@ -59,6 +59,8 @@ rdf: facts
 query: rdf
 	# Run the question runner inside the project's environment.
 	uv run python -m seisa_kg.rdf.ask
+	# Draw fact -> note -> source from the RDF graph (the second visualisation, beside Bloom).
+	uv run python -m seisa_kg.rdf.provenance_view
 
 # Show the scorer at work: damage each reference answer on purpose and score it (D-059 to D-061).
 score-demo: query

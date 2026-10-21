@@ -1797,3 +1797,10 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - **Text-to-Cypher:** perfect on Q1 and Q11; 3 failures (two syntax/type errors, one blocked `CALL`); Q9 and Q12 ran but returned no rows (the silent failure). Q5 and Q10 return far too many rows (145 and 165 invented).
   - **Vector search:** said "not found" on 8 of 10, and its 2 answers scored 0. Expected for registry questions (the answers aren't in any sentence), but it also failed every news question: 5 sentences can't hold a list of 28 deals, a count, or a trail across sources. Its one honest strength: it never invented an answer when it had nothing.
   - Common pattern: the generated queries fail on **our graph's specifics** (escaping, list properties, receipts, how sources are cited), not on the question's logic.
+
+### Visualisations (16:50)
+- **Bloom (Neo4j Explore):** two saved scenes, screenshots in `docs/images/`: Bridgepoint Group plc's GLEIF and Companies House nodes fanning out to their records (`DERIVED_FROM`) and rules (`GENERATED_BY`); Hg's OneStream deal → the 10 sentences its facts came from → the release → Hg.
+- **The other tool: Mermaid diagrams drawn from the RDF graph by SPARQL** (`src/seisa_kg/rdf/provenance_view.py` → `docs/provenance-rdf.md`, run by `make query`; viewable at https://claude.ai/artifact/Tf64wcF8LbqtKYT6fxSbeh). The same two examples, so both graphs show the same path side by side: fact ← RDF-star note (quote, model, dates) → record (url, fetch date, sentence text) or rule → release → sponsor.
+  - Why Mermaid: it is text, so the picture is generated from the graph on every build and lives in the repo; GitHub renders it.
+  - Found while building: a blank node's label can't be put back into a SPARQL query (SPARQL reads `_:x` as a wildcard), so each note's details are fetched in the same query as its fact.
+  - A nice detail for the demo: Bridgepoint Group plc's name history comes straight from the dates on the notes (Atlantic Investment Holdings Ltd 2018 → Atlantic Investments Holdings Ltd → Bridgepoint Group Limited 2021 → plc from 5 July 2021, the IPO).
