@@ -14,10 +14,15 @@ Two examples, the same ones as the Bloom scenes:
 1. a registry company: Bridgepoint Group plc (its GLEIF and Companies House records);
 2. a news deal: Hg's OneStream deal (ex:deal/hg-06-d1).
 
-Output: docs/provenance-rdf.md
+Output: docs/provenance-rdf.md (GitHub draws it), and the same page as
+docs/provenance-rdf.html, which any browser draws (for the handoff zip, D-126).
 Run with: uv run python -m seisa_kg.rdf.provenance_view
 """
 
+# Makes text safe to put inside a web page.
+import html
+# Pattern matching, used to turn **bold** and `code` into web-page tags.
+import re
 # A tidy way of working with file paths.
 from pathlib import Path
 
@@ -31,6 +36,10 @@ from seisa_kg.rdf.build import OUTPUT_PATH, PREFIXES
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 # The page this writes.
 OUT_PATH = PROJECT_ROOT / "docs" / "provenance-rdf.md"
+# The same page as a web page, for reading outside GitHub.
+HTML_PATH = PROJECT_ROOT / "docs" / "provenance-rdf.html"
+# Mermaid, the drawing library, at a fixed version, from a public CDN (the page needs internet to draw).
+MERMAID_JS = "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"
 # Our vocabulary's address.
 EX = PREFIXES["ex"]
 # The registry example: Bridgepoint Group plc's GLEIF record, and which of its facts to draw (kept to a readable few).
@@ -161,6 +170,53 @@ def diagram(store: ox.Store, subjects: list[str], predicates: tuple, prefix: str
     return L + ["```"]
 
 
+# Turn the page's Markdown lines into a web page that draws the diagrams in any browser. Returns the page.
+def as_html(lines: list[str]) -> str:
+    # The page's body, built line by line.
+    body = []
+    # Whether we're inside a diagram.
+    in_diagram = False
+    # Each Markdown line.
+    for line in lines:
+        # A diagram starts.
+        if line == "```mermaid":
+            # Mermaid draws whatever is inside this box.
+            body.append('<pre class="mermaid">')
+            # Remember we're inside one.
+            in_diagram = True
+        # A diagram ends.
+        elif line == "```":
+            # Close the box.
+            body.append("</pre>")
+            # Back to text.
+            in_diagram = False
+        # A diagram line: kept as written, made safe for the page.
+        elif in_diagram:
+            # Mermaid reads the text back with the safe characters decoded.
+            body.append(html.escape(line))
+        # Any text line: made safe, then **bold** and `code` turned into tags.
+        elif line:
+            # Safe characters first.
+            text = re.sub(r"`([^`]+)`", r"<code>\1</code>", re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", html.escape(line)))
+            # A heading, or a paragraph.
+            body.append(f"<h1>{text[2:]}</h1>" if line.startswith("# ") else f"<h2>{text[3:]}</h2>" if line.startswith("## ") else f"<p>{text}</p>")
+    # The whole page: a title, simple readable styles, the body, and Mermaid set to draw on load.
+    return "\n".join([
+        # The page's opening.
+        '<!doctype html>', '<html lang="en">', '<head>', '<meta charset="utf-8">',
+        # Readable on any screen.
+        '<meta name="viewport" content="width=device-width, initial-scale=1">', "<title>RDF Provenance View</title>",
+        # Plain styles: a readable column, and diagrams that scroll sideways if wide.
+        "<style>body{font-family:Arial,sans-serif;max-width:72rem;margin:2rem auto;padding:0 16px;line-height:1.5;color:#1b2330;background:#fff}"
+        "pre.mermaid{overflow-x:auto;border:1px solid #d9dee6;border-radius:6px;padding:1rem}code{background:#eef1f5;padding:0 .2em}</style>",
+        # The body.
+        "</head>", "<body>", *body,
+        # Mermaid, then draw every diagram on the page.
+        f'<script src="{MERMAID_JS}"></script>', "<script>mermaid.initialize({startOnLoad: true});</script>",
+        # The page's end.
+        "</body>", "</html>", ""])
+
+
 # Write the page with both diagrams.
 def main() -> None:
     # Load the graph.
@@ -188,8 +244,10 @@ def main() -> None:
     L += diagram(store, [DEAL], DEAL_FACTS, "b")
     # Save it.
     OUT_PATH.write_text("\n".join(L) + "\n", encoding="utf-8")
-    # Say where it is.
-    print(f"Wrote {OUT_PATH.relative_to(PROJECT_ROOT)}")
+    # And the same page for any browser.
+    HTML_PATH.write_text(as_html(L), encoding="utf-8")
+    # Say where they are.
+    print(f"Wrote {OUT_PATH.relative_to(PROJECT_ROOT)} and {HTML_PATH.relative_to(PROJECT_ROOT)}")
 
 
 # Run main() when this file is run directly.

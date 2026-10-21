@@ -308,8 +308,8 @@ This is slower than Claude building alone, so the plan below cuts the extensions
 
 ### Plan to the explain-back, Thursday 22 Oct 12:00 (D-123, D-124): current plan
 - **Wednesday to 18:30:** the three-way comparison; Q4 and Q9 (to reach 10 questions); Claude drafts the README, the write-up and the reMarkable notes (with a demo script); Bruno writes his "what changed in my thinking" bullets.
-- **Thursday 08:30–10:45:** 08:30 edit the write-up · 09:00 Bloom view · **09:20 freeze** (Bruno runs `make build` from a clean copy) · **09:35 solo demo** (Bruno explains every output aloud) · 10:10 rehearsal with Seisa-style questions.
-- **12:00:** explain-back in the office, with the reMarkable notes.
+- **Changed (D-127): the explain-back is Thursday at 10:00; everything below is finished on Wednesday night, and Thursday is train reading only.** Was: **Thursday 08:30–10:45 (D-124, D-126):** 08:30 edit the write-up (Claude builds the handoff zip in parallel) · **09:00 freeze and zip test** (Bruno rebuilds the unzipped copy with placeholder keys) · **09:20 solo demo** (Bruno explains every output aloud) · 10:05 rehearsal with Seisa-style questions · **10:35 email Anish the zip** and share the repo.
+- **10:00 (D-127):** explain-back in the office, with the reMarkable notes.
 - Dropped (named in the write-up as next work): Q6, Q7, large-data timings (method described instead), the gemini-3.8-flash comparison, `make refresh`, the flashcard deck.
 
 ### Wednesday 21 Oct, revised (D-117): learn in the morning, build from 14:00

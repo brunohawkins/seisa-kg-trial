@@ -8,7 +8,7 @@
 NEO4J := tools/neo4j/bin/neo4j
 
 # Tell make these names are commands, not files to be created.
-.PHONY: setup test brief build fetch-gleif fetch-ch sentences extract facts rdf query lpg query-lpg compare score-demo neo4j-install neo4j-start neo4j-stop neo4j-status
+.PHONY: setup test brief build fetch-gleif fetch-ch sentences extract facts rdf query lpg query-lpg compare score-demo neo4j-install neo4j-start neo4j-stop neo4j-status handoff
 
 # Install every Python library into the project's private environment.
 setup:
@@ -66,6 +66,11 @@ query: rdf
 score-demo: query
 	# Run the scoring demonstration inside the project's environment.
 	uv run python -m seisa_kg.evaluation.demo
+
+# Build the handoff zip for Seisa: code, docs and every cached download and output, checked for secrets (D-126).
+handoff:
+	# Refuses if anything is uncommitted; writes data/handoff/seisa-kg-trial-<date>-<commit>.zip.
+	uv run python scripts/handoff.py
 
 # Build the property graph in Neo4j from the fact list, then check it against the fact list and the RDF graph (stage 4b; D-110 to D-114).
 lpg: rdf

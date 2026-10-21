@@ -41,6 +41,8 @@ make build
 
 Every download and every language-model answer is cached (in `data/raw/`), so a rebuild is fast and repeatable; a first run fetches from GLEIF and Companies House within their rate limits. Each stage checks its own output and **stops the build if a check fails**.
 
+**From the handoff zip:** the zip includes `data/` (every download and every Gemini answer, cached; the fact list; the RDF graph file; every answer). So you can read every result without running anything, and `make build` rebuilds both graphs identically **without calling Gemini or Companies House**: put any placeholder text for `LLM_API_KEY` and `COMPANIES_HOUSE_API_KEY` in `.env` (the code reads them at start, but never uses them when the answer is cached). Neo4j still needs steps 3 and 4 of the setup. `make handoff` makes the zip from the last commit and checks it contains no key.
+
 | Stage | Command | What it does | Output |
 |---|---|---|---|
 | 1. Fetch | `make fetch-gleif`, `make fetch-ch` | Downloads and caches every GLEIF and Companies House record | `data/raw/` |
@@ -61,7 +63,7 @@ Every download and every language-model answer is cached (in `data/raw/`), so a 
 | Facts extracted from the news | [docs/extraction-report.md](docs/extraction-report.md); in both graphs |
 | The hand-checked matching sample, precision and recall, the errors explained | [eval/matching-sample.csv](eval/matching-sample.csv), [docs/matching-eval.md](docs/matching-eval.md) |
 | The three-way comparison and how it was scored | [docs/comparison.md](docs/comparison.md); the scorer in `src/seisa_kg/evaluation/score.py`, demonstrated in [docs/scoring-demo.md](docs/scoring-demo.md) |
-| Visualisations | Neo4j Bloom scenes: [docs/images/](docs/images/); the RDF provenance view: [docs/provenance-rdf.md](docs/provenance-rdf.md) |
+| Visualisations | Neo4j Bloom scenes: [docs/images/](docs/images/); the RDF provenance view: [docs/provenance-rdf.md](docs/provenance-rdf.md) (drawn by GitHub), or [docs/provenance-rdf.html](docs/provenance-rdf.html) in any browser |
 | The write-up | [docs/write-up.md](docs/write-up.md) |
 | What the sources contain, and what we found in them | [docs/data-sources.md](docs/data-sources.md) |
 

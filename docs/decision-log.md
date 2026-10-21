@@ -1819,3 +1819,53 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - **Pre-freeze check: `make build` ran end to end and passed** (exit 0): every stage's checks passed, all 10 questions identical in SPARQL and Cypher, the comparison regenerated from cache. The only "errors" in the log are Gemini's own failures inside the comparison, which are expected and recorded.
 - **reMarkable notes for the explain-back:** `~/Work Projects/Seisa explain-back notes - reMarkable - 22 Oct 2026.pdf` (outside the repo; 7 pages sized to the reMarkable 2 screen, with a margin for handwriting): the story in six sentences, the pipeline on one page, numbers and industry terms, the decisions with one-line whys (the ones Bruno accepted are starred), the same fact both ways plus space for "what changed in my thinking", likely questions with short answers and the weaknesses to say first, and the demo script.
 - Bruno finished early, tired after a long day; the rest of the plan is unchanged (D-124).
+
+### Handoff zip, and the brief reread (evening)
+- **D-126 · Bruno will hand the work to Anish as a zip by email on Thursday morning, as well as the GitHub repo.** Why: Anish can open every result without running anything; and the brief asks for a repo "shared with us for review", but ours is private, so Anish needs adding.
+- **The brief reread against §4 "What to deliver"** (Claude, Wednesday evening):
+  - **Met:** the decision log; one command plus the README; a schema sketch for each graph (`docs/schema/`); 10 questions with why each matters, both queries, answers, sources and timings; the extracted facts (the report, plus the facts themselves in `data/interim/extracted/`, which git doesn't hold, so the zip must); the matching sample, precision and recall, errors explained; the comparison and how it was scored; Bloom plus Mermaid; the write-up draft.
+  - **Not met, already disclosed:** timings on a smaller and a larger version of the data (dropped in D-124; the write-up gives the method).
+  - **Gaps to close on Thursday:**
+    1. the write-up's "what changed in my thinking" is still a placeholder (brief §3, item 2 asks for it);
+    2. the write-up quotes Q11 at 99 ms vs 1.8 ms, but tonight's build gives 92.2 vs 1.5 (timings vary run to run, so quote the docs);
+    3. the RDF view is Mermaid inside Markdown: GitHub draws it, but someone opening the zip sees code, so it also needs an HTML page;
+    4. the repo is private and not yet shared with Seisa;
+    5. the write-up says the 10 answers are identical "sources included" (opening paragraph and results table), but `lpg/ask.py` compares only the KEY and VALUE columns: both languages cite sources on every row, yet the sources themselves aren't compared (the two databases write them differently). Fix the wording: "identical answers, each row citing its sources in both".
+  - **Optional:** the brief asks for a "short log"; ours has 125 decisions over 1,800 lines, so a one-page index of the key ones at the top would help a reader.
+- **Measured for the zip:** code and docs 0.5 MB, outputs 1.8 MB, the fact list 0.7 MB, the download and Gemini cache 15 MB (all zipped): about 18 MB, under Gmail's 25 MB limit. No key or password appears anywhere in `data/` or in the tracked files (checked by value, never printed).
+- **Found:** with the cache present, the build makes no Gemini or Companies House calls, but the code still reads both keys at start, so a reviewer needs placeholder values. To prove at the freeze: rebuild the unzipped copy with placeholder keys.
+
+#### Zip choices for Bruno (confirm at 08:30; recommendation first)
+- **Z1 · What goes in:** code and docs, the outputs (RDF graph file, fact list, extracted facts, answers, comparison attempts) and the cache: about 18 MB. Why: every result can be read without running anything, and rebuilt identically with no keys. Alternative: without the cache, about 3 MB; a rebuild then needs both keys, and Gemini may answer differently.
+- **Z2 · What stays out:** `.env` (secrets); `brief/` and its text copies (Seisa's own material, D-011); `tools/` and `data/neo4j` (the Neo4j program and database, about 400 MB, rebuilt by `make neo4j-install` and the build); `.venv`. Note: `docs/talking-points.md` is in git, so it goes in.
+- **Z3 · When and how:** sent before leaving at 10:45, so it's waiting at 12:00. The email also gives the repo link and asks for Anish's GitHub username. If it bounces for size: a Google Drive link.
+
+#### TODO (Thursday, D-124, D-126): replaces the list above
+- [ ] **08:30–09:00 · Bruno:** edit the write-up (own voice, two pages, the "what changed" bullets, confirm "my choice", the Q11 timing, the "sources included" wording); check the README; confirm Z1–Z3.
+  - **Claude, in parallel:** `make handoff` (builds the zip, then scans it for the key values); the RDF view also as an HTML page; a README note on rebuilding from the zip; the optional log index.
+- [ ] **09:00–09:20 · freeze and zip test:** commit; `make handoff`; unzip into a fresh folder; run `make setup`, `make test` and `make build` there with placeholder Gemini and Companies House keys; check the outputs match; push. No code after this.
+- [ ] **09:20–10:05 · solo demo** with the demo script.
+- [ ] **10:05–10:35 · rehearsal** with Seisa-style questions.
+- [ ] **10:35–10:45 · send:** email Anish the zip and the repo link (re-run `make handoff` first if anything changed); share the GitHub repo.
+- [ ] **12:00 · explain-back.**
+
+### reMarkable notes: train reading added (evening)
+- The notes PDF now has 18 pages. Pages 1–7 are unchanged apart from corrected numbers: SHACL is 11 shapes, not 12; Q11 is 92 ms against 1.5 ms; "identical answers" now says the key columns are what is compared.
+- **Pages 8–16 are the whole pipeline, for the train.** Two end-to-end journeys come first: Bridgepoint Group plc's legal name, then Hg's OneStream deal. Then one page per stage: fetch and scope; news and Gemini; matching; fact cards and RDF; Neo4j; questions and the scorer; the comparison. Each was checked against the code's own summaries tonight.
+- **Pages 17–18:** the five "what does the code do when…" questions, with answers drawn from the code. The 10:05 rehearsal will still ask them aloud.
+
+### Schedule change: the explain-back is at 10:00 (late evening)
+- **D-127 · The explain-back is on Thursday 22 Oct at 10:00, not 12:00** (Bruno had misread the time). Bruno has no work time on Thursday morning, so every loose end is finished tonight, and Thursday is train reading only (notes pages 8–18). Replaces the Thursday timings in D-123, D-124 and D-126.
+  - **Bruno said yes to preparing the handoff tonight,** with the recommended contents (Z1–Z3).
+- **Done tonight:**
+  - `make handoff` (`scripts/handoff.py`) builds the zip from the last commit, refuses if anything is uncommitted, and checks the zip for the `.env` values (never printed) and for paths that must stay out.
+  - `docs/provenance-rdf.html`: the RDF view, drawn in any browser. Made by the same step as the Markdown page.
+  - README: how to rebuild from the zip with placeholder keys.
+
+#### TODO (tonight, D-127): replaces the Thursday list above
+- [x] `make handoff`, the HTML view, the README note.
+- [ ] The freeze test: unzip into a fresh folder; rebuild from the cache alone (with placeholder keys); compare with the originals.
+- [ ] Write-up: Bruno's "what changed in my thinking" bullets; "my choice" confirmed; the "sources included" and Q11 wording.
+- [ ] Commit and push; then the final `make handoff`.
+- [ ] Bruno emails Anish the zip and the repo link (tonight or first thing), asking for his GitHub username.
+- [ ] Thursday: train reading (notes pages 8–18); at the office, `make neo4j-start` before the demo; explain-back at 10:00.
