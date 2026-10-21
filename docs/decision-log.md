@@ -1725,3 +1725,5 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - No code link points at the wrong sponsor or the wrong company.
 - **Also found:** Gemini's role labels are loose (row 17 "growth investment" labelled buyer; the same sentence labelled Bridgepoint buyer in row 30 and sponsor in row 40).
 - **For Bruno to decide:** keep D-103 (the code's answer) or switch named funds to `ambiguous`; and which precision to report (exact outcome match, or "is the code's link true").
+- **D-120 · Keep D-103 for named funds with a sponsor word** (`refersToGroup` the sponsor, vehicles listed as possible, none picked). The 8 hand-check disagreements of this kind are a difference of rule, not a code error: both answers refuse to pick one vehicle, and D-103 also keeps the part we're sure of (the sponsor).
+- Bruno removed the "(Claude's suggestion)" tags from the notes in the CSV; the answers are unchanged. Who judged each row is still recorded in D-119 and in the scorer, and the report keeps the split.

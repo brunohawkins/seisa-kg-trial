@@ -39,6 +39,6 @@
 | 18 | Apax (sponsor) | refersToGroup | sameEntityAs | names the sponsor | the sentence defines the short name: Apax Partners LLP ("Apax"); sentence truncated in the data (apax-04 teaser) | guided |
 | 20 | The Apax Global Impact Fund (buyer) | refersToGroup | ambiguous | names the sponsor; 7 possible entities, none picked | same as row 16. 4 Global Impact fund vehicles fit, none named | own |
 | 39 | Bridgepoint’s small cap Growth fund (fund) | refersToGroup | ambiguous | names the sponsor | singular fund, can't tell which: Growth I 'A', Growth I 'B', or Growth II (not in our graph) | guided |
-| 43 | Apax Digital Fund I (seller) | refersToGroup | ambiguous | names the sponsor | same sentence as row 8 (copied from row 8) | guided |
-| 44 | Bridgepoint’s small cap Growth fund (buyer) | refersToGroup | ambiguous | names the sponsor | same sentence as row 39 (copied from row 39) | guided |
-| 48 | commitments from Bridgepoint Direct Lending II (target) | refersToGroup | non-entity | names the sponsor | a thing being sold (fund commitments), not an organisation (Claude's suggestion) | claude |
+| 43 | Apax Digital Fund I (seller) | refersToGroup | ambiguous | names the sponsor | same sentence as row 8 | guided |
+| 44 | Bridgepoint’s small cap Growth fund (buyer) | refersToGroup | ambiguous | names the sponsor | same sentence as row 39 | guided |
+| 48 | commitments from Bridgepoint Direct Lending II (target) | refersToGroup | non-entity | names the sponsor | a thing being sold (fund commitments), not an organisation | claude |
