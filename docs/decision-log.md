@@ -1727,3 +1727,15 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - **For Bruno to decide:** keep D-103 (the code's answer) or switch named funds to `ambiguous`; and which precision to report (exact outcome match, or "is the code's link true").
 - **D-120 · Keep D-103 for named funds with a sponsor word** (`refersToGroup` the sponsor, vehicles listed as possible, none picked). The 8 hand-check disagreements of this kind are a difference of rule, not a code error: both answers refuse to pick one vehicle, and D-103 also keeps the part we're sure of (the sponsor).
 - Bruno removed the "(Claude's suggestion)" tags from the notes in the CSV; the answers are unchanged. Who judged each row is still recorded in D-119 and in the scorer, and the report keeps the split.
+
+### Questions in Cypher (15:27)
+- **D-121 · For the remaining queries, Claude writes both versions (SPARQL and Cypher) and Bruno checks them.** A change to D-067 for queries only.
+  - Why (Bruno): no time to write them all; checking each one against its twin is still real understanding.
+- **Built:** `src/seisa_kg/lpg/queries/` (Q1, Q2, Q3, Q5 in Cypher, each the twin of its `.rq` file), the runner `src/seisa_kg/lpg/ask.py`, and `make query-lpg` (now part of `make build`). Report: `docs/answers-lpg.md`.
+  - The runner checks each Cypher answer against the SPARQL answer on the KEY and VALUE columns, as a multiset. **All 4 match**, and so do every source web address (60, 435, 144 and 49); a deliberately changed row is caught.
+  - Timings (median of 5): SPARQL 1.2–5.1 ms, Cypher 4.6–13.4 ms. Not a fair race: Oxigraph runs inside our process, Neo4j over the network.
+  - Translation points worth explaining: a scope decision is a node in RDF but `IN_SCOPE_OF {verdict}` in Neo4j; a link's source is on the link (`managed.record`), a value's source is on its receipt (`"directParentException" IN receipt.properties`); a list property needs `UNWIND`, and the receipt's aligned lists need an index match (`properties[i]` with `values[i]`); RDF's `FILTER NOT EXISTS { ?newer prov:wasRevisionOf ?decision }` has no Cypher twin yet because no hand decision exists (0 revisions).
+
+#### TODO
+- [ ] Bruno checks Q1, Q2, Q3, Q5 side by side (SPARQL vs Cypher).
+- [ ] News questions Q8, Q10, Q11, Q12 in both languages, then the three-way comparison.

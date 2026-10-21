@@ -8,7 +8,7 @@
 NEO4J := tools/neo4j/bin/neo4j
 
 # Tell make these names are commands, not files to be created.
-.PHONY: setup test brief build fetch-gleif fetch-ch sentences extract facts rdf query lpg score-demo neo4j-install neo4j-start neo4j-stop neo4j-status
+.PHONY: setup test brief build fetch-gleif fetch-ch sentences extract facts rdf query lpg query-lpg score-demo neo4j-install neo4j-start neo4j-stop neo4j-status
 
 # Install every Python library into the project's private environment.
 setup:
@@ -70,10 +70,15 @@ lpg: rdf
 	# Run the property graph builder inside the project's environment; it stops with an error if any check fails.
 	uv run python -m seisa_kg.lpg.build
 
-# The single command (brief §4): fetch GLEIF, then Companies House, then news sentences + Gemini extraction (all cached) -> facts -> RDF graph -> checks -> questions -> property graph -> checks.
-build: fetch-gleif fetch-ch extract query lpg
+# Answer the investor questions in Cypher and check each answer against its SPARQL twin (stage 5 for the property graph).
+query-lpg: lpg query
+	# Run the Cypher question runner inside the project's environment.
+	uv run python -m seisa_kg.lpg.ask
+
+# The single command (brief §4): fetch GLEIF, then Companies House, then news sentences + Gemini extraction (all cached) -> facts -> RDF graph -> checks -> questions -> property graph -> checks -> the same questions in Cypher.
+build: fetch-gleif fetch-ch extract query lpg query-lpg
 	# Say the whole pipeline finished.
-	@echo "Build complete: data/output/graph.ttl, docs/answers-rdf.md, and the Neo4j property graph"
+	@echo "Build complete: data/output/graph.ttl, docs/answers-rdf.md, the Neo4j property graph and docs/answers-lpg.md"
 
 # Download and set up the project's own Neo4j server (only needed once).
 neo4j-install:
