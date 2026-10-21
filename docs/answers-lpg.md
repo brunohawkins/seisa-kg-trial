@@ -4,16 +4,16 @@ Each Cypher question is the twin of a SPARQL question. **Same answer** compares 
 
 | Question | Rows (SPARQL / Cypher) | Same answer? | SPARQL ms | Cypher ms |
 |---|---|---|---|---|
-| q01_apax_fund_managers | 9 / 9 | yes | 1.15 | 2.05 |
-| q02_no_parent_reasons | 15 / 15 | yes | 4.91 | 4.91 |
-| q03_lapsed_leis | 72 / 72 | yes | 2.54 | 5.49 |
-| q04_every_fact_about_a_company | 30 / 30 | yes | 0.37 | 2.04 |
-| q05_source_disagreements | 15 / 15 | yes | 1.95 | 2.56 |
-| q08_deals_and_reasons | 28 / 28 | yes | 31.12 | 3.84 |
-| q09_add_ons | 2 / 2 | yes | 1.16 | 0.97 |
-| q10_trace_the_buyer | 33 / 33 | yes | 1.8 | 1.87 |
-| q11_fund_closes | 5 / 5 | yes | 92.76 | 1.07 |
-| q12_shared_advisers | 10 / 10 | yes | 0.9 | 2.18 |
+| q01_apax_fund_managers | 9 / 9 | yes | 1.02 | 2.82 |
+| q02_no_parent_reasons | 15 / 15 | yes | 4.84 | 8.2 |
+| q03_lapsed_leis | 72 / 72 | yes | 2.68 | 6.87 |
+| q04_every_fact_about_a_company | 30 / 30 | yes | 0.39 | 2.3 |
+| q05_source_disagreements | 15 / 15 | yes | 2.06 | 2.74 |
+| q08_deals_and_reasons | 28 / 28 | yes | 32.01 | 4.18 |
+| q09_add_ons | 2 / 2 | yes | 1.15 | 1.18 |
+| q10_trace_the_buyer | 33 / 33 | yes | 1.76 | 2.06 |
+| q11_fund_closes | 5 / 5 | yes | 92.19 | 1.54 |
+| q12_shared_advisers | 10 / 10 | yes | 0.92 | 1.45 |
 
 Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j is a separate server reached over the network, so each Cypher time includes a round trip. Side by side, not a fair race.
 
@@ -27,7 +27,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** GLEIF's "fund manager" can be a GP company or a management company (F4, D-027), so the answer says "manager per GLEIF", not "GP".
 
-**Answer:** 9 rows, 2.05 ms.
+**Answer:** 9 rows, 2.82 ms.
 
 | manager | managerName | funds | sources | latestFetch |
 |---|---|---|---|---|
@@ -51,7 +51,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** companies that do report a parent, or give no Level 2 information at all (F13), are counted too, so every In company appears exactly once.
 
-**Answer:** 15 rows, 4.91 ms.
+**Answer:** 15 rows, 8.2 ms.
 
 | sponsorName | reason | companies | sources | latestFetch |
 |---|---|---|---|---|
@@ -79,7 +79,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Type:** time and data quality; the answer reads each fact's own source and fetch date (D-046, D-042).
 
-**Answer:** 72 rows, 5.49 ms.
+**Answer:** 72 rows, 6.87 ms.
 
 | sponsorName | entity | name | status | lastToldUs | sources |
 |---|---|---|---|---|---|
@@ -116,7 +116,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** facts made by our own rules (status groups, address keys, the GLEIF-Companies House link) cite the rule, not a record. Types are left out.
 
-**Answer:** 30 rows, 2.04 ms.
+**Answer:** 30 rows, 2.3 ms.
 
 | node | fact | value | sources |
 |---|---|---|---|
@@ -151,7 +151,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Type:** cross-source conflict; compares tidy keys (D-092, D-093) but shows each source's own words and record.
 
-**Answer:** 15 rows, 2.56 ms.
+**Answer:** 15 rows, 2.74 ms.
 
 | company | name | field | gleifSays | chSays | gleifSources | chSources |
 |---|---|---|---|---|---|---|
@@ -181,7 +181,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** the sponsor is the release's publisher. "sold" means the sponsor is on the seller side (a seller name linked to its group, or to one of its In companies); everything else counts as "bought" (including add-ons). The "commitments from Bridgepoint Direct Lending II" row is an extraction flaw (a non-company read as a target), kept visible on purpose.
 
-**Answer:** 28 rows, 3.84 ms.
+**Answer:** 28 rows, 4.18 ms.
 
 | sponsorName | target | side | kind | published | reasons | sources |
 |---|---|---|---|---|---|---|
@@ -218,7 +218,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** the deal kind "add-on" is Gemini's reading of the release, checked against its quote (D-085). The buyer is the portfolio company as named (e.g. WGSN), not linked to a registry entity.
 
-**Answer:** 2 rows, 0.97 ms.
+**Answer:** 2 rows, 1.18 ms.
 
 | sponsorName | target | buyer | published | reasons | sources |
 |---|---|---|---|---|---|
@@ -235,7 +235,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** names that can't be linked (ambiguous, out of scope, ...) are shown too, with an empty trail, so the answer says where tracing stops.
 
-**Answer:** 33 rows, 1.87 ms.
+**Answer:** 33 rows, 2.06 ms.
 
 | deal | buyerAsWritten | buyerSentence | outcome | matchRule | linkedTo | legalName | registryRecords | sponsorName | scopeRule |
 |---|---|---|---|---|---|---|---|---|---|
@@ -272,7 +272,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** only 5 fund closes were published in our releases (F40). The fund's name is linked to the sponsor's group, not to one legal entity (D-103: a fund is many vehicles).
 
-**Answer:** 5 rows, 1.07 ms.
+**Answer:** 5 rows, 1.54 ms.
 
 | sponsorName | fund | closeType | size | closeDate | published | sources |
 |---|---|---|---|---|---|---|
@@ -292,7 +292,7 @@ Timings are the median of 5 runs. Oxigraph runs inside our Python process; Neo4j
 
 **Note:** advisers are matched by their name as written, in capitals (e.g. "Kirkland & Ellis LLP" and "Kirkland & Ellis" would count as two); advisers are not linked to registry entities (D-104). The sponsor is the release's publisher.
 
-**Answer:** 10 rows, 2.18 ms.
+**Answer:** 10 rows, 1.45 ms.
 
 | adviser | sponsors | sponsorNames | deals | sources |
 |---|---|---|---|---|

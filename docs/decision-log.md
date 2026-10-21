@@ -1814,3 +1814,8 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - [ ] 08:30 Bruno edits the write-up (own voice, two pages, his "what changed" bullets) and checks the README.
 - [ ] 09:00 freeze: Bruno runs `make build` from a clean copy, plus `make test`; commit, push.
 - [ ] 09:15 solo demo with the demo script; 10:00 rehearsal with Seisa-style questions.
+
+### End of Wednesday (17:00)
+- **Pre-freeze check: `make build` ran end to end and passed** (exit 0): every stage's checks passed, all 10 questions identical in SPARQL and Cypher, the comparison regenerated from cache. The only "errors" in the log are Gemini's own failures inside the comparison, which are expected and recorded.
+- **reMarkable notes for the explain-back:** `~/Work Projects/Seisa explain-back notes - reMarkable - 22 Oct 2026.pdf` (outside the repo; 7 pages sized to the reMarkable 2 screen, with a margin for handwriting): the story in six sentences, the pipeline on one page, numbers and industry terms, the decisions with one-line whys (the ones Bruno accepted are starred), the same fact both ways plus space for "what changed in my thinking", likely questions with short answers and the weaknesses to say first, and the demo script.
+- Bruno finished early, tired after a long day; the rest of the plan is unchanged (D-124).
