@@ -1864,8 +1864,29 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 
 #### TODO (tonight, D-127): replaces the Thursday list above
 - [x] `make handoff`, the HTML view, the README note.
-- [ ] The freeze test: unzip into a fresh folder; rebuild from the cache alone (with placeholder keys); compare with the originals.
-- [ ] Write-up: Bruno's "what changed in my thinking" bullets; "my choice" confirmed; the "sources included" and Q11 wording.
+- [x] The freeze test: unzip into a fresh folder; rebuild from the cache alone (with placeholder keys); compare with the originals.
+- [x] Write-up: Bruno's "what changed in my thinking" bullets; "my choice" confirmed; the "sources included" and Q11 wording.
 - [ ] Commit and push; then the final `make handoff`.
 - [ ] Bruno emails Anish the zip and the repo link (tonight or first thing), asking for his GitHub username.
 - [ ] Thursday: train reading (notes pages 8–18); at the office, `make neo4j-start` before the demo; explain-back at 10:00.
+
+### The freeze test (late evening)
+- **Passed.** The zip from commit 96c0ae9 was unzipped into a fresh folder. Every generated file was deleted (`data/interim`, `data/output`, except the hand-check's hidden key). Then `make setup`, `make test` and `make build` ran with **placeholder Gemini and Companies House keys**:
+  - exit 0; 62 tests pass; every stage's checks pass; Neo4j steps 1–5 ok;
+  - **no new downloads:** 1,842 cached files before and after, so nothing called Gemini or Companies House;
+  - **identical:** the extraction report, the extracted facts, the scope and matching reports, the comparison (every score), both RDF views;
+  - **the RDF graph is identical in content:** 112,800 triples in both, the same count for every predicate, and every triple without a blank node equal. The file's text differs only in blank-node labels, which are random on every save.
+- **One finding: a fetch time taken from a file's save time doesn't survive copying.** Bridgepoint's pages were saved by hand (D-082), so their fetch time is the file's modification time. A zip keeps that only to the nearest 2 seconds, so 1,533 Bridgepoint news facts get a `retrieved_at` up to 2 seconds earlier after unzipping. Unzipping in another time zone could shift it by hours. Everything else in those facts is identical.
+  - The fix (not made tonight, to keep the freeze): record each hand-saved page's save time once in a small manifest file next to the pages, and read it from there.
+  - Why it matters: provenance should never depend on something a copy can change. The freeze test found this, which is what it is for.
+
+### The write-up finished (late evening)
+- **"What changed in my thinking": Bruno chose three of Claude's drafts and kept his own process point.** The drafts were written from Bruno's own questions today: "is a receipt the LPG equivalent of RDF-star?" and "why 34,000 facts become 113,000 triples". The four bullets:
+  - sources have to be designed in (receipts);
+  - RDF gave things for free (set semantics, global names) that Neo4j needed building (ids, uniqueness, the "link stated twice" stop);
+  - queries follow the shape (Q4: one pattern vs three parts; Q11: 92 ms vs 1.5 ms);
+  - how I worked: I own the design, the checks and the scoring; Claude Code wrote much of the code, and I checked its output.
+  - Why the process point stays: the brief encourages AI tools and asks for candour; Bruno would rather say it plainly than be asked.
+- **"My choice" kept:** the fact list plus RDF as the system of record; the property graph generated from it for exploration and applications; text search only to feed extraction.
+- The draft banner is removed. The notes PDF (page 5) carries the same bullets.
+
