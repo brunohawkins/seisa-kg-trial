@@ -1756,3 +1756,7 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
   - **Empty key values:** found by scoring each Cypher answer against its SPARQL twin. Q10's identical answer scored 0.55, because `linkedTo` is empty for names that can't be linked and an empty value can never be "found". Empty key columns are now skipped.
   - Check: every Cypher answer, scored against its SPARQL answer key, now gets 1.0 on correctness and citation (all 8). Two new tests; 57 pass.
 - **Build map for Bruno:** https://claude.ai/artifact/JVA5qGz77NqKozV3CiL4nS (what's built, where it lives, and the proposed comparison design with 10 decisions).
+
+### Schedule change (16:05)
+- **D-123 · The explain-back moves to Thursday 22 Oct at 12:00, in the office (Anish's request).** Bruno works 08:30–10:45 on Thursday beforehand, and may use his reMarkable 2 notes during the explain-back.
+  - Consequence: about 4 h 45 min of work left (today to 18:30, Thursday 08:30–10:45). The comparison is still built today; Thursday morning becomes write-up, Bloom, freeze and rehearsal. Claude's proposed plan is on the build map (https://claude.ai/artifact/JVA5qGz77NqKozV3CiL4nS); Bruno decides the open choices.
