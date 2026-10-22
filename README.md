@@ -6,6 +6,30 @@ Public data about three UK private equity sponsors (**Hg, Bridgepoint, Apax**), 
 - **One command builds both graphs from scratch:** `make build`.
 - **Decisions and why:** [docs/decision-log.md](docs/decision-log.md). **The write-up:** [docs/write-up.md](docs/write-up.md).
 
+## Results at a glance
+
+- **Both graphs from one list of 34,269 fact cards:** RDF 112,800 triples; Neo4j 6,342 nodes, 4,889 relationships, 6,545 receipts. The build checks both against the list and against each other.
+- **10 investor questions:** identical answers in SPARQL and Cypher, every row citing its sources ([answers-rdf](docs/answers-rdf.md), [answers-lpg](docs/answers-lpg.md)).
+- **Extraction:** 30 deals, 5 fund closes, 438 mentions from 30 releases; 9 fields rejected by the quote check, each explained ([extraction report](docs/extraction-report.md)).
+- **Matching (50 names, hand-checked):** recall 86%, precision 38% (weighted), every disagreement explained ([matching eval](docs/matching-eval.md)).
+- **Three-way comparison:** text-to-SPARQL 0.44, text-to-Cypher 0.30, vector search 0.00, with every attempt and its failure ([comparison](docs/comparison.md)).
+- **Decisions:** D-001 to D-128, each with its reason ([decision log](docs/decision-log.md)).
+
+## Run it end to end
+
+In the project folder (from the handoff zip or a clone). Each step is explained under Setup and Build below.
+
+```bash
+make setup             # 1. the Python environment (uv installs Python 3.12)
+cp .env.example .env   # 2. keys: real ones, or placeholders when running from the zip (its cache needs no calls)
+make neo4j-install     # 3. the project's own Neo4j server (needs Java)
+make neo4j-start       #    then set the password at http://localhost:7474 to the one in .env
+make test              # 4. the tests
+make build             # 5. fetch (cached) → extract → fact list → RDF graph → Neo4j → the 10 questions → the comparison
+```
+
+Then read the results: the [write-up](docs/write-up.md) first, then the files listed under "Where each deliverable is".
+
 ## Setup (once)
 
 You need [uv](https://docs.astral.sh/uv/) (it installs Python 3.12 for you), a recent Java for Neo4j (built and tested on Java 25) and `make`.

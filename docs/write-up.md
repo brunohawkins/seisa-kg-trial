@@ -1,10 +1,16 @@
-# Two graphs and a text index: what I would choose, and why
+Write up
 
-> Numbers are from the build of 21 Oct 2026; each one points to where it is measured.
+Two graphs and a text index: what I would choose, and why
+
+> Numbers are from the build of 21 Oct 2026. each one points to where it is measured.
+
+Note: D-xxx refers to a decision I made when building the pipeline, visible in the decision log file.
+
+This write-up was written with the aid of claude code.
 
 ## What I built
 
-Public data on three UK private equity sponsors (Hg, Bridgepoint, Apax): 648 legal entities from GLEIF and Companies House, and 30 of the sponsors' own news releases read by Gemini. Everything first becomes one list of **34,269 fact cards**, each recording what a source said, where and when, or which of our rules made it (D-029: never silently correct a source; our own judgements are separate, labelled facts). Both graphs are built from that one list, and the build checks them against it and against each other: the **RDF graph** (112,800 triples, sources on RDF-star notes, checked by SHACL) and the **Neo4j property graph** (6,342 nodes, 4,889 relationships, 6,545 receipts). Ten investor questions are answered in both SPARQL and Cypher, and **all ten give identical answers**, every row citing its sources in both (`docs/answers-lpg.md`; the check compares the answer columns row by row, not the sources, which the two databases write differently).
+Public data focused on three UK private equity sponsors (Hg, Bridgepoint, Apax): 648 legal entities from GLEIF and Companies House, and 30 of the sponsors' own news releases read by Gemini. Everything first becomes one list of **34,269 fact cards**, each recording what a source said, where and when, or which of our rules made it (D-029: never silently correct a source; our own judgements are separate, labelled facts). Both graphs are built from that one list, and the build checks them against it and against each other: the **RDF graph** (112,800 triples, sources on RDF-star notes, checked by SHACL) and the **Neo4j property graph** (6,342 nodes, 4,889 relationships, 6,545 receipts). Ten investor questions are answered in both SPARQL and Cypher, and **all ten give identical answers**, every row citing its sources in both (`docs/answers-lpg.md`; the check compares the answer columns row by row, not the sources, which the two databases write differently).
 
 ## When I would choose each
 
@@ -12,18 +18,18 @@ Public data on three UK private equity sponsors (Hg, Bridgepoint, Apax): 648 leg
 
 **A property graph, when the graph is explored, served and traversed.** Links carry their own properties, so a fund-manager link holds its start date and its source record directly. Bloom made the fact-to-source path visible in minutes. Cypher was easier for the LLM on our graph (it wrote a perfect Q1). But a property cannot carry its own source, so I designed **receipts**: one `DERIVED_FROM` relationship per node and source, listing exactly which values that source vouches for (D-110). They are cheap to query and can be hidden by relationship type. And the property graph needed discipline that RDF gives for free: global ids (an `id` property with uniqueness rules), de-duplication in code (Neo4j would store a link twice), and care with list properties (several questions needed `UNWIND`).
 
-**Vector search, for finding passages, not for answering structured questions.** Over the 968 news sentences it scored **0.00** in the comparison: "not found" on 8 of 10 questions, and wrong on the other 2. The answers to registry questions are not in any sentence; five sentences cannot hold a list of 28 deals, a count, or a trail across sources; and the similarity scores of right and wrong sentences bunched together (0.69–0.70 on Q11). Its one strength was honesty: it never invented an answer. I would use it to find the passages an extraction step should read, as the first stage of building a graph, not as a replacement for one.
+**Vector search, for finding passages, not for answering structured questions.** Over the 968 news sentences it scored **0.00** in the comparison: "not found" on 8 of 10 questions, and wrong on the other 2. The answers to registry questions are not in any sentence; five sentences cannot hold a list of 28 deals, a count, or a trail across sources; and the similarity scores of right and wrong sentences bunched together (0.69–0.70 on Q11). Its one strength was honesty: it never invented an answer. I would use it to find the passages an extraction step should read, as the first stage of building a graph, not as a replacement for one. Note I did not focus on building this up too much and saw it as more of an extention task. With more time, I would have gone into this problem more and figured out how best to engineer it.
 
 **My choice for this kind of work:** keep a provenance-first record of facts (here, the fact list and the RDF graph) as the system of record, generate the property graph from it for exploration and applications, and use text search only to feed extraction, whose every fact is checked word for word against its sentence.
 
 ## What changed in my thinking between the first graph and the second
 
-- **Sources have to be designed in.** In RDF I could attach a source to any single fact with an RDF-star note. I expected Neo4j to work the same way, but a property can't carry its own source, so I designed receipts. Provenance has to be part of the model from the start, not added later.
+- **Sources have to be designed in.** In RDF I could attach a source to any single fact with an RDF-star note. I expected Neo4j to work the same way, but a property can't carry its own source, so I designed receipts (in the form of their own node-relationship-node). Provenance has to be part of the model from the start.
 - **RDF gave me things for free that Neo4j didn't.** A fact stated twice is stored once (a graph is a set), and everything has a global name. In Neo4j I had to add ids, uniqueness rules, and a check that stops the build if a link is stated twice.
 - **Queries follow the shape.** "Every fact about this company, with its source" is one pattern in SPARQL but three joined parts in Cypher; following links and reading sources was faster in Neo4j (Q11: 92 ms against 1.5 ms).
 - **How I worked.** Building the second graph sent me back to learn both query languages properly. I learned which parts I needed to understand in depth (the design, the checks, the scoring) and which I could leave to Claude Code to write, checking its output.
 
-## A new kind of fact: when a stake began and ended
+## A new kind of fact was when a stake began and ended
 
 **What the source gives.** Companies House states, for each person with significant control, `notified_on` (51 of our stakes) and, once control ends, `ceased_on` (14). It does not give the date a stake *began*: 17 of the 51 show 6 April 2016, the day the register started, which means "already in control then", not "began then". So the facts are recorded as given (`notifiedOn`, `ceasedOn`), and any "began" date would be our own judgement, made by a named rule and labelled as such (D-029).
 
@@ -33,9 +39,9 @@ Public data on three UK private equity sponsors (Hg, Bridgepoint, Apax): 648 leg
 
 **In vector search.** Nothing to model, so nothing gained: the dates stay inside sentences, and "on this date" questions still cannot be answered.
 
-**In our pipeline,** both builders are generic (fact cards in, graph out), so a new kind of fact on an existing node type is a parser change, a SHACL shape and a check, not a redesign.
+**In the pipeline,** both builders are generic (fact cards in, graph out), so a new kind of fact on an existing node type is a parser change, a SHACL shape and a check, not a redesign.
 
-## Results, candidly
+## Results
 
 | Area | Result | Where |
 |---|---|---|
@@ -46,4 +52,4 @@ Public data on three UK private equity sponsors (Hg, Bridgepoint, Apax): 648 leg
 
 **What did not work, or is missing:** timings on a larger dataset (the method: generate a scaled copy of the fact list, or widen the sponsor list, and re-run the same timed queries); a refresh that records what changed between fetches; matching for bought companies, which stay "news-only" until they are looked up in Companies House; four fixes to the comparison's own scoring after its first run, each disclosed with its reason (D-125).
 
-**In a real deployment** I would add: scheduled refreshes with history; access rules by label and property (Neo4j Enterprise), which the receipts design already allows; entity matching at scale with an LLM proposing and a sampled human audit; and a larger question set with answer keys, since an answer key is the only way to know when a generated query is wrong.
+**In a real deployment** I would add: scheduled refreshes with history; access rules by label and property (Neo4j Enterprise), which the receipts design already allows; entity matching at scale with an LLM proposing and a sampled human audit; and a larger question set with answer keys, since an answer key is the only way to know when a generated query is wrong. I would also, given more time, be more methodological with checking how code was written. Due to a constrained time limit, there was a risk I had leaving claude to code without checking every part, only skimming. I would ideally focus in on one aspect in detail to ensure it really does look right.

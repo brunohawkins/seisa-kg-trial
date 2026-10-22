@@ -1890,3 +1890,18 @@ Bruno answered seven questions first; Claude reviewed each one against sources a
 - **"My choice" kept:** the fact list plus RDF as the system of record; the property graph generated from it for exploration and applications; text search only to feed extraction.
 - The draft banner is removed. The notes PDF (page 5) carries the same bullets.
 
+## Entry · Thursday 22 Oct 2026 · Explain-back day
+
+### Schedule change (09:30)
+- **D-128 · The explain-back moves to about 14:00 (Anish's request).** Bruno has 09:30–12:30 at home, leaving at 12:30. Replaces the 10:00 time in D-127.
+  - **The freeze holds at commit 3c1ef72:** no code changes today. The handoff zip from that commit is unchanged.
+  - **The morning, in order:** setup and email; the pipeline read aloud (notes pages 8–16); a results review using a new results briefing (https://claude.ai/artifact/TXwZHPsY6Pa6zRgfX7kkwx), explained back to Claude a section at a time; the solo demo out loud (the demo script); a mock explain-back.
+- **Results briefing:** every result, its cause, and a "say it" line for each. New causes, checked against the data this morning:
+  - Q12 in Cypher returned no rows because every Adviser node belongs to exactly one deal, so no node spans two sponsors; the answer needs grouping by name.
+  - Q9 in Cypher filtered on a deal kind "Buy", which the graph doesn't use (acquisition, add-on, investment, exit, other).
+  - Both translators failed Q5 by comparing addresses as raw text, not the tidy key (D-093).
+  - Vector search on Q11 found 2 of 5 closes, but in the sentences' words, so the strict scorer matched none.
+
+#### TODO (Thursday)
+- [ ] Results review; solo demo; mock explain-back; leave 12:30; explain-back about 14:00.
+- [ ] After the explain-back: commit this entry.
